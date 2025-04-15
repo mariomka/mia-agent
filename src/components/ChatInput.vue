@@ -53,7 +53,7 @@ const handleInput = (event) => {
         @keydown="handleKeydown"
         @input="handleInput"
         :disabled="props.isLoading"
-        class="flex-1 py-2 px-1 bg-transparent border-none rounded-lg focus:outline-none resize-none disabled:bg-gray-100 disabled:cursor-not-allowed transition duration-150 ease-in-out text-base"
+        class="flex-1 py-2 px-1 bg-transparent border-none rounded-lg focus:outline-none resize-none disabled:placeholder-gray-400 disabled:cursor-not-allowed transition duration-150 ease-in-out text-base"
         placeholder="Type your message..."
         rows="1"
         style="min-height: 40px; max-height: 120px;"
