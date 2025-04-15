@@ -1,0 +1,121 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# Mia Agent Implementation Plan
+
+This document outlines the plan for developing the Mia AI Interview Agent, a web-based UI for conducting text-based interviews powered by an n8n backend.
+
+## 1. Project Overview
+
+Mia Agent provides a minimalist chat interface for users to interact with an AI conducting interviews. The initial focus is on user testing interviews to gather feedback, pain points, and feature requests. The application communicates with a predefined n8n webhook endpoint.
+
+## 2. Technology Stack
+
+Based on the `front-end-developer-rules`, we will use:
+
+*   **Framework:** Vue.js 3 (Composition API with `<script setup>`)
+*   **Build Tool:** Vite
+*   **State Management:** Pinia
+*   **Testing:** Vitest
+*   **UI Styling:** Tailwind CSS
+*   **Utility Functions:** VueUse
+*   **UI Components:** Potentially Headless UI or Element Plus if needed for specific complex components, but prioritize Tailwind for basic elements.
+*   **HTTP Client:** Axios
+*   **UUID Generation:** `uuid` library
+
+## 3. Core Features
+
+*   **Minimalist Chat UI:** Display conversation history with AI messages left-aligned and user messages right-aligned. Large text, light colors, no distracting elements like message bubbles.
+*   **User Input:** A text area at the bottom for user input and a send mechanism.
+*   **n8n Integration:** Send user messages and session ID to the n8n webhook and process responses.
+*   **Session Management:** Generate a unique session ID (UUID) for each interview session.
+*   **Interview Flow:**
+    *   Start a new session upon loading.
+    *   Display AI messages as they are received.
+    *   Handle the end of the interview when `final_output` is present in the response.
+    *   Log `final_output` to the console.
+    *   Hide the user input area when the interview ends.
+
+## 4. Component Breakdown (Initial Draft)
+
+*   `src/views/ChatView.vue`: Main container for the chat interface.
+*   `src/components/ChatMessage.vue`: Renders a single message, styled based on the sender (AI or user).
+*   `src/components/ChatInput.vue`: Contains the text area, send button, and handles user input submission. Hidden when the interview ends.
+*   `src/stores/useChatStore.js`: Pinia store to manage `sessionId`, `messages` array, `isLoading` state, `isInterviewEnded` state, and `finalOutput`.
+*   `src/services/apiService.js`: Contains the function(s) to interact with the n8n webhook.
+*   `src/composables/useSession.js`: (Optional VueUse-style composable) Manages session ID generation and persistence (e.g., in sessionStorage).
+
+## 5. UI/UX Details
+
+*   **Layout:** Full-height chat area, input fixed at the bottom.
+*   **Styling:** Use Tailwind utility classes exclusively. Light background, contrasting text colors. Define specific colors later.
+*   **Typography:** Use larger font sizes for readability. Choose a clean, sans-serif font.
+*   **Responsiveness:** Ensure usability on different screen sizes (Mobile-first approach).
+*   **Accessibility:** Implement ARIA attributes, keyboard navigation (`tabindex` for interactive elements), and semantic HTML.
+
+## 6. n8n API Interaction
+
+*   **Endpoint:** `POST http://localhost:5678/webhook/d73aaa78-0487-4818-9364-fdf93f37a45d/chat`
+*   **Request Body:**
+    ```json
+    {
+      "sessionId": "generated-uuid-string",
+      "chatInput": "User's message text"
+    }
+    ```
+*   **Response Body (Success):**
+    ```json
+    {
+      "output": {
+        "message": "AI's response text",
+        "final_output": null // Or contains data when interview ends
+      }
+    }
+    ```
+*   **End Condition:** The `output.final_output` property in the response is not `null`.
+*   **Error Handling:** Implement try/catch blocks for fetch calls, handle network errors, and potential non-JSON responses. Update loading state accordingly.
+
+## 7. State Management (Pinia `useChatStore`)
+
+*   **State:**
+    *   `sessionId: string | null = null`
+    *   `messages: { id: string, sender: 'ai' | 'user', text: string }[] = []` (Add unique IDs for list rendering)
+    *   `isLoading: boolean = false`
+    *   `isInterviewEnded: boolean = false`
+    *   `finalOutput: any | null = null`
+*   **Actions:**
+    *   `initializeSession()`: Generate UUID, set `sessionId`.
+    *   `sendMessage(messageText: string)`: Add user message to `messages`, set `isLoading` to true, call API service, handle response (add AI message, check for end), set `isLoading` to false.
+    *   `endInterview(output: any)`: Set `isInterviewEnded` to true, store `finalOutput`, log to console.
+*   **Getters:** (Optional, e.g., `getMessages`, `getIsLoading`)
+
+## 8. Development Steps
+
+1.  **Project Setup:** Vue + Vite has already been set up. Remove any example files and update the readme.
+2.  **Install Dependencies:** `npm install pinia tailwindcss @tailwindcss/vite @headlessui/vue element-plus uuid axios vitest @vue/test-utils --save-dev`. Configure Tailwind following ([https://tailwindcss.com/docs/installation/using-vite](mdc:https:/tailwindcss.com/docs/installation/using-vite)). Configure Vitest.
+3.  **Store:** Create and configure Pinia store (`src/stores/useChatStore.js`). Implement state and initial actions (`initializeSession`). Write unit tests for the store.
+4.  **API Service:** Create `src/services/apiService.js` with a function to call the n8n endpoint. Write unit tests for the API service.
+5.  **Basic UI Structure:** Create `ChatView.vue`, `ChatMessage.vue`, `ChatInput.vue`. Add basic template structure and Tailwind classes.
+6.  **Connect UI to Store:** Use the store in `ChatView` to display messages and manage input state. Implement message sending via `ChatInput` calling the store action.
+7.  **Implement Core Logic:** Complete the `sendMessage` action in the store, including API call, response handling, adding AI messages, and checking for `final_output`. Update relevant tests.
+8.  **Component Testing:** Write component tests for `ChatMessage.vue` and `ChatInput.vue` using `@vue/test-utils` and Vitest.
+9.  **Styling:** Refine Tailwind styles to match the minimalist design requirements (colors, typography, layout).
+10. **End State Handling:** Implement logic in `ChatView` and `ChatInput` to hide the input when `isInterviewEnded` is true. Log `finalOutput`. Test this behaviour.
+11. **Session Handling:** Integrate UUID generation and ensure `sessionId` is sent with each request. Consider using `sessionStorage` if persistence across refreshes (during a single session) is desired. Test session logic.
+12. **Accessibility:** Review and add necessary ARIA attributes and keyboard navigation support.
+13. **Refinement & Testing:** Test thoroughly, debug, write integration/end-to-end tests (optional but recommended), and refine the UI/UX based on test results and feedback.
+
+## 9. Additional Notes
+
+*   **Vitest:** Vitest is a powerful testing framework for JavaScript. It's designed to be simple and fast.
+*   **Session Storage:** Consider using sessionStorage for storing session-specific data.
+*   **Accessibility:** Ensure that the application is accessible to all users, including those with disabilities.
+*   **Refinement:** Continuously refine the UI/UX based on user feedback and test results.
+*   **Testing:** Write unit tests for all components and ensure they work as expected.
+*   **Refinement:** Continuously refine the UI/UX based on user feedback and test results.
+*   **Code Quality:** Ensure that the code is clean, readable, and maintainable.
+*   **Security:** Ensure that the application is secure and free from common security vulnerabilities.
+*   **Performance:** Ensure that the application is fast and efficient.
+*   **User Experience:** Ensure that the application is easy to use and provides a good user experience. 
