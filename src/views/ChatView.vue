@@ -50,22 +50,24 @@ watch(messages, () => {
     <!-- Chat messages area -->
     <div
       ref="chatMessagesContainer"
-      class="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6 max-w-[800px] mx-auto w-full"
+      class="flex-1 overflow-y-auto p-4 sm:p-6 max-w-[800px] mx-auto w-full"
       aria-live="polite"
       aria-atomic="false" >
-      <ChatMessage
-        v-for="message in messages"
-        :key="message.id"
-        :message="message"
-        @retry="handleRetryMessage"
-      />
-      <!-- Loading indicator -->
-      <div v-if="isLoading" class="flex justify-start">
-         <div class="flex items-center space-x-1 py-2 px-4">
-            <span class="dot dot-1"></span>
-            <span class="dot dot-2"></span>
-            <span class="dot dot-3"></span>
-          </div>
+      <div class="flex flex-col min-h-full space-y-6">
+        <div class="flex-grow"></div>
+        <ChatMessage
+          v-for="message in messages"
+          :key="message.id"
+          :message="message"
+          @retry="handleRetryMessage"
+        />
+        <div v-if="isLoading" class="flex justify-start">
+           <div class="flex items-center space-x-1 py-2 px-4">
+              <span class="dot dot-1"></span>
+              <span class="dot dot-2"></span>
+              <span class="dot dot-3"></span>
+            </div>
+        </div>
       </div>
     </div>
 
