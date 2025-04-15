@@ -37,6 +37,16 @@ export const useChatStore = defineStore('chat', () => {
           if (Array.isArray(parsedMessages)) {
              messages.value = parsedMessages;
              console.log('Loaded messages from sessionStorage.');
+
+             // Check if the last message needs retrying
+             if (messages.value.length > 0) {
+                const lastMessage = messages.value[messages.value.length - 1];
+                if (lastMessage.sender === 'user') {
+                    console.log('Last message was from user, attempting retry to ensure AI response:', lastMessage.id);
+                    // Pass force: true for automatic retry on load
+                    retryFailedMessage(lastMessage.id, { force: true });
+                }
+             }
           } else {
              console.warn('Invalid messages format found in sessionStorage. Starting fresh.');
              messages.value = [];
@@ -142,7 +152,9 @@ export const useChatStore = defineStore('chat', () => {
   }
 
   // Action to retry sending a failed message
-  async function retryFailedMessage(messageId) {
+  // Added options param { force?: boolean }
+  async function retryFailedMessage(messageId, options = {}) {
+      const { force = false } = options;
       const messageIndex = findMessageIndexById(messageId);
       if (messageIndex === -1) {
         console.error('Message not found for retry:', messageId);
@@ -150,8 +162,10 @@ export const useChatStore = defineStore('chat', () => {
       }
 
       const messageToRetry = messages.value[messageIndex];
-      if (messageToRetry.status !== 'error' || messageToRetry.sender !== 'user') {
-          console.warn('Cannot retry message - not a user message with error status:', messageToRetry);
+      // Updated guard: Check force flag
+      const isRetryableStatus = messageToRetry.status === 'error' || messageToRetry.status === 'sending';
+      if (messageToRetry.sender !== 'user' || (!force && !isRetryableStatus)) {
+          console.warn(`Cannot retry message (sender: ${messageToRetry.sender}, status: ${messageToRetry.status}, force: ${force}):`, messageToRetry);
           return;
       }
 
