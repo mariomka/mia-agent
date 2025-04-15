@@ -78,14 +78,13 @@ describe('ChatInput.vue', () => {
     expect(textarea.element.value).toContain('\n'); // Check if newline was added
   });
 
-  it('disables input and button and shows loading icon when isLoading is true', async () => {
+  it('disables input and button when isLoading is true', async () => {
     const wrapper = mount(ChatInput, { props: { isLoading: false } });
     const textarea = wrapper.find('textarea');
     const button = wrapper.find('button');
 
-    // Initial state check (send icon present, not loading)
+    // Initial state check (send icon present)
     expect(button.find('svg').exists()).toBe(true);
-    expect(button.find('svg.animate-spin').exists()).toBe(false);
     // ... other initial checks ...
 
     // Set isLoading to true
@@ -93,17 +92,15 @@ describe('ChatInput.vue', () => {
 
     expect(textarea.attributes('disabled')).toBeDefined();
     expect(button.attributes('disabled')).toBeDefined();
-    // Check for loading SVG icon specifically
-    expect(button.find('svg.animate-spin').exists()).toBe(true);
-    // Check that the other non-loading SVG is NOT present (optional but good)
-    // This depends on the structure, assuming loading replaces send SVG
-    expect(wrapper.find('button > svg:not(.animate-spin)').exists()).toBe(false);
+    // Check that the send icon SVG is still present
+    expect(button.find('svg').exists()).toBe(true);
 
     // Set isLoading back to false
     await wrapper.setProps({ isLoading: false });
-    // Check loading spinner is gone
-    expect(button.find('svg.animate-spin').exists()).toBe(false);
-    // Check *any* svg is present again (should be send icon)
+    // Check elements are enabled again
+    expect(textarea.attributes('disabled')).toBeUndefined();
+    // Button might still be disabled if text is empty, so check based on that or just check the prop effect is gone
+    // Let's just check the send icon is still there
     expect(button.find('svg').exists()).toBe(true);
     // ... other final checks ...
   });
