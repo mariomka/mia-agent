@@ -1,4 +1,4 @@
 // Vitest setup file
-// You can add global setup logic here, e.g., mocking global objects
+import { afterEach } from 'vitest';
 
-console.log('Vitest setup file loaded.'); 
+// Add global setup logic below if needed in the future 

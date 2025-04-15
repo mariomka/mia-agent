@@ -26,7 +26,6 @@ export const useChatStore = defineStore('chat', () => {
 
     if (existingSessionId) {
       sessionId.value = existingSessionId;
-      console.log('Existing session found and reused:', sessionId.value);
 
       // Try to load messages from storage
       try {
@@ -36,26 +35,22 @@ export const useChatStore = defineStore('chat', () => {
           // Basic validation - check if it's an array
           if (Array.isArray(parsedMessages)) {
              messages.value = parsedMessages;
-             console.log('Loaded messages from sessionStorage.');
 
              // Check if the last message needs retrying
              if (messages.value.length > 0) {
                 const lastMessage = messages.value[messages.value.length - 1];
                 if (lastMessage.sender === 'user') {
-                    console.log('Last message was from user, attempting retry to ensure AI response:', lastMessage.id);
                     // Pass force: true for automatic retry on load
                     retryFailedMessage(lastMessage.id, { force: true });
                 }
              }
           } else {
-             console.warn('Invalid messages format found in sessionStorage. Starting fresh.');
              messages.value = [];
           }
         } else {
           messages.value = []; // No messages stored
         }
       } catch (e) {
-        console.error('Failed to parse messages from sessionStorage:', e);
         messages.value = []; // Start fresh on error
         sessionStorage.removeItem(MESSAGES_STORAGE_KEY); // Clear invalid data
       }
@@ -66,7 +61,7 @@ export const useChatStore = defineStore('chat', () => {
       messages.value = [];
       sessionStorage.setItem(SESSION_ID_STORAGE_KEY, sessionId.value);
       sessionStorage.removeItem(MESSAGES_STORAGE_KEY); // Clear any old messages
-      console.log('New session initialized and stored:', sessionId.value);
+
       // TODO: Add initial welcome message?
       // addMessage('ai', 'Welcome! Please tell me about...');
     }
@@ -84,7 +79,6 @@ export const useChatStore = defineStore('chat', () => {
     try {
         sessionStorage.setItem(MESSAGES_STORAGE_KEY, JSON.stringify(messages.value));
     } catch (e) {
-        console.error('Failed to save messages to sessionStorage:', e);
     }
   }
 
@@ -140,7 +134,6 @@ export const useChatStore = defineStore('chat', () => {
         isLoading.value = false;
       }
     } catch (err) {
-      console.error('Error during sendMessage:', err);
       const errorMessage = err.message || 'An unknown error occurred.';
       // Update user message status to 'error'
       upsertMessage({ id: userMessageId, status: 'error', error: errorMessage });
@@ -157,7 +150,6 @@ export const useChatStore = defineStore('chat', () => {
       const { force = false } = options;
       const messageIndex = findMessageIndexById(messageId);
       if (messageIndex === -1) {
-        console.error('Message not found for retry:', messageId);
         return;
       }
 
@@ -165,11 +157,8 @@ export const useChatStore = defineStore('chat', () => {
       // Updated guard: Check force flag
       const isRetryableStatus = messageToRetry.status === 'error' || messageToRetry.status === 'sending';
       if (messageToRetry.sender !== 'user' || (!force && !isRetryableStatus)) {
-          console.warn(`Cannot retry message (sender: ${messageToRetry.sender}, status: ${messageToRetry.status}, force: ${force}):`, messageToRetry);
           return;
       }
-
-      console.log('Retrying message:', messageToRetry.text);
 
       // Update status to 'sending' and clear error immediately
       upsertMessage({ id: messageId, status: 'sending', error: undefined });
@@ -189,7 +178,6 @@ export const useChatStore = defineStore('chat', () => {
           isLoading.value = false; // Set loading false if interview didn't end
         }
       } catch (err) {
-        console.error('Error during retryFailedMessage:', err);
         const errorMessage = err.message || 'An unknown error occurred during retry.';
         // Update original user message status back to 'error' with new error message
         upsertMessage({ id: messageId, status: 'error', error: errorMessage });
@@ -214,7 +202,6 @@ export const useChatStore = defineStore('chat', () => {
   function clearSession() {
      sessionStorage.removeItem(SESSION_ID_STORAGE_KEY);
      sessionStorage.removeItem(MESSAGES_STORAGE_KEY);
-     console.log('Session ID and messages cleared from storage.');
      // initializeSession(); // Optionally start a new session
   }
 
