@@ -7,7 +7,7 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "test:unit": "vitest run"
+    "test": "vitest run"
   },
   "dependencies": {
     "@headlessui/vue": "^1.7.23",
