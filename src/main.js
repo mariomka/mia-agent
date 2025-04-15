@@ -1,6 +1,8 @@
-import './assets/main.css'
-
 import { createApp } from 'vue'
 import App from './App.vue'
+// Pinia will be imported and used later
 
-createApp(App).mount('#app')
+const app = createApp(App)
+// app.use(pinia) will be added later
+
+app.mount('#app')

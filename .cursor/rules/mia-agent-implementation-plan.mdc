@@ -92,6 +92,7 @@ Based on the `front-end-developer-rules`, we will use:
 *   **Getters:** (Optional, e.g., `getMessages`, `getIsLoading`)
 
 ## 8. Development Steps
+Make a git commit for each step.
 
 1.  **Project Setup:** Vue + Vite has already been set up. Remove any example files and update the readme.
 2.  **Install Dependencies:** `npm install pinia tailwindcss @tailwindcss/vite @headlessui/vue element-plus uuid axios vitest @vue/test-utils --save-dev`. Configure Tailwind following ([https://tailwindcss.com/docs/installation/using-vite](mdc:https:/tailwindcss.com/docs/installation/using-vite)). Configure Vitest.

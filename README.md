@@ -1,6 +1,22 @@
 # Mia Agent
 
-This template should help get you started developing with Vue 3 in Vite.
+AI Interview Agent using Vue 3, Vite, Pinia, and Tailwind CSS.
+
+## Project Overview
+
+Mia Agent provides a minimalist chat interface for users to interact with an AI conducting interviews. It communicates with a predefined n8n webhook endpoint.
+
+## Technology Stack
+
+*   **Framework:** Vue.js 3 (Composition API with `<script setup>`)
+*   **Build Tool:** Vite
+*   **State Management:** Pinia
+*   **Testing:** Vitest
+*   **UI Styling:** Tailwind CSS
+*   **Utility Functions:** VueUse
+*   **UI Components:** Tailwind CSS (potentially Headless UI or Element Plus later)
+*   **HTTP Client:** Axios
+*   **UUID Generation:** `uuid` library
 
 ## Recommended IDE Setup
 
@@ -26,4 +42,10 @@ npm run dev
 
 ```sh
 npm run build
+```
+
+### Run Unit Tests with [Vitest](https://vitest.dev/)
+
+```sh
+npm run test:unit
 ```
