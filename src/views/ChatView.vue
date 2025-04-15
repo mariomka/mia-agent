@@ -40,7 +40,7 @@ watch(messages, () => {
 </script>
 
 <template>
-  <div class="flex flex-col h-screen bg-gray-50">
+  <div class="flex flex-col h-screen">
     <!-- Chat messages area -->
     <div
       ref="chatMessagesContainer"
