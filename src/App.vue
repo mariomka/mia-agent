@@ -13,6 +13,6 @@ html, body, #app {
   height: 100%;
   margin: 0;
   padding: 0;
-  background-color: #f3f4f6; /* Default light gray background */
+  background-color: #ffffff; /* Change to white */
 }
 </style>
