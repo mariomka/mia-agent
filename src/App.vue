@@ -1,22 +1,18 @@
 <script setup>
-// Will be replaced with ChatView later
+import ChatView from './views/ChatView.vue';
 </script>
 
 <template>
-  <div id="app">
-    <h1>Mia Agent</h1>
-    <!-- ChatView will be rendered here -->
-  </div>
+  <ChatView />
 </template>
 
-<style scoped>
-/* Basic styles, Tailwind will be added later */
-#app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-  margin-top: 60px;
+<style>
+/* Global styles - Tailwind is handling base styles */
+/* Ensure html, body, and #app take full height for the chat layout */
+html, body, #app {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  background-color: #f3f4f6; /* Default light gray background */
 }
 </style>
