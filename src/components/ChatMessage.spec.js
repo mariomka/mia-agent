@@ -20,8 +20,8 @@ describe('ChatMessage.vue', () => {
     const outerDiv = wrapper.find('div'); // The outer div
     expect(outerDiv.classes()).toContain('justify-start');
 
-    // Correctly target the inner div with text classes
-    const innerDiv = wrapper.find('.text-lg'); // Find by a unique class on the inner div
+    // Correctly target the inner div with text classes using text-xl
+    const innerDiv = wrapper.find('.text-xl');
     expect(innerDiv.exists()).toBe(true);
     expect(innerDiv.classes()).toContain('text-left');
     // Ensure bubble classes are NOT present as per plan
@@ -46,8 +46,8 @@ describe('ChatMessage.vue', () => {
     const outerDiv = wrapper.find('div'); // The outer div
     expect(outerDiv.classes()).toContain('justify-end');
 
-    // Correctly target the inner div with text classes
-    const innerDiv = wrapper.find('.text-lg'); // Find by a unique class on the inner div
+    // Correctly target the inner div with text classes using text-xl
+    const innerDiv = wrapper.find('.text-xl');
     expect(innerDiv.exists()).toBe(true);
     expect(innerDiv.classes()).toContain('text-right');
     // Ensure bubble classes are NOT present
@@ -59,8 +59,9 @@ describe('ChatMessage.vue', () => {
   it('uses large text size', () => {
      const message = { id: 'any', sender: 'ai', text: 'Test text' };
      const wrapper = mount(ChatMessage, { props: { message } });
-     const innerDiv = wrapper.find('.text-lg'); // Use the same selector
+     // Find by the updated class
+     const innerDiv = wrapper.find('.text-xl');
      expect(innerDiv.exists()).toBe(true);
-     expect(innerDiv.classes()).toContain('text-lg');
+     expect(innerDiv.classes()).toContain('text-xl'); // Check for text-xl now
   });
 }); 

@@ -42,7 +42,11 @@ watch(messages, () => {
 <template>
   <div class="flex flex-col h-screen bg-gray-50">
     <!-- Chat messages area -->
-    <div ref="chatMessagesContainer" class="flex-1 overflow-y-auto p-4 sm:p-6 space-y-3">
+    <div
+      ref="chatMessagesContainer"
+      class="flex-1 overflow-y-auto p-4 sm:p-6 space-y-3"
+      aria-live="polite"
+      aria-atomic="false" >
       <ChatMessage
         v-for="message in messages"
         :key="message.id"

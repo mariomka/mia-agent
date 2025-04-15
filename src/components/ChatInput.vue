@@ -55,11 +55,13 @@ const handleInput = (event) => {
         placeholder="Type your message..."
         rows="1"
         style="min-height: 44px; max-height: 150px;"
+        aria-label="Chat message input"
       ></textarea>
       <button
         @click="sendMessage"
         :disabled="!messageText.trim() || props.isLoading"
         class="px-5 py-2.5 bg-blue-500 text-white rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-1 disabled:opacity-60 disabled:cursor-not-allowed transition duration-150 ease-in-out shrink-0 text-base font-medium"
+        aria-label="Send chat message"
       >
         <span v-if="!props.isLoading">Send</span>
         <span v-else>...</span>
