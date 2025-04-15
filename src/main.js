@@ -1,8 +1,9 @@
 import { createApp } from 'vue'
+import { createPinia } from 'pinia'
 import App from './App.vue'
-// Pinia will be imported and used later
 
+const pinia = createPinia()
 const app = createApp(App)
-// app.use(pinia) will be added later
 
+app.use(pinia)
 app.mount('#app')
