@@ -50,7 +50,7 @@ watch(messages, () => {
     <!-- Chat messages area -->
     <div
       ref="chatMessagesContainer"
-      class="flex-1 overflow-y-auto p-4 sm:p-6 space-y-3"
+      class="flex-1 overflow-y-auto p-4 sm:p-6 space-y-3 max-w-[800px] mx-auto w-full"
       aria-live="polite"
       aria-atomic="false" >
       <ChatMessage
@@ -73,7 +73,7 @@ watch(messages, () => {
       v-if="!isInterviewEnded"
       @send-message="handleSendMessage"
       :is-loading="isLoading"
-    />
+      />
   </div>
 </template>
 

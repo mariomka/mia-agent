@@ -46,7 +46,7 @@ const handleInput = (event) => {
   <!-- Remove padding, adjust background and border -->
   <div class="bg-white border-t border-gray-100">
     <!-- Use flex and items-center for alignment, add padding/spacing -->
-    <div class="flex items-center space-x-1 px-2 py-1">
+    <div class="flex items-center space-x-1 px-2 py-1 max-w-[800px] mx-auto">
       <textarea
         ref="textareaRef"
         v-model="messageText"
