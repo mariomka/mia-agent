@@ -1,0 +1,24 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+
+# General Development Practices
+
+Follow these guidelines when working on the codebase:
+
+1.  **Testing:**
+    *   Add or update tests for every important change made.
+    *   Ensure all tests pass before considering a task, feature, or request complete. Run tests using the command:
+        ```bash
+        npm run test
+        ```
+
+2.  **Committing Changes:**
+    *   Make a Git commit after completing a request, step, or feature.
+    *   Use a single command to stage all changed files and create the commit.
+    *   The commit message should accurately reflect all the changes included in the commit.
+        ```bash
+        git add . && git commit -m "Your descriptive commit message"
+        ```
