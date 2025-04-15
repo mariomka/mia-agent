@@ -11,13 +11,14 @@ export const useChatStore = defineStore('chat', () => {
   const isInterviewEnded = ref(false);
   const finalOutput = ref(null);
   const error = ref(null); // Add state for potential errors
+  const MESSAGES_STORAGE_KEY = 'miaMessages';
+  const SESSION_ID_STORAGE_KEY = 'miaSessionId';
 
   // Actions
   function initializeSession() {
-    const existingSessionId = sessionStorage.getItem('miaSessionId');
+    const existingSessionId = sessionStorage.getItem(SESSION_ID_STORAGE_KEY);
 
-    // Always reset state on initialization, regardless of new/existing session
-    messages.value = [];
+    // Always reset transient state
     isLoading.value = false;
     isInterviewEnded.value = false;
     finalOutput.value = null;
@@ -26,32 +27,68 @@ export const useChatStore = defineStore('chat', () => {
     if (existingSessionId) {
       sessionId.value = existingSessionId;
       console.log('Existing session found and reused:', sessionId.value);
-      // TODO: If we wanted to restore messages, we would load them from sessionStorage here.
-      // addMessage('ai', 'Welcome back!'); // Example welcome back message
+
+      // Try to load messages from storage
+      try {
+        const storedMessages = sessionStorage.getItem(MESSAGES_STORAGE_KEY);
+        if (storedMessages) {
+          const parsedMessages = JSON.parse(storedMessages);
+          // Basic validation - check if it's an array
+          if (Array.isArray(parsedMessages)) {
+             messages.value = parsedMessages;
+             console.log('Loaded messages from sessionStorage.');
+          } else {
+             console.warn('Invalid messages format found in sessionStorage. Starting fresh.');
+             messages.value = [];
+          }
+        } else {
+          messages.value = []; // No messages stored
+        }
+      } catch (e) {
+        console.error('Failed to parse messages from sessionStorage:', e);
+        messages.value = []; // Start fresh on error
+        sessionStorage.removeItem(MESSAGES_STORAGE_KEY); // Clear invalid data
+      }
+
     } else {
+      // New session
       sessionId.value = uuidv4();
-      sessionStorage.setItem('miaSessionId', sessionId.value);
+      messages.value = [];
+      sessionStorage.setItem(SESSION_ID_STORAGE_KEY, sessionId.value);
+      sessionStorage.removeItem(MESSAGES_STORAGE_KEY); // Clear any old messages
       console.log('New session initialized and stored:', sessionId.value);
-      // TODO: Add initial welcome message or fetch initial state from backend?
-      // addMessage('ai', 'Welcome! Please tell me about...'); // Example new session message
+      // TODO: Add initial welcome message?
+      // addMessage('ai', 'Welcome! Please tell me about...');
+    }
+    // Persist initial state (empty messages if new session)
+    updateStoredMessages();
+  }
+
+  // Helper to update sessionStorage for messages
+  function updateStoredMessages() {
+    try {
+        sessionStorage.setItem(MESSAGES_STORAGE_KEY, JSON.stringify(messages.value));
+    } catch (e) {
+        console.error('Failed to save messages to sessionStorage:', e);
     }
   }
 
   // Action to clear session storage
   function clearSession() {
-     sessionStorage.removeItem('miaSessionId');
-     console.log('Session cleared from storage.');
-     // Optionally, immediately start a new session:
-     // initializeSession();
+     sessionStorage.removeItem(SESSION_ID_STORAGE_KEY);
+     sessionStorage.removeItem(MESSAGES_STORAGE_KEY);
+     console.log('Session ID and messages cleared from storage.');
+     // initializeSession(); // Optionally start a new session
   }
 
-  // Action to add a message to the list
+  // Action to add a message to the list and update storage
   function addMessage(sender, text) {
     messages.value.push({
-      id: uuidv4(), // Use UUID for message IDs
+      id: uuidv4(),
       sender,
       text,
     });
+    updateStoredMessages(); // Update storage whenever a message is added
   }
 
   // Action to handle sending a message and receiving response
@@ -96,9 +133,10 @@ export const useChatStore = defineStore('chat', () => {
   function endInterview(output) {
     isInterviewEnded.value = true;
     finalOutput.value = output;
-    isLoading.value = false; // Ensure loading is off
+    isLoading.value = false;
     console.log('Interview ended. Final Output:', output);
-    // TODO: Persist final output if needed
+    // Clear storage when interview ends?
+    // clearSession();
   }
 
   // Return state and actions

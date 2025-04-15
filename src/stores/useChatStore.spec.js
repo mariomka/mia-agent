@@ -6,7 +6,30 @@ import * as apiService from '../services/apiService'; // Import like this for mo
 // Mock the apiService
 vi.mock('../services/apiService');
 
+// Mock sessionStorage
+const sessionStorageMock = (() => {
+  let store = {};
+  return {
+    getItem: vi.fn((key) => store[key] || null),
+    setItem: vi.fn((key, value) => {
+      store[key] = value.toString();
+    }),
+    removeItem: vi.fn((key) => {
+      delete store[key];
+    }),
+    clear: vi.fn(() => {
+      store = {};
+    }),
+  };
+})();
+Object.defineProperty(window, 'sessionStorage', {
+  value: sessionStorageMock,
+});
+
 describe('Chat Store', () => {
+  const MESSAGES_STORAGE_KEY = 'miaMessages';
+  const SESSION_ID_STORAGE_KEY = 'miaSessionId';
+
   beforeEach(() => {
     // creates a fresh pinia and makes it active
     // so it's automatically picked up by any useStore()
@@ -15,6 +38,103 @@ describe('Chat Store', () => {
     setActivePinia(createPinia());
     // Reset mocks before each test
     vi.clearAllMocks();
+    sessionStorageMock.clear();
+  });
+
+  it('initializes a new session and stores ID/empty messages', () => {
+    const store = useChatStore();
+    store.initializeSession();
+
+    expect(sessionStorageMock.getItem).toHaveBeenCalledWith(SESSION_ID_STORAGE_KEY);
+    expect(store.sessionId).toBeTypeOf('string');
+    expect(sessionStorageMock.setItem).toHaveBeenCalledWith(SESSION_ID_STORAGE_KEY, store.sessionId);
+    // Check messages are empty and stored
+    expect(store.messages).toEqual([]);
+    expect(sessionStorageMock.setItem).toHaveBeenCalledWith(MESSAGES_STORAGE_KEY, JSON.stringify([]));
+  });
+
+  it('reuses existing session ID and loads stored messages', () => {
+    const existingId = 'existing-uuid-123';
+    const existingMessages = [{ id: 'msg1', sender: 'ai', text: 'Existing msg' }];
+    sessionStorageMock.setItem(SESSION_ID_STORAGE_KEY, existingId);
+    sessionStorageMock.setItem(MESSAGES_STORAGE_KEY, JSON.stringify(existingMessages));
+    const store = useChatStore();
+
+    // Clear setItem mock calls from setup before running the action
+    sessionStorageMock.setItem.mockClear();
+
+    store.initializeSession();
+
+    // Check that getItem was called for both keys
+    expect(sessionStorageMock.getItem).toHaveBeenCalledWith(SESSION_ID_STORAGE_KEY);
+    expect(sessionStorageMock.getItem).toHaveBeenCalledWith(MESSAGES_STORAGE_KEY);
+    // Check state
+    expect(store.sessionId).toBe(existingId);
+    expect(store.messages).toEqual(existingMessages);
+
+    // Check setItem calls *during* initializeSession
+    const setItemCalls = sessionStorageMock.setItem.mock.calls;
+    // Verify messages *were* stored (by updateStoredMessages)
+    expect(setItemCalls.some(call => call[0] === MESSAGES_STORAGE_KEY)).toBe(true);
+    // Verify session ID was *not* stored
+    expect(setItemCalls.some(call => call[0] === SESSION_ID_STORAGE_KEY)).toBe(false);
+  });
+
+  it('handles invalid stored messages by starting fresh', () => {
+    const existingId = 'existing-uuid-456';
+    sessionStorageMock.setItem(SESSION_ID_STORAGE_KEY, existingId);
+    sessionStorageMock.setItem(MESSAGES_STORAGE_KEY, 'this is not json'); // Invalid data
+    const store = useChatStore();
+
+    store.initializeSession();
+
+    expect(store.sessionId).toBe(existingId);
+    expect(store.messages).toEqual([]); // Should be empty
+    expect(sessionStorageMock.removeItem).toHaveBeenCalledWith(MESSAGES_STORAGE_KEY); // Should remove invalid data
+    // Should store the now-empty message array
+    expect(sessionStorageMock.setItem).toHaveBeenCalledWith(MESSAGES_STORAGE_KEY, JSON.stringify([]));
+  });
+
+  it('clearSession removes session ID and messages from storage', () => {
+    const store = useChatStore();
+    store.initializeSession(); // Put items in storage
+    // Clear mocks from init
+    vi.clearAllMocks();
+
+    store.clearSession();
+
+    expect(sessionStorageMock.removeItem).toHaveBeenCalledTimes(2);
+    expect(sessionStorageMock.removeItem).toHaveBeenCalledWith(SESSION_ID_STORAGE_KEY);
+    expect(sessionStorageMock.removeItem).toHaveBeenCalledWith(MESSAGES_STORAGE_KEY);
+  });
+
+  it('sendMessage updates stored messages after adding user and AI message', async () => {
+    const store = useChatStore();
+    store.initializeSession(); // Stores initial empty messages
+    const userMessage = 'Test storage update';
+    const aiMessage = 'Storage updated';
+    const mockApiResponse = { output: { message: aiMessage, final_output: null } };
+    apiService.sendChatMessage.mockResolvedValue(mockApiResponse);
+    vi.clearAllMocks(); // Clear mocks from initialization
+
+    await store.sendMessage(userMessage);
+
+    // Check the setItem calls by parsing the stored JSON
+    const calls = sessionStorageMock.setItem.mock.calls;
+    expect(calls).toHaveLength(2); // after user, after AI
+
+    // Check first call (after user message)
+    const storedAfterUser = JSON.parse(calls[0][1]);
+    expect(storedAfterUser).toEqual([
+      expect.objectContaining({ sender: 'user', text: userMessage })
+    ]);
+
+    // Check second call (after AI message)
+    const storedAfterAI = JSON.parse(calls[1][1]);
+    expect(storedAfterAI).toEqual([
+      expect.objectContaining({ sender: 'user', text: userMessage }),
+      expect.objectContaining({ sender: 'ai', text: aiMessage })
+    ]);
   });
 
   it('initializes a session correctly', () => {
