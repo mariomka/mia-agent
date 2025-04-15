@@ -1,16 +1,25 @@
 <script setup>
-import { ref } from 'vue';
+import { ref, defineEmits, defineProps } from 'vue';
+
+const props = defineProps({
+  isLoading: {
+    type: Boolean,
+    default: false,
+  },
+});
+
+const emit = defineEmits(['sendMessage']);
 
 const messageText = ref('');
 
-// TODO: Define emits for sending message
-// const emit = defineEmits(['sendMessage']);
-
 const sendMessage = () => {
-  if (messageText.value.trim()) {
-    console.log('Sending:', messageText.value); // Placeholder
-    // emit('sendMessage', messageText.value.trim());
+  const textToSend = messageText.value.trim();
+  if (textToSend && !props.isLoading) {
+    emit('sendMessage', textToSend);
     messageText.value = ''; // Clear input after sending
+    // Reset textarea height after sending
+    const textarea = document.querySelector('textarea'); // Find the textarea element
+    if (textarea) textarea.rows = 1;
   }
 };
 
@@ -22,26 +31,39 @@ const handleKeydown = (event) => {
   }
 };
 
+// Basic auto-resize logic for textarea
+const handleInput = (event) => {
+  const textarea = event.target;
+  textarea.rows = 1; // Reset rows to recalculate height
+  const lines = textarea.value.split('\n').length;
+  const maxRows = 5; // Maximum number of rows before scrolling
+  textarea.rows = Math.min(lines, maxRows);
+};
+
 </script>
 
 <template>
   <div class="p-4 bg-white border-t border-gray-200">
     <div class="flex items-end space-x-2">
       <textarea
+        ref="textareaRef" // Add ref for potential future use
         v-model="messageText"
         @keydown="handleKeydown"
-        class="flex-1 p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+        @input="handleInput"
+        :disabled="props.isLoading"
+        class="flex-1 p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none disabled:bg-gray-100 disabled:cursor-not-allowed transition duration-150 ease-in-out"
         placeholder="Type your message... (Shift+Enter for new line)"
         rows="1"
         style="min-height: 44px; max-height: 150px;"
-        @input="$event.target.rows = messageText.split('\n').length > 1 ? Math.min(messageText.split('\n').length, 5) : 1"
       ></textarea>
       <button
         @click="sendMessage"
-        :disabled="!messageText.trim()"
-        class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 disabled:opacity-50 disabled:cursor-not-allowed transition duration-150 ease-in-out"
+        :disabled="!messageText.trim() || props.isLoading"
+        class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 disabled:opacity-50 disabled:cursor-not-allowed transition duration-150 ease-in-out shrink-0"
       >
-        Send
+        <!-- Optional: Show loading state on button -->
+        <span v-if="!props.isLoading">Send</span>
+        <span v-else>...</span>
       </button>
     </div>
   </div>
