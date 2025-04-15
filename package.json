@@ -6,10 +6,21 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test:unit": "vitest"
   },
   "dependencies": {
-    "vue": "^3.5.13"
+    "@headlessui/vue": "^1.7.23",
+    "@tailwindcss/vite": "^4.1.4",
+    "@vue/test-utils": "^2.4.6",
+    "axios": "^1.8.4",
+    "element-plus": "^2.9.7",
+    "pinia": "^3.0.2",
+    "tailwindcss": "^4.1.4",
+    "uuid": "^11.1.0",
+    "vitest": "^3.1.1",
+    "vue": "^3.5.13",
+    "vue-router": "^4.5.0"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^5.2.3",
