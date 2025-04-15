@@ -106,7 +106,6 @@ Make a git commit for each step.
 10. **End State Handling:** Implement logic in `ChatView` and `ChatInput` to hide the input when `isInterviewEnded` is true. Log `finalOutput`. Test this behaviour.
 11. **Session Handling:** Integrate UUID generation and ensure `sessionId` is sent with each request. Consider using `sessionStorage` if persistence across refreshes (during a single session) is desired. Test session logic.
 12. **Accessibility:** Review and add necessary ARIA attributes and keyboard navigation support.
-13. **Refinement & Testing:** Test thoroughly, debug, write integration/end-to-end tests (optional but recommended), and refine the UI/UX based on test results and feedback.
 
 ## 9. Additional Notes
 
