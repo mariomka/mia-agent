@@ -24,7 +24,7 @@ describe('ChatMessage.vue', () => {
     expect(bubbleDiv.classes()).toContain('bg-gray-100');
     expect(bubbleDiv.classes()).toContain('text-gray-800');
     expect(bubbleDiv.classes()).toContain('rounded-lg');
-    expect(bubbleDiv.classes()).toContain('text-xl');
+    expect(bubbleDiv.classes()).toContain('text-lg');
 
     // Check no error stuff shown
     expect(wrapper.find('.border-t').exists()).toBe(false);
@@ -52,7 +52,7 @@ describe('ChatMessage.vue', () => {
     expect(bubbleDiv.classes()).toContain('bg-blue-100');
     expect(bubbleDiv.classes()).toContain('text-blue-900');
     expect(bubbleDiv.classes()).toContain('rounded-lg');
-    expect(bubbleDiv.classes()).toContain('text-xl');
+    expect(bubbleDiv.classes()).toContain('text-lg');
 
      // Check no error stuff shown
     expect(wrapper.find('.border-t').exists()).toBe(false);
@@ -123,6 +123,6 @@ describe('ChatMessage.vue', () => {
      const wrapper = mount(ChatMessage, { props: { message } });
      const bubbleDiv = wrapper.find('.rounded-lg');
      expect(bubbleDiv.exists()).toBe(true);
-     expect(bubbleDiv.classes()).toContain('text-xl');
+     expect(bubbleDiv.classes()).toContain('text-lg');
   });
 }); 
