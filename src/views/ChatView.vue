@@ -23,6 +23,12 @@ const handleSendMessage = (messageText) => {
   store.sendMessage(messageText);
 };
 
+// Call the store action to retry a message
+const handleRetryMessage = (messageId) => {
+  console.log('View received retry for message ID:', messageId);
+  store.retryFailedMessage(messageId);
+};
+
 // Function to scroll to the bottom of the chat
 const scrollToBottom = async () => {
   await nextTick(); // Wait for the DOM to update
@@ -51,6 +57,7 @@ watch(messages, () => {
         v-for="message in messages"
         :key="message.id"
         :message="message"
+        @retry="handleRetryMessage"
       />
       <!-- Loading indicator -->
       <div v-if="isLoading" class="flex justify-start">

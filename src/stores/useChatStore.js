@@ -6,11 +6,11 @@ import { sendChatMessage } from '../services/apiService'; // Import the API serv
 export const useChatStore = defineStore('chat', () => {
   // State
   const sessionId = ref(null);
-  const messages = ref([]); // { id: string, sender: 'ai' | 'user', text: string }
+  const messages = ref([]); // { id, sender, text, status: 'sending'|'sent'|'error', error?: string }
   const isLoading = ref(false);
   const isInterviewEnded = ref(false);
   const finalOutput = ref(null);
-  const error = ref(null); // Add state for potential errors
+  const error = ref(null); // General store error (maybe remove if errors are per-message?)
   const MESSAGES_STORAGE_KEY = 'miaMessages';
   const SESSION_ID_STORAGE_KEY = 'miaSessionId';
 
@@ -64,6 +64,11 @@ export const useChatStore = defineStore('chat', () => {
     updateStoredMessages();
   }
 
+  // Helper to find message index by ID
+  function findMessageIndexById(id) {
+    return messages.value.findIndex(m => m.id === id);
+  }
+
   // Helper to update sessionStorage for messages
   function updateStoredMessages() {
     try {
@@ -73,60 +78,112 @@ export const useChatStore = defineStore('chat', () => {
     }
   }
 
-  // Action to clear session storage
-  function clearSession() {
-     sessionStorage.removeItem(SESSION_ID_STORAGE_KEY);
-     sessionStorage.removeItem(MESSAGES_STORAGE_KEY);
-     console.log('Session ID and messages cleared from storage.');
-     // initializeSession(); // Optionally start a new session
+  // Action to add/update a message and save
+  function upsertMessage(messageData) {
+      const index = findMessageIndexById(messageData.id);
+      if (index > -1) {
+          // Update existing message
+          messages.value[index] = { ...messages.value[index], ...messageData };
+      } else {
+          // Add new message
+          messages.value.push(messageData);
+      }
   }
 
-  // Action to add a message to the list and update storage
-  function addMessage(sender, text) {
-    messages.value.push({
-      id: uuidv4(),
-      sender,
-      text,
-    });
-    updateStoredMessages(); // Update storage whenever a message is added
-  }
-
-  // Action to handle sending a message and receiving response
+  // Action to handle sending a message
   async function sendMessage(messageText) {
-    if (!sessionId.value || isLoading.value || isInterviewEnded.value) {
-      console.warn('sendMessage called inappropriately.', { isLoading: isLoading.value, isInterviewEnded: isInterviewEnded.value });
-      return; // Don't send if loading, ended, or no session
-    }
+    if (!sessionId.value || isInterviewEnded.value || isLoading.value) return;
 
-    // Add user message immediately
-    addMessage('user', messageText);
+    const userMessageId = uuidv4(); // Generate ID upfront
+    const userMessage = {
+        id: userMessageId,
+        sender: 'user',
+        text: messageText,
+        status: 'sending',
+        error: undefined, // Clear any previous error for this potential retry
+    };
+    upsertMessage(userMessage);
     isLoading.value = true;
-    error.value = null; // Clear previous errors
+    error.value = null; // Clear general store error
 
     try {
       const response = await sendChatMessage(sessionId.value, messageText);
 
-      // Check for AI message
+      // Update user message status to 'sent'
+      upsertMessage({ id: userMessageId, status: 'sent' });
+
+      // Add AI response message
       if (response.output && response.output.message) {
-        addMessage('ai', response.output.message);
+        const aiMessage = {
+            id: uuidv4(),
+            sender: 'ai',
+            text: response.output.message,
+            status: 'sent', // AI messages are considered 'sent'
+        };
+        upsertMessage(aiMessage);
       }
 
       // Check for interview end condition
       if (response.output && response.output.final_output !== null && response.output.final_output !== undefined) {
         endInterview(response.output.final_output);
-        // Clear session storage when interview naturally ends?
-        // clearSession(); // Uncomment if desired
       } else {
-        isLoading.value = false; // Turn off loading if interview continues
+        isLoading.value = false;
       }
     } catch (err) {
       console.error('Error during sendMessage:', err);
-      error.value = err.message || 'An unknown error occurred.'; // Store error message
-      addMessage('ai', `Sorry, I encountered an error: ${error.value}`); // Add error message to chat
-      isLoading.value = false; // Ensure loading is turned off on error
-      // Optionally end interview on error? Depends on desired behavior.
-      // endInterview({ error: error.value });
+      const errorMessage = err.message || 'An unknown error occurred.';
+      // Update user message status to 'error'
+      upsertMessage({ id: userMessageId, status: 'error', error: errorMessage });
+      isLoading.value = false;
+      // Maybe set general error too?
+      // error.value = errorMessage;
     }
+    updateStoredMessages();
+  }
+
+  // Action to retry sending a failed message
+  async function retryFailedMessage(messageId) {
+      const messageIndex = findMessageIndexById(messageId);
+      if (messageIndex === -1) {
+        console.error('Message not found for retry:', messageId);
+        return;
+      }
+
+      const messageToRetry = messages.value[messageIndex];
+      if (messageToRetry.status !== 'error' || messageToRetry.sender !== 'user') {
+          console.warn('Cannot retry message - not a user message with error status:', messageToRetry);
+          return;
+      }
+
+      console.log('Retrying message:', messageToRetry.text);
+
+      // Update status to 'sending' and clear error immediately
+      upsertMessage({ id: messageId, status: 'sending', error: undefined });
+      isLoading.value = true;
+      error.value = null; // Clear any general store error
+
+      try {
+        const response = await sendChatMessage(sessionId.value, messageToRetry.text);
+
+        // Update original user message status to 'sent'
+        upsertMessage({ id: messageId, status: 'sent' });
+
+        // Check for interview end condition
+        if (response.output && response.output.final_output !== null && response.output.final_output !== undefined) {
+          endInterview(response.output.final_output); // This sets isLoading = false
+        } else {
+          isLoading.value = false; // Set loading false if interview didn't end
+        }
+      } catch (err) {
+        console.error('Error during retryFailedMessage:', err);
+        const errorMessage = err.message || 'An unknown error occurred during retry.';
+        // Update original user message status back to 'error' with new error message
+        upsertMessage({ id: messageId, status: 'error', error: errorMessage });
+        isLoading.value = false;
+        // Optionally set general error
+        // error.value = errorMessage;
+      }
+      updateStoredMessages();
   }
 
   // Action to end the interview
@@ -139,6 +196,14 @@ export const useChatStore = defineStore('chat', () => {
     // clearSession();
   }
 
+  // Action to clear session storage
+  function clearSession() {
+     sessionStorage.removeItem(SESSION_ID_STORAGE_KEY);
+     sessionStorage.removeItem(MESSAGES_STORAGE_KEY);
+     console.log('Session ID and messages cleared from storage.');
+     // initializeSession(); // Optionally start a new session
+  }
+
   // Return state and actions
   return {
     sessionId,
@@ -149,6 +214,7 @@ export const useChatStore = defineStore('chat', () => {
     error, // Expose error state
     initializeSession,
     sendMessage,
+    retryFailedMessage, // Expose retry action
     endInterview, // Expose endInterview if needed externally
     clearSession, // Expose clearSession
   };
