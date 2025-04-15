@@ -40,9 +40,9 @@ watch(messages, () => {
 </script>
 
 <template>
-  <div class="flex flex-col h-screen bg-gray-100">
+  <div class="flex flex-col h-screen bg-gray-50">
     <!-- Chat messages area -->
-    <div ref="chatMessagesContainer" class="flex-1 overflow-y-auto p-6 space-y-4">
+    <div ref="chatMessagesContainer" class="flex-1 overflow-y-auto p-4 sm:p-6 space-y-3">
       <ChatMessage
         v-for="message in messages"
         :key="message.id"
@@ -50,8 +50,8 @@ watch(messages, () => {
       />
       <!-- Loading indicator -->
       <div v-if="isLoading" class="flex justify-start">
-         <div class="p-3 text-lg text-gray-500 italic">
-            AI is thinking...
+         <div class="py-2 px-4 text-lg text-gray-400 italic">
+            Thinking...
          </div>
       </div>
     </div>

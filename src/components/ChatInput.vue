@@ -51,17 +51,16 @@ const handleInput = (event) => {
         @keydown="handleKeydown"
         @input="handleInput"
         :disabled="props.isLoading"
-        class="flex-1 p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none disabled:bg-gray-100 disabled:cursor-not-allowed transition duration-150 ease-in-out"
-        placeholder="Type your message... (Shift+Enter for new line)"
+        class="flex-1 p-3 bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-400 focus:border-blue-400 resize-none disabled:bg-gray-100 disabled:cursor-not-allowed transition duration-150 ease-in-out text-base"
+        placeholder="Type your message..."
         rows="1"
         style="min-height: 44px; max-height: 150px;"
       ></textarea>
       <button
         @click="sendMessage"
         :disabled="!messageText.trim() || props.isLoading"
-        class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 disabled:opacity-50 disabled:cursor-not-allowed transition duration-150 ease-in-out shrink-0"
+        class="px-5 py-2.5 bg-blue-500 text-white rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-1 disabled:opacity-60 disabled:cursor-not-allowed transition duration-150 ease-in-out shrink-0 text-base font-medium"
       >
-        <!-- Optional: Show loading state on button -->
         <span v-if="!props.isLoading">Send</span>
         <span v-else>...</span>
       </button>

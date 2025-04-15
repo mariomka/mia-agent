@@ -15,25 +15,21 @@ const props = defineProps({
   },
 });
 
-const alignmentClass = props.message.sender === 'ai' ? 'justify-start' : 'justify-end';
-const bubbleClass = props.message.sender === 'ai'
-  ? 'bg-white text-gray-800' // AI style (left)
-  : 'bg-blue-500 text-white'; // User style (right)
-
 // Plan specifies no message bubbles, large text, light colors
-// Let's adjust - remove bubble, use alignment, larger text
+// Keep alignment, use larger text, define light colors
+const alignmentClass = props.message.sender === 'ai' ? 'justify-start' : 'justify-end';
 const textAlignmentClass = props.message.sender === 'ai' ? 'text-left' : 'text-right';
+// Use light gray for user, slightly darker gray for AI text for contrast on light bg
+const textColor = props.message.sender === 'ai' ? 'text-gray-700' : 'text-gray-600';
 
 </script>
 
 <template>
   <div :class="['flex', alignmentClass]">
-    <div :class="['p-3 text-lg max-w-xl', textAlignmentClass]">
+    <!-- Increased text size, adjusted padding, added text color -->
+    <div :class="['py-2 px-4 text-xl max-w-xl', textAlignmentClass, textColor]">
        {{ message.text }}
     </div>
-    <!-- <div :class="['p-3 rounded-lg max-w-xs lg:max-w-md xl:max-w-lg', bubbleClass]">
-      {{ message.text }}
-    </div> -->
   </div>
 </template>
 
