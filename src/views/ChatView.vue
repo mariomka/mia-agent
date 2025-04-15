@@ -61,9 +61,11 @@ watch(messages, () => {
       />
       <!-- Loading indicator -->
       <div v-if="isLoading" class="flex justify-start">
-         <div class="py-2 px-4 text-lg text-gray-400 italic">
-            Thinking...
-         </div>
+         <div class="flex items-center space-x-1 py-2 px-4">
+            <span class="dot dot-1"></span>
+            <span class="dot dot-2"></span>
+            <span class="dot dot-3"></span>
+          </div>
       </div>
     </div>
 
@@ -78,5 +80,35 @@ watch(messages, () => {
 </template>
 
 <style scoped>
+/* Add styles for the waving dots animation */
+.dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: #a0aec0; /* gray-500 */
+  animation: wave 1.3s linear infinite;
+}
+
+.dot-1 {
+  animation-delay: -0.9s;
+}
+
+.dot-2 {
+  animation-delay: -0.7s;
+}
+
+.dot-3 {
+  animation-delay: -0.5s;
+}
+
+@keyframes wave {
+  0%, 60%, 100% {
+    transform: initial;
+  }
+  30% {
+    transform: translateY(-8px); /* Adjust vertical distance */
+  }
+}
 /* Add any view-specific styles here if needed */
 </style> 
