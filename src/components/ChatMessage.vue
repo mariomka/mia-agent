@@ -47,7 +47,7 @@ const handleRetry = () => {
     <!-- Add bubble classes: background, rounding, padding -->
     <!-- Max width to prevent bubbles from being full width -->
     <div :class="[
-        'py-2 px-4 rounded-lg text-xl max-w-xl lg:max-w-2xl relative group',
+        'py-2 px-4 rounded-lg text-lg sm:text-xl max-w-xl lg:max-w-2xl relative group',
         bubbleClass
       ]"
     >
