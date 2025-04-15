@@ -18,28 +18,9 @@ onMounted(() => {
   scrollToBottom();
 });
 
-// Placeholder for the actual send message logic
+// Call the store action to send the message
 const handleSendMessage = (messageText) => {
-  console.log('View received message to send:', messageText);
-  // TODO: Call store.sendMessage(messageText) in Step 7
-
-  // Temporary: Add user message directly for UI testing
-  store.messages.value.push({
-    id: Date.now().toString(), // Temporary ID
-    sender: 'user',
-    text: messageText,
-  });
-
-  // Simulate AI response (replace in Step 7)
-  store.isLoading.value = true;
-  setTimeout(() => {
-    store.messages.value.push({
-      id: (Date.now() + 1).toString(), // Temporary ID
-      sender: 'ai',
-      text: `AI received: "${messageText}". Responding...`,
-    });
-    store.isLoading.value = false;
-  }, 1500);
+  store.sendMessage(messageText);
 };
 
 // Function to scroll to the bottom of the chat
