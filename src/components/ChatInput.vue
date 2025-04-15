@@ -46,7 +46,7 @@ const handleInput = (event) => {
   <div class="p-4 bg-white border-t border-gray-200">
     <div class="flex items-end space-x-2">
       <textarea
-        ref="textareaRef" // Add ref for potential future use
+        ref="textareaRef"
         v-model="messageText"
         @keydown="handleKeydown"
         @input="handleInput"
