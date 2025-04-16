@@ -105,5 +105,19 @@ describe('ChatInput.vue', () => {
     // ... other final checks ...
   });
 
+  it('focuses the textarea on component mount', async () => {
+    // Mock document.activeElement to check focus
+    const originalActiveElement = document.activeElement;
+    const focusSpy = vi.spyOn(HTMLElement.prototype, 'focus');
+    
+    const wrapper = mount(ChatInput);
+    
+    // Verify that focus was called on the textarea
+    expect(focusSpy).toHaveBeenCalled();
+    
+    // Clean up
+    focusSpy.mockRestore();
+  });
+
   // Add more tests for edge cases or specific behaviors if needed
 }); 

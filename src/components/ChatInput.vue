@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
 
 const props = defineProps({
   isLoading: {
@@ -11,6 +11,7 @@ const props = defineProps({
 const emit = defineEmits(['sendMessage']);
 
 const messageText = ref('');
+const textareaRef = ref(null);
 
 const sendMessage = () => {
   const textToSend = messageText.value.trim();
@@ -18,8 +19,7 @@ const sendMessage = () => {
     emit('sendMessage', textToSend);
     messageText.value = ''; // Clear input after sending
     // Reset textarea height after sending
-    const textarea = document.querySelector('textarea'); // Find the textarea element
-    if (textarea) textarea.rows = 1;
+    if (textareaRef.value) textareaRef.value.rows = 1;
   }
 };
 
@@ -40,6 +40,13 @@ const handleInput = (event) => {
   textarea.rows = Math.min(lines, maxRows);
 };
 
+// Focus the textarea when component is mounted
+onMounted(() => {
+  if (textareaRef.value) {
+    textareaRef.value.focus();
+  }
+});
+
 </script>
 
 <template>
@@ -58,6 +65,7 @@ const handleInput = (event) => {
         rows="1"
         style="min-height: 40px; max-height: 120px;"
         aria-label="Chat message input"
+        autofocus
       ></textarea>
       <!-- Icon Button -->
       <button
