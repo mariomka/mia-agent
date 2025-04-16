@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const N8N_WEBHOOK_URL = 'http://localhost:5678/webhook/d73aaa78-0487-4818-9364-fdf93f37a45d/chat';
+const CHAT_URL = 'http://127.0.0.1:8000/chat';
 
 /**
  * Sends a message to the n8n chat webhook.
@@ -15,7 +15,7 @@ export async function sendChatMessage(sessionId, chatInput) {
   }
 
   try {
-    const response = await axios.post(N8N_WEBHOOK_URL, {
+    const response = await axios.post(CHAT_URL, {
       sessionId,
       chatInput,
     });
@@ -38,4 +38,4 @@ export async function sendChatMessage(sessionId, chatInput) {
       throw new Error('An unexpected error occurred while processing the API response.');
     }
   }
-} 
+}
