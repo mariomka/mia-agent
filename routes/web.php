@@ -1,6 +1,13 @@
 <?php
 
+use App\Http\Controllers\ChatController;
+use App\Http\Controllers\InterviewController;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', \App\Http\Controllers\InterviewController::class);
-Route::post('/chat', \App\Http\Controllers\ChatController::class);
+Route::get('/', function () {
+    return '';
+})->name('home');
+
+Route::get('/interviews/{interview}', InterviewController::class)->name('interview');
+
+Route::post('/chat', ChatController::class);

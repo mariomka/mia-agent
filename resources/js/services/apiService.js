@@ -3,21 +3,23 @@ import axios from 'axios';
 const CHAT_URL = 'http://127.0.0.1:8000/chat';
 
 /**
- * Sends a message to the n8n chat webhook.
+ * Sends a message to the chat API endpoint.
  * @param {string} sessionId - The unique session identifier.
  * @param {string} chatInput - The user's message text.
+ * @param {number} interviewId - The ID of the interview.
  * @returns {Promise<object>} - A promise that resolves with the API response data.
  * @throws {Error} - Throws an error if the API call fails.
  */
-export async function sendChatMessage(sessionId, chatInput) {
-  if (!sessionId || !chatInput) {
-    throw new Error('Session ID and chat input are required.');
+export async function sendChatMessage(sessionId, chatInput, interviewId) {
+  if (!sessionId || !chatInput || !interviewId) {
+    throw new Error('Session ID, chat input, and interview ID are required.');
   }
 
   try {
     const response = await axios.post(CHAT_URL, {
       sessionId,
       chatInput,
+      interviewId,
     });
 
     // Basic validation of the expected response structure

@@ -1,9 +1,14 @@
 import { defineStore } from 'pinia';
-import { ref } from 'vue';
+import { ref, inject } from 'vue';
 import { v4 as uuidv4 } from 'uuid';
+import { usePage } from '@inertiajs/vue3';
 import { sendChatMessage } from '../services/apiService.js'; // Import the API service
 
 export const useChatStore = defineStore('chat', () => {
+  // Get interview data from Inertia props
+  const page = usePage();
+  const interviewId = ref(page.props.interview?.id);
+  
   // State
   const sessionId = ref(null);
   const messages = ref([]); // { id, sender, text, status: 'sending'|'sent'|'error', error?: string }
@@ -96,7 +101,7 @@ export const useChatStore = defineStore('chat', () => {
 
   // Action to handle sending a message
   async function sendMessage(messageText) {
-    if (!sessionId.value || isInterviewEnded.value || isLoading.value) return;
+    if (!sessionId.value || !interviewId.value || isInterviewEnded.value || isLoading.value) return;
 
     const userMessageId = uuidv4(); // Generate ID upfront
     const userMessage = {
@@ -111,7 +116,7 @@ export const useChatStore = defineStore('chat', () => {
     error.value = null; // Clear general store error
 
     try {
-      const response = await sendChatMessage(sessionId.value, messageText);
+      const response = await sendChatMessage(sessionId.value, messageText, interviewId.value);
 
       // Update user message status to 'sent'
       upsertMessage({ id: userMessageId, status: 'sent' });
@@ -166,10 +171,29 @@ export const useChatStore = defineStore('chat', () => {
       error.value = null; // Clear any general store error
 
       try {
-        const response = await sendChatMessage(sessionId.value, messageToRetry.text);
+        const response = await sendChatMessage(sessionId.value, messageToRetry.text, interviewId.value);
 
         // Update original user message status to 'sent'
         upsertMessage({ id: messageId, status: 'sent' });
+
+        // Add AI response message if not already present
+        if (response.output && response.output.message) {
+          // Check if there's already an AI response after this message
+          const messagePosition = findMessageIndexById(messageId);
+          const nextMessage = messagePosition < messages.value.length - 1 ? 
+                             messages.value[messagePosition + 1] : null;
+          
+          // Only add if there's no next message or the next one isn't from the AI
+          if (!nextMessage || nextMessage.sender !== 'ai') {
+            const aiMessage = {
+                id: uuidv4(),
+                sender: 'ai',
+                text: response.output.message,
+                status: 'sent',
+            };
+            upsertMessage(aiMessage);
+          }
+        }
 
         // Check for interview end condition
         if (response.output && response.output.final_output !== null && response.output.final_output !== undefined) {
@@ -208,6 +232,7 @@ export const useChatStore = defineStore('chat', () => {
   // Return state and actions
   return {
     sessionId,
+    interviewId,
     messages,
     isLoading,
     isInterviewEnded,
