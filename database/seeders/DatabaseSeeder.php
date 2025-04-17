@@ -76,5 +76,42 @@ class DatabaseSeeder extends Seeder
                 ]
             ],
         ]);
+        
+        // Customer Feedback Interview Amalfi Restaurant Example
+        Interview::factory()->create([
+            'language' => 'spanish',
+            'agent_name' => 'Lucia',
+            'interview_type' => 'Customer Feedback',
+            'is_public' => true,
+            'target_name' => 'Amalfi',
+            'target_description' => 'Amalfi is an authentic Italian restaurant specializing in pasta fresca and traditional pizza. The restaurant offers a warm ambiance with a focus on fresh, locally-sourced ingredients and classic Italian recipes from the Amalfi Coast region.',
+            'questions' => [
+                [
+                    'question' => 'How would you rate your overall dining experience at Amalfi today?',
+                    'description' => 'Evaluate general customer satisfaction with their visit',
+                    'approach' => 'direct'
+                ],
+                [
+                    'question' => 'What did you think about the quality and authenticity of our pasta dishes?',
+                    'description' => 'Assess perception of core menu offerings and their authenticity',
+                    'approach' => 'direct'
+                ],
+                [
+                    'question' => 'How was the service provided by our staff during your visit?',
+                    'description' => 'Gather feedback on staff performance and service quality',
+                    'approach' => 'direct'
+                ],
+                [
+                    'question' => 'What would you like to see added to our menu in the future?',
+                    'description' => 'Identify opportunities for menu expansion and improvement',
+                    'approach' => 'direct'
+                ],
+                [
+                    'question' => 'How likely are you to recommend Amalfi to friends or family?',
+                    'description' => 'Measure likelihood of word-of-mouth promotion',
+                    'approach' => 'direct'
+                ]
+            ],
+        ]);
     }
 }
