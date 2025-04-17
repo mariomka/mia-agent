@@ -22,6 +22,7 @@ class Interview extends Model
         'company_name',
         'product_name',
         'product_description',
+        'questions',
     ];
 
     /**
@@ -31,5 +32,6 @@ class Interview extends Model
      */
     protected $casts = [
         'is_public' => 'boolean',
+        'questions' => 'array',
     ];
 }

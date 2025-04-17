@@ -19,6 +19,7 @@ return new class extends Migration
             $table->string('company_name')->nullable();
             $table->string('product_name')->nullable();
             $table->text('product_description')->nullable();
+            $table->json('questions')->nullable();
             $table->boolean('is_public')->default(false);
             $table->timestamps();
         });

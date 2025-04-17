@@ -79,7 +79,8 @@ class InterviewAgent
             agentName: $interview->agent_name,
             companyName: $interview->company_name,
             productName: $interview->product_name,
-            productDescription: $interview->product_description
+            productDescription: $interview->product_description,
+            questions: $interview->questions
         );
 
         $response = Prism::structured()
@@ -98,7 +99,14 @@ class InterviewAgent
         return $response;
     }
 
-    private function getSystemPrompt(string $language, string $agentName, ?string $companyName = null, ?string $productName = null, ?string $productDescription = null): string
+    private function getSystemPrompt(
+        string $language, 
+        string $agentName, 
+        ?string $companyName = null, 
+        ?string $productName = null, 
+        ?string $productDescription = null,
+        ?array $questions = null
+    ): string
     {
         $companyContext = $companyName ? "You are conducting this interview on behalf of {$companyName}." : "";
         $productContext = "";
@@ -108,6 +116,26 @@ class InterviewAgent
             
             if ($productDescription) {
                 $productContext .= " {$productDescription}";
+            }
+        }
+        
+        $questionsContext = "";
+        if ($questions && is_array($questions)) {
+            $questionsContext = "You need to gather information about these specific topics:\n";
+            
+            foreach ($questions as $index => $question) {
+                $questionText = $question['question'] ?? 'N/A';
+                $description = $question['description'] ?? 'N/A';
+                $approach = $question['approach'] ?? 'direct';
+                
+                $questionsContext .= "- Topic " . ($index + 1) . ": {$description}\n";
+                
+                if ($approach === 'direct') {
+                    $questionsContext .= "  You can ask directly: \"{$questionText}\"\n";
+                } else {
+                    $questionsContext .= "  Ask indirectly about: \"{$questionText}\"\n";
+                    $questionsContext .= "  Instead of asking this directly, find creative ways to get this information through conversation.\n";
+                }
             }
         }
         
@@ -125,6 +153,8 @@ Your goals:
 - Validate a specific new feature idea (referred to as "a chat to talk with colleagues")
 - Ask a magic wand style question
 - Collect clear and structured insights
+
+{$questionsContext}
 
 Conversation style:
 - Warm and conversational, like an attentive product researcher
