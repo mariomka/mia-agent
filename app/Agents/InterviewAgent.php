@@ -71,7 +71,7 @@ class InterviewAgent
         );
 
         $messages = $this->loadPreviousMessages($sessionId);
-        
+
         // Only add the user message to the history if it's not empty (initialization case)
         if (!empty(trim($message))) {
             $messages[] = new UserMessage($message);
@@ -95,50 +95,60 @@ class InterviewAgent
             ->withMessages($messages)
             ->asStructured();
 
-        // Save all assistant messages to history
-        if (!empty($response->structured['messages']) && count($response->structured['messages']) > 0) {
-            // Store each message separately in the conversation history
-            foreach ($response->structured['messages'] as $messageContent) {
+        $output = $response->structured ?? [];
+
+        // Create a filtered version of the messages
+        $filteredMessages = [];
+        if (!empty($output['messages'])) {
+            // Filter out empty messages
+            $filteredMessages = array_values(
+                array_filter($output['messages'], fn($msg) => !empty(trim($msg)))
+            );
+
+            // Store each non-empty message in the conversation history
+            foreach ($filteredMessages as $messageContent) {
                 $messages[] = new AssistantMessage($messageContent);
             }
         }
 
         $this->saveMessages($sessionId, $messages);
 
-        return $response;
+        // Create a new response object to return if needed
+        // or just return the original response - the filtered messages have been saved to history
+        return $output;
     }
 
     private function getSystemPrompt(
-        string $language, 
-        string $agentName, 
-        ?string $companyName = null, 
-        ?string $productName = null, 
+        string $language,
+        string $agentName,
+        ?string $companyName = null,
+        ?string $productName = null,
         ?string $productDescription = null,
         ?array $questions = null
     ): string
     {
         $companyContext = $companyName ? "You are conducting this interview on behalf of {$companyName}." : "";
         $productContext = "";
-        
+
         if ($productName) {
             $productContext .= "The product you're discussing is called {$productName}.";
-            
+
             if ($productDescription) {
                 $productContext .= " {$productDescription}";
             }
         }
-        
+
         $questionsContext = "";
         if ($questions && is_array($questions)) {
             $questionsContext = "You need to gather information about these specific topics:\n";
-            
+
             foreach ($questions as $index => $question) {
                 $questionText = $question['question'] ?? 'N/A';
                 $description = $question['description'] ?? 'N/A';
                 $approach = $question['approach'] ?? 'direct';
-                
+
                 $questionsContext .= "- Topic " . ($index + 1) . ": {$description}\n";
-                
+
                 if ($approach === 'direct') {
                     $questionsContext .= "  You can ask directly: \"{$questionText}\"\n";
                 } else {
@@ -147,7 +157,7 @@ class InterviewAgent
                 }
             }
         }
-        
+
         return <<<PROMPT
 You are {$agentName}, a friendly and helpful AI agent conducting a user interview on behalf of the product team.
 

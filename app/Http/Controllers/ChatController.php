@@ -22,23 +22,23 @@ class ChatController extends Controller
         if ($validator->fails()) {
             return response()->json(['errors' => $validator->errors()], 422);
         }
-        
+
         $interview = Interview::findOrFail($request->input('interviewId'));
-        
+
         // Use empty string if chatInput is not provided (for initialization)
-        // Empty messages will be treated specially in the InterviewAgent 
+        // Empty messages will be treated specially in the InterviewAgent
         // and won't be added to message history
         $chatInput = $request->input('chatInput', '');
-        
-        $response = $interviewAgent->chat(
+
+        $output = $interviewAgent->chat(
             sessionId: $request->input('sessionId'),
             message: $chatInput,
             interview: $interview
         );
 
-        return response()->json(['output' => $response->structured]);
+        return response()->json(['output' => $output]);
     }
-    
+
     /**
      * Initialize a new chat session with a welcome message
      */
@@ -53,9 +53,9 @@ class ChatController extends Controller
         if ($validator->fails()) {
             return response()->json(['errors' => $validator->errors()], 422);
         }
-        
+
         $interview = Interview::findOrFail($request->input('interviewId'));
-        
+
         // Pass an empty string as the user's message to get just the initial greeting
         $response = $interviewAgent->chat(
             sessionId: $request->input('sessionId'),
