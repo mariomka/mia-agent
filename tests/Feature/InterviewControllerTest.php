@@ -19,33 +19,46 @@ it('generates session id when none exists', function () {
     // Visit the interview page
     $response = $this->get(route('interview', $interview));
 
+    // Generate the expected session key
+    $interviewSessionKey = "interview_{$interview->id}_session_id";
+    
     // Assert response is successful and uses the Chat view
     $response->assertStatus(200);
     $response->assertInertia(fn ($page) => $page->component('Chat'));
 
-    // Check that the session contains an interview_session_id
-    expect(session('interview_session_id'))->not->toBeNull();
+    // Check that the session contains an interview session ID
+    expect(session($interviewSessionKey))->not->toBeNull();
     
-    // Check that the session ID is a valid UUID
-    expect(Str::isUuid(session('interview_session_id')))->toBeTrue();
+    // Get the session ID
+    $sessionId = session($interviewSessionKey);
+    
+    // Check that the session ID contains the interview ID
+    expect($sessionId)->toContain("interview_{$interview->id}_");
+    
+    // Check that the UUID part is valid
+    $uuidPart = str_replace("interview_{$interview->id}_", '', $sessionId);
+    expect(Str::isUuid($uuidPart))->toBeTrue();
     
     // Check that the session ID is passed to the frontend
     $response->assertInertia(fn ($page) => 
         $page->has('sessionId') && 
-        $page->where('sessionId', session('interview_session_id'))
+        $page->where('sessionId', $sessionId)
     );
 });
 
 it('reuses existing session id', function () {
-    // Create a session ID
-    $sessionId = Str::uuid()->toString();
-    session(['interview_session_id' => $sessionId]);
-    
     // Create a public interview
     $interview = Interview::factory()->create([
         'is_public' => true,
     ]);
-
+    
+    // Generate the expected session key
+    $interviewSessionKey = "interview_{$interview->id}_session_id";
+    
+    // Create a session ID for this specific interview
+    $sessionId = "interview_{$interview->id}_" . Str::uuid()->toString();
+    session([$interviewSessionKey => $sessionId]);
+    
     // Visit the interview page
     $response = $this->get(route('interview', $interview));
 
@@ -53,7 +66,7 @@ it('reuses existing session id', function () {
     $response->assertStatus(200);
     
     // Check that the existing session ID is reused
-    expect(session('interview_session_id'))->toBe($sessionId);
+    expect(session($interviewSessionKey))->toBe($sessionId);
     
     // Check that the session ID is passed to the frontend
     $response->assertInertia(fn ($page) => 

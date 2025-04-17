@@ -19,12 +19,15 @@ class InterviewController extends Controller
             abort(SymfonyResponse::HTTP_FORBIDDEN, 'Invalid or expired interview link');
         }
 
+        // Generate a session key that's tied to the specific interview
+        $interviewSessionKey = "interview_{$interview->id}_session_id";
+        
         // Generate a new session ID or retrieve existing one from session
-        $sessionId = $request->session()->get('interview_session_id');
+        $sessionId = $request->session()->get($interviewSessionKey);
         
         if (!$sessionId) {
-            $sessionId = Str::uuid()->toString();
-            $request->session()->put('interview_session_id', $sessionId);
+            $sessionId = "interview_{$interview->id}_" . Str::uuid()->toString();
+            $request->session()->put($interviewSessionKey, $sessionId);
         }
         
         // Load messages from cache
