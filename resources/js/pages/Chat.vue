@@ -55,9 +55,9 @@ watch(messages, () => {
       aria-live="polite"
       aria-atomic="false">
       <!-- Centered content container -->
-      <div class="max-w-[800px] mx-auto p-4 sm:p-6">
-        <div class="flex flex-col min-h-full space-y-6">
-          <div class="flex-grow"></div>
+      <div class="h-full max-w-[800px] mx-auto p-4 sm:p-6 flex flex-col">
+        <div class="flex-grow"></div>
+        <div class="space-y-6">
           <ChatMessage
             v-for="message in messages"
             :key="message.id"
