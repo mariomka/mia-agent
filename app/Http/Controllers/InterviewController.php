@@ -21,19 +21,19 @@ class InterviewController extends Controller
 
         // Generate a session key that's tied to the specific interview
         $interviewSessionKey = "interview_{$interview->id}_session_id";
-        
+
         // Generate a new session ID or retrieve existing one from session
         $sessionId = $request->session()->get($interviewSessionKey);
-        
+
         if (!$sessionId) {
             $sessionId = "interview_{$interview->id}_" . Str::uuid()->toString();
             $request->session()->put($interviewSessionKey, $sessionId);
         }
-        
+
         // Load messages from cache
         $cachedMessages = Cache::get("chat_{$sessionId}", []);
         $messages = [];
-        
+
         foreach ($cachedMessages as $index => $message) {
             $messages[] = [
                 'id' => "{$sessionId}_{$index}",
