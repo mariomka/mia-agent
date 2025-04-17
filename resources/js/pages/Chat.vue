@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted, ref, nextTick, watch } from 'vue';
+import { onMounted, ref, nextTick, watch, computed } from 'vue';
 import { storeToRefs } from 'pinia';
 import ChatMessage from '../components/ChatMessage.vue';
 import ChatInput from '../components/ChatInput.vue';
@@ -39,6 +39,30 @@ const scrollToBottom = async () => {
   }
 };
 
+// Function to group messages by sender
+const groupedMessages = computed(() => {
+  if (!messages.value || messages.value.length === 0) return [];
+  
+  const result = [];
+  let currentGroup = null;
+  
+  messages.value.forEach((message) => {
+    // Start a new group if needed
+    if (!currentGroup || currentGroup.sender !== message.sender) {
+      if (currentGroup) result.push(currentGroup);
+      currentGroup = { sender: message.sender, messages: [message] };
+    } else {
+      // Add to existing group
+      currentGroup.messages.push(message);
+    }
+  });
+  
+  // Don't forget to add the last group
+  if (currentGroup) result.push(currentGroup);
+  
+  return result;
+});
+
 // Watch for new messages and scroll down
 watch(messages, () => {
   scrollToBottom();
@@ -56,13 +80,20 @@ watch(messages, () => {
       aria-atomic="false">
       <!-- Centered content container with flex to push content to bottom -->
       <div class="flex flex-col justify-end min-h-full max-w-[800px] mx-auto p-4 sm:p-6 pb-8">
-        <div class="space-y-6">
-          <ChatMessage
-            v-for="message in messages"
-            :key="message.id"
-            :message="message"
-            @retry="handleRetryMessage"
-          />
+        <div class="space-y-3">
+          <!-- Group messages by sender -->
+          <div v-for="(group, groupIndex) in groupedMessages" :key="groupIndex" class="mb-3">
+            <!-- Messages in a group have reduced spacing between them -->
+            <div v-for="(message, messageIndex) in group.messages" 
+                 :key="message.id" 
+                 :class="{ 'mt-0.5': messageIndex > 0 }">
+              <ChatMessage
+                :message="message"
+                @retry="handleRetryMessage"
+              />
+            </div>
+          </div>
+          
           <div v-if="isLoading" class="flex justify-start">
              <div class="flex items-center space-x-1 py-2 px-4">
                 <span class="dot dot-1"></span>
