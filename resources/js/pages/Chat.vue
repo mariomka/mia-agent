@@ -7,6 +7,7 @@ import { useChatStore } from '../stores/useChatStore';
 
 const store = useChatStore();
 const { messages, isLoading, isInterviewEnded } = storeToRefs(store);
+const isInitialized = ref(false);
 
 const chatMessagesContainer = ref(null);
 

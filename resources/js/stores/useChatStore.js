@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia';
 import { ref, inject } from 'vue';
 import { usePage } from '@inertiajs/vue3';
-import { sendChatMessage } from '../services/apiService.js'; // Import the API service
+import { sendChatMessage, initializeChat } from '../services/apiService.js'; // Import the new API function
 
 export const useChatStore = defineStore('chat', () => {
   // Get interview data and sessionId from Inertia props
@@ -24,8 +24,11 @@ export const useChatStore = defineStore('chat', () => {
     finalOutput.value = null;
     error.value = null;
     
-    // Check if the last message needs retrying
-    if (messages.value.length > 0) {
+    // Check if messages are empty or if the last message needs retrying
+    if (messages.value.length === 0) {
+      // If no messages, initialize the chat with the first AI message
+      fetchInitialAIMessage();
+    } else if (messages.value.length > 0) {
       const lastMessage = messages.value[messages.value.length - 1];
       if (lastMessage.sender === 'user') {
         // Pass force: true for automatic retry on load
@@ -48,6 +51,40 @@ export const useChatStore = defineStore('chat', () => {
     } else {
       // Add new message
       messages.value.push(messageData);
+    }
+  }
+
+  // Action to fetch the initial AI message
+  async function fetchInitialAIMessage() {
+    if (!sessionId.value || !interviewId.value || isInterviewEnded.value) return;
+
+    isLoading.value = true;
+    error.value = null; // Clear general store error
+
+    try {
+      const response = await initializeChat(sessionId.value, interviewId.value);
+
+      // Add AI welcome message
+      if (response.output && response.output.message) {
+        const aiMessage = {
+          id: `${sessionId.value}_${Date.now()}`,
+          sender: 'ai',
+          text: response.output.message,
+          status: 'sent', // AI messages are considered 'sent'
+        };
+        upsertMessage(aiMessage);
+      }
+
+      // Check for interview end condition
+      if (response.output && response.output.final_output !== null && response.output.final_output !== undefined) {
+        endInterview(response.output.final_output);
+      } else {
+        isLoading.value = false;
+      }
+    } catch (err) {
+      const errorMessage = err.message || 'An unknown error occurred during initialization.';
+      error.value = errorMessage;
+      isLoading.value = false;
     }
   }
 
@@ -178,5 +215,6 @@ export const useChatStore = defineStore('chat', () => {
     sendMessage,
     retryFailedMessage, // Expose retry action
     endInterview, // Expose endInterview if needed externally
+    fetchInitialAIMessage, // Expose initialization function
   };
 });

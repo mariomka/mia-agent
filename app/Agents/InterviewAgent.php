@@ -67,7 +67,11 @@ class InterviewAgent
         );
 
         $messages = $this->loadPreviousMessages($sessionId);
-        $messages[] = new UserMessage($message);
+        
+        // Only add the user message to the history if it's not empty (initialization case)
+        if (!empty(trim($message))) {
+            $messages[] = new UserMessage($message);
+        }
 
         // Get system prompt with language instruction and agent name
         $systemPrompt = $this->getSystemPrompt(
@@ -86,6 +90,7 @@ class InterviewAgent
             ->withMessages($messages)
             ->asStructured();
 
+        // Only save the assistant message to history
         $messages[] = new AssistantMessage($response->structured['message']);
 
         $this->saveMessages($sessionId, $messages);

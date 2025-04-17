@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
 import axios from 'axios';
-import { sendChatMessage } from './apiService.js';
+import { sendChatMessage, initializeChat } from './apiService.js';
 
 // Mock axios
 vi.mock('axios');
@@ -37,21 +37,34 @@ describe('API Service - sendChatMessage', () => {
 
   it('should throw an error if session ID is missing', async () => {
     await expect(sendChatMessage(null, mockChatInput, mockInterviewId)).rejects.toThrow(
-      'Session ID, chat input, and interview ID are required.'
+      'Session ID and interview ID are required.'
     );
     expect(axios.post).not.toHaveBeenCalled();
   });
 
-  it('should throw an error if chat input is missing', async () => {
-    await expect(sendChatMessage(mockSessionId, '', mockInterviewId)).rejects.toThrow(
-      'Session ID, chat input, and interview ID are required.'
-    );
-    expect(axios.post).not.toHaveBeenCalled();
+  it('should accept empty chat input as valid', async () => {
+    const mockResponseData = {
+      output: {
+        message: 'Hello, User!',
+        final_output: null,
+      },
+    };
+    axios.post.mockResolvedValue({ data: mockResponseData });
+
+    // This should not throw an error
+    await sendChatMessage(mockSessionId, '', mockInterviewId);
+
+    expect(axios.post).toHaveBeenCalledTimes(1);
+    expect(axios.post).toHaveBeenCalledWith(CHAT_URL, {
+      sessionId: mockSessionId,
+      chatInput: '',
+      interviewId: mockInterviewId,
+    });
   });
 
   it('should throw an error if interview ID is missing', async () => {
     await expect(sendChatMessage(mockSessionId, mockChatInput, null)).rejects.toThrow(
-      'Session ID, chat input, and interview ID are required.'
+      'Session ID and interview ID are required.'
     );
     expect(axios.post).not.toHaveBeenCalled();
   });
@@ -97,5 +110,49 @@ describe('API Service - sendChatMessage', () => {
       'An unexpected error occurred while processing the API response.'
     );
     expect(axios.post).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('API Service - initializeChat', () => {
+  const mockSessionId = 'test-session-id';
+  const mockInterviewId = 123;
+  const CHAT_URL = 'http://127.0.0.1:8000/chat';
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it('should initialize chat successfully and return data', async () => {
+    const mockResponseData = {
+      output: {
+        message: 'Welcome to the chat!',
+        final_output: null,
+      },
+    };
+    axios.post.mockResolvedValue({ data: mockResponseData });
+
+    const result = await initializeChat(mockSessionId, mockInterviewId);
+
+    expect(axios.post).toHaveBeenCalledTimes(1);
+    expect(axios.post).toHaveBeenCalledWith(CHAT_URL, {
+      sessionId: mockSessionId,
+      interviewId: mockInterviewId,
+      // No chatInput provided for initialization
+    });
+    expect(result).toEqual(mockResponseData);
+  });
+
+  it('should throw an error if session ID is missing', async () => {
+    await expect(initializeChat(null, mockInterviewId)).rejects.toThrow(
+      'Session ID and interview ID are required.'
+    );
+    expect(axios.post).not.toHaveBeenCalled();
+  });
+
+  it('should throw an error if interview ID is missing', async () => {
+    await expect(initializeChat(mockSessionId, null)).rejects.toThrow(
+      'Session ID and interview ID are required.'
+    );
+    expect(axios.post).not.toHaveBeenCalled();
   });
 });
