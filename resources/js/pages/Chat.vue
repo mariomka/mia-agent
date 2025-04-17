@@ -54,9 +54,8 @@ watch(messages, () => {
       class="flex-1 overflow-y-auto w-full"
       aria-live="polite"
       aria-atomic="false">
-      <!-- Centered content container -->
-      <div class="h-full max-w-[800px] mx-auto p-4 sm:p-6 flex flex-col">
-        <div class="flex-grow"></div>
+      <!-- Centered content container with flex to push content to bottom -->
+      <div class="flex flex-col justify-end min-h-full max-w-[800px] mx-auto p-4 sm:p-6 pb-8">
         <div class="space-y-6">
           <ChatMessage
             v-for="message in messages"
