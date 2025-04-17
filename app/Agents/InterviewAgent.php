@@ -84,7 +84,8 @@ class InterviewAgent
             companyName: $interview->company_name,
             productName: $interview->product_name,
             productDescription: $interview->product_description,
-            questions: $interview->questions
+            questions: $interview->questions,
+            interviewType: $interview->interview_type
         );
 
         $response = Prism::structured()
@@ -124,11 +125,37 @@ class InterviewAgent
         ?string $companyName = null,
         ?string $productName = null,
         ?string $productDescription = null,
-        ?array $questions = null
+        ?array $questions = null,
+        ?string $interviewType = null
     ): string
     {
         $companyContext = $companyName ? "You are conducting this interview on behalf of {$companyName}." : "";
         $productContext = "";
+
+        // Determine the interview purpose based on type
+        $interviewPurpose = match($interviewType) {
+            'Screening Interview' => 'to evaluate candidates',
+            'User Interview' => 'on behalf of the product team',
+            'Customer Feedback' => 'to gather valuable feedback',
+            'Market Research' => 'to understand market trends',
+            default => 'with our users'
+        };
+
+        // Add context based on interview type
+        $typeContext = "";
+        if ($interviewType) {
+            $typeContext = "This is a {$interviewType}.";
+
+            if ($interviewType === 'User Interview') {
+                $typeContext .= " Focus on understanding user needs, pain points, and workflows to improve the product.";
+            } elseif ($interviewType === 'Screening Interview') {
+                $typeContext .= " Focus on assessing the candidate's skills, experience, and fit for the role.";
+            } elseif ($interviewType === 'Customer Feedback') {
+                $typeContext .= " Focus on gathering detailed feedback about existing features and potential improvements.";
+            } elseif ($interviewType === 'Market Research') {
+                $typeContext .= " Focus on understanding market trends, competitor analysis, and user preferences.";
+            }
+        }
 
         if ($productName) {
             $productContext .= "The product you're discussing is called {$productName}.";
@@ -159,16 +186,17 @@ class InterviewAgent
         }
 
         return <<<PROMPT
-You are {$agentName}, a friendly and helpful AI agent conducting a user interview on behalf of the product team.
+You are {$agentName}, a friendly and helpful AI agent conducting a {$interviewType} {$interviewPurpose}.
 
 IMPORTANT: You must communicate with the user in {$language}. All your responses should be in {$language}.
 
 # Context
 {$companyContext}
 {$productContext}
+{$typeContext}
 
 # Conversation style
-- Warm and conversational, like an attentive product researcher
+- Warm and conversational
 - Use natural and easy to understand language
 - Be polite and curious
 
@@ -194,8 +222,7 @@ IMPORTANT: You must communicate with the user in {$language}. All your responses
 - For introductions or complex topics, prioritize key information within the character limits
 
 # When starting the interview:
-- Introduce yourself in {$language}: Example in English: "Hi, I'm {$agentName}, an AI that helps the team learn more about our users so we can improve the product." Or in Spanish: "Hola, soy {$agentName}, una IA que ayuda al equipo a aprender más de nuestras personas usuarias para poder mejorar el producto."
-- Briefly explain the purpose in {$language}
+- Introduce yourself and briefly explain the purpose of this interview
 
 # When the interview is in progress:
 - While the interview is in progress, `final_output` should be empty (`null`)

@@ -17,6 +17,7 @@ class DatabaseSeeder extends Seeder
         Interview::factory()->create([
             'language' => 'spanish',
             'agent_name' => 'Mia',
+            'interview_type' => 'User Interview',
             'is_public' => true,
             'company_name' => 'iDoctus',
             'product_name' => 'iDoctus',
@@ -49,6 +50,7 @@ class DatabaseSeeder extends Seeder
         Interview::factory()->create([
             'language' => 'english',
             'agent_name' => 'Riley',
+            'interview_type' => 'Screening Interview',
             'is_public' => true,
             'company_name' => 'iDoctus',
             'product_name' => 'iDoctus',

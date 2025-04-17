@@ -19,9 +19,11 @@ class InterviewFactory extends Factory
     {
         $languages = ['English', 'Spanish', 'French', 'German', 'Italian', 'Portuguese', 'Chinese', 'Japanese'];
         $agentNames = ['Mia', 'Alex', 'Sam', 'Jordan', 'Taylor', 'Riley', 'Casey', 'Morgan'];
+        $interviewTypes = ['User Interview', 'Screening Interview', 'Customer Feedback', 'Market Research'];
         
         return [
             'name' => fake()->sentence(3),
+            'interview_type' => fake()->randomElement($interviewTypes),
             'agent_name' => fake()->randomElement($agentNames),
             'language' => fake()->randomElement($languages),
             'company_name' => fake()->company(),

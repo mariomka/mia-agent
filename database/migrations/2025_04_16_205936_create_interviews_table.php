@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('interviews', function (Blueprint $table) {
             $table->id();
             $table->string('name');
+            $table->string('interview_type')->nullable();
             $table->string('agent_name');
             $table->string('language');
             $table->string('company_name')->nullable();

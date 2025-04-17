@@ -23,6 +23,7 @@ class Interview extends Model
         'product_name',
         'product_description',
         'questions',
+        'interview_type',
     ];
 
     /**
