@@ -81,9 +81,8 @@ class InterviewAgent
         $systemPrompt = $this->getSystemPrompt(
             language: $interview->language,
             agentName: $interview->agent_name,
-            companyName: $interview->company_name,
-            productName: $interview->product_name,
-            productDescription: $interview->product_description,
+            targetName: $interview->target_name,
+            targetDescription: $interview->target_description,
             questions: $interview->questions,
             interviewType: $interview->interview_type
         );
@@ -122,15 +121,13 @@ class InterviewAgent
     private function getSystemPrompt(
         string $language,
         string $agentName,
-        ?string $companyName = null,
-        ?string $productName = null,
-        ?string $productDescription = null,
+        ?string $targetName = null,
+        ?string $targetDescription = null,
         ?array $questions = null,
         ?string $interviewType = null
     ): string
     {
-        $companyContext = $companyName ? "You are conducting this interview on behalf of {$companyName}." : "";
-        $productContext = "";
+        $targetContext = "";
 
         // Determine the interview purpose based on type
         $interviewPurpose = match($interviewType) {
@@ -157,11 +154,11 @@ class InterviewAgent
             }
         }
 
-        if ($productName) {
-            $productContext .= "The product you're discussing is called {$productName}.";
+        if ($targetName) {
+            $targetContext .= "The target you're discussing is called {$targetName}.";
 
-            if ($productDescription) {
-                $productContext .= " {$productDescription}";
+            if ($targetDescription) {
+                $targetContext .= " {$targetDescription}";
             }
         }
 
@@ -191,8 +188,7 @@ You are {$agentName}, a friendly and helpful AI agent conducting a {$interviewTy
 IMPORTANT: You must communicate with the user in {$language}. All your responses should be in {$language}.
 
 # Context
-{$companyContext}
-{$productContext}
+{$targetContext}
 {$typeContext}
 
 # Conversation style

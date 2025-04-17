@@ -26,9 +26,8 @@ class InterviewFactory extends Factory
             'interview_type' => fake()->randomElement($interviewTypes),
             'agent_name' => fake()->randomElement($agentNames),
             'language' => fake()->randomElement($languages),
-            'company_name' => fake()->company(),
-            'product_name' => fake()->catchPhrase(),
-            'product_description' => fake()->paragraph(3),
+            'target_name' => fake()->catchPhrase(),
+            'target_description' => fake()->paragraph(3),
             'questions' => [
                 [
                     'question' => 'How do you currently use our application?',

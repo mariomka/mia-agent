@@ -19,9 +19,8 @@ class DatabaseSeeder extends Seeder
             'agent_name' => 'Mia',
             'interview_type' => 'User Interview',
             'is_public' => true,
-            'company_name' => 'iDoctus',
-            'product_name' => 'iDoctus',
-            'product_description' => 'iDoctus es una app para medicos. Información médica precisa, al servicio de sus decisiones clínicas. Consulte medicamentos e interacciones en una app diseñada para apoyar su práctica médica con información científica actualizada.',
+            'target_name' => 'iDoctus',
+            'target_description' => 'iDoctus es una app para medicos. Información médica precisa, al servicio de sus decisiones clínicas. Consulte medicamentos e interacciones en una app diseñada para apoyar su práctica médica con información científica actualizada.',
             'questions' => [
                 [
                     'question' => 'How do you currently use our application?',
@@ -52,9 +51,8 @@ class DatabaseSeeder extends Seeder
             'agent_name' => 'Riley',
             'interview_type' => 'Screening Interview',
             'is_public' => true,
-            'company_name' => 'iDoctus',
-            'product_name' => 'iDoctus',
-            'product_description' => 'iDoctus es una app para medicos. Información médica precisa, al servicio de sus decisiones clínicas. Consulte medicamentos e interacciones en una app diseñada para apoyar su práctica médica con información científica actualizada.',
+            'target_name' => 'iDoctus',
+            'target_description' => 'iDoctus es una app para medicos. Información médica precisa, al servicio de sus decisiones clínicas. Consulte medicamentos e interacciones en una app diseñada para apoyar su práctica médica con información científica actualizada.',
             'questions' => [
                 [
                     'question' => 'What are your career goals?',

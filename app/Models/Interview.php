@@ -19,9 +19,8 @@ class Interview extends Model
         'agent_name',
         'language',
         'is_public',
-        'company_name',
-        'product_name',
-        'product_description',
+        'target_name',
+        'target_description',
         'questions',
         'interview_type',
     ];
