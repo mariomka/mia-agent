@@ -48,26 +48,29 @@ watch(messages, () => {
 
 <template>
   <div class="flex flex-col h-screen">
-    <!-- Chat messages area -->
+    <!-- Chat messages container (full width with scroll) -->
     <div
       ref="chatMessagesContainer"
-      class="flex-1 overflow-y-auto p-4 sm:p-6 max-w-[800px] mx-auto w-full"
+      class="flex-1 overflow-y-auto w-full"
       aria-live="polite"
-      aria-atomic="false" >
-      <div class="flex flex-col min-h-full space-y-6">
-        <div class="flex-grow"></div>
-        <ChatMessage
-          v-for="message in messages"
-          :key="message.id"
-          :message="message"
-          @retry="handleRetryMessage"
-        />
-        <div v-if="isLoading" class="flex justify-start">
-           <div class="flex items-center space-x-1 py-2 px-4">
-              <span class="dot dot-1"></span>
-              <span class="dot dot-2"></span>
-              <span class="dot dot-3"></span>
-            </div>
+      aria-atomic="false">
+      <!-- Centered content container -->
+      <div class="max-w-[800px] mx-auto p-4 sm:p-6">
+        <div class="flex flex-col min-h-full space-y-6">
+          <div class="flex-grow"></div>
+          <ChatMessage
+            v-for="message in messages"
+            :key="message.id"
+            :message="message"
+            @retry="handleRetryMessage"
+          />
+          <div v-if="isLoading" class="flex justify-start">
+             <div class="flex items-center space-x-1 py-2 px-4">
+                <span class="dot dot-1"></span>
+                <span class="dot dot-2"></span>
+                <span class="dot dot-3"></span>
+              </div>
+          </div>
         </div>
       </div>
     </div>
@@ -78,7 +81,7 @@ watch(messages, () => {
       v-if="!isInterviewEnded"
       @send-message="handleSendMessage"
       :is-loading="isLoading"
-      />
+    />
   </div>
 </template>
 
