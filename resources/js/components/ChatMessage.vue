@@ -36,6 +36,13 @@ const bubbleClass = computed(() => {
     : 'bg-blue-100 text-blue-900'; // User: Pale blue bubble
 });
 
+// Add custom rounded corners based on sender
+const roundedCornerClass = computed(() => {
+  return props.message.sender === 'ai'
+    ? 'rounded-t-2xl rounded-r-2xl rounded-bl-xs' // AI: squared bottom left
+    : 'rounded-t-2xl rounded-l-2xl rounded-br-xs'; // User: squared bottom right
+});
+
 const handleRetry = () => {
   emit('retry', props.message.id);
 }
@@ -44,11 +51,11 @@ const handleRetry = () => {
 
 <template>
   <div :class="['flex w-full', alignmentClass]">
-    <!-- Add bubble classes: background, rounding, padding -->
-    <!-- Max width to prevent bubbles from being full width -->
+    <!-- Updated bubble styling with custom rounded corners -->
     <div :class="[
-        'py-2 px-4 rounded-lg text-lg sm:text-xl max-w-xs sm:max-w-md lg:max-w-lg relative group',
-        bubbleClass
+        'py-2 px-4 text-lg sm:text-xl max-w-xs sm:max-w-md lg:max-w-lg relative group',
+        bubbleClass,
+        roundedCornerClass
       ]"
     >
        <p class="whitespace-pre-wrap">{{ message.text }}</p>
