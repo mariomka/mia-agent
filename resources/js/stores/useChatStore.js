@@ -1,77 +1,37 @@
 import { defineStore } from 'pinia';
 import { ref, inject } from 'vue';
-import { v4 as uuidv4 } from 'uuid';
 import { usePage } from '@inertiajs/vue3';
 import { sendChatMessage } from '../services/apiService.js'; // Import the API service
 
 export const useChatStore = defineStore('chat', () => {
-  // Get interview data from Inertia props
+  // Get interview data and sessionId from Inertia props
   const page = usePage();
   const interviewId = ref(page.props.interview?.id);
+  const sessionId = ref(page.props.sessionId || null);
   
   // State
-  const sessionId = ref(null);
-  const messages = ref([]); // { id, sender, text, status: 'sending'|'sent'|'error', error?: string }
+  const messages = ref(page.props.messages || []); // Use messages from backend
   const isLoading = ref(false);
   const isInterviewEnded = ref(false);
   const finalOutput = ref(null);
-  const error = ref(null); // General store error (maybe remove if errors are per-message?)
-  const MESSAGES_STORAGE_KEY = 'miaMessages';
-  const SESSION_ID_STORAGE_KEY = 'miaSessionId';
+  const error = ref(null); // General store error
 
   // Actions
   function initializeSession() {
-    const existingSessionId = sessionStorage.getItem(SESSION_ID_STORAGE_KEY);
-
-    // Always reset transient state
+    // Reset transient state
     isLoading.value = false;
     isInterviewEnded.value = false;
     finalOutput.value = null;
     error.value = null;
-
-    if (existingSessionId) {
-      sessionId.value = existingSessionId;
-
-      // Try to load messages from storage
-      try {
-        const storedMessages = sessionStorage.getItem(MESSAGES_STORAGE_KEY);
-        if (storedMessages) {
-          const parsedMessages = JSON.parse(storedMessages);
-          // Basic validation - check if it's an array
-          if (Array.isArray(parsedMessages)) {
-             messages.value = parsedMessages;
-
-             // Check if the last message needs retrying
-             if (messages.value.length > 0) {
-                const lastMessage = messages.value[messages.value.length - 1];
-                if (lastMessage.sender === 'user') {
-                    // Pass force: true for automatic retry on load
-                    retryFailedMessage(lastMessage.id, { force: true });
-                }
-             }
-          } else {
-             messages.value = [];
-          }
-        } else {
-          messages.value = []; // No messages stored
-        }
-      } catch (e) {
-        messages.value = []; // Start fresh on error
-        sessionStorage.removeItem(MESSAGES_STORAGE_KEY); // Clear invalid data
+    
+    // Check if the last message needs retrying
+    if (messages.value.length > 0) {
+      const lastMessage = messages.value[messages.value.length - 1];
+      if (lastMessage.sender === 'user') {
+        // Pass force: true for automatic retry on load
+        retryFailedMessage(lastMessage.id, { force: true });
       }
-
-    } else {
-      // New session
-      sessionId.value = uuidv4();
-      messages.value = [];
-      sessionStorage.setItem(SESSION_ID_STORAGE_KEY, sessionId.value);
-      sessionStorage.removeItem(MESSAGES_STORAGE_KEY); // Clear any old messages
-
-      // TODO: Add initial welcome message?
-      // addMessage('ai', 'Welcome! Please tell me about...');
     }
-    // Persist initial state (empty messages if new session)
-    updateStoredMessages();
   }
 
   // Helper to find message index by ID
@@ -79,37 +39,29 @@ export const useChatStore = defineStore('chat', () => {
     return messages.value.findIndex(m => m.id === id);
   }
 
-  // Helper to update sessionStorage for messages
-  function updateStoredMessages() {
-    try {
-        sessionStorage.setItem(MESSAGES_STORAGE_KEY, JSON.stringify(messages.value));
-    } catch (e) {
-    }
-  }
-
-  // Action to add/update a message and save
+  // Action to add/update a message
   function upsertMessage(messageData) {
-      const index = findMessageIndexById(messageData.id);
-      if (index > -1) {
-          // Update existing message
-          messages.value[index] = { ...messages.value[index], ...messageData };
-      } else {
-          // Add new message
-          messages.value.push(messageData);
-      }
+    const index = findMessageIndexById(messageData.id);
+    if (index > -1) {
+      // Update existing message
+      messages.value[index] = { ...messages.value[index], ...messageData };
+    } else {
+      // Add new message
+      messages.value.push(messageData);
+    }
   }
 
   // Action to handle sending a message
   async function sendMessage(messageText) {
     if (!sessionId.value || !interviewId.value || isInterviewEnded.value || isLoading.value) return;
 
-    const userMessageId = uuidv4(); // Generate ID upfront
+    const userMessageId = `${sessionId.value}_${Date.now()}`;
     const userMessage = {
-        id: userMessageId,
-        sender: 'user',
-        text: messageText,
-        status: 'sending',
-        error: undefined, // Clear any previous error for this potential retry
+      id: userMessageId,
+      sender: 'user',
+      text: messageText,
+      status: 'sending',
+      error: undefined, // Clear any previous error for this potential retry
     };
     upsertMessage(userMessage);
     isLoading.value = true;
@@ -124,10 +76,10 @@ export const useChatStore = defineStore('chat', () => {
       // Add AI response message
       if (response.output && response.output.message) {
         const aiMessage = {
-            id: uuidv4(),
-            sender: 'ai',
-            text: response.output.message,
-            status: 'sent', // AI messages are considered 'sent'
+          id: `${sessionId.value}_${Date.now() + 1}`,
+          sender: 'ai',
+          text: response.output.message,
+          status: 'sent', // AI messages are considered 'sent'
         };
         upsertMessage(aiMessage);
       }
@@ -143,73 +95,66 @@ export const useChatStore = defineStore('chat', () => {
       // Update user message status to 'error'
       upsertMessage({ id: userMessageId, status: 'error', error: errorMessage });
       isLoading.value = false;
-      // Maybe set general error too?
-      // error.value = errorMessage;
     }
-    updateStoredMessages();
   }
 
   // Action to retry sending a failed message
-  // Added options param { force?: boolean }
   async function retryFailedMessage(messageId, options = {}) {
-      const { force = false } = options;
-      const messageIndex = findMessageIndexById(messageId);
-      if (messageIndex === -1) {
-        return;
-      }
+    const { force = false } = options;
+    const messageIndex = findMessageIndexById(messageId);
+    if (messageIndex === -1) {
+      return;
+    }
 
-      const messageToRetry = messages.value[messageIndex];
-      // Updated guard: Check force flag
-      const isRetryableStatus = messageToRetry.status === 'error' || messageToRetry.status === 'sending';
-      if (messageToRetry.sender !== 'user' || (!force && !isRetryableStatus)) {
-          return;
-      }
+    const messageToRetry = messages.value[messageIndex];
+    // Updated guard: Check force flag
+    const isRetryableStatus = messageToRetry.status === 'error' || messageToRetry.status === 'sending';
+    if (messageToRetry.sender !== 'user' || (!force && !isRetryableStatus)) {
+      return;
+    }
 
-      // Update status to 'sending' and clear error immediately
-      upsertMessage({ id: messageId, status: 'sending', error: undefined });
-      isLoading.value = true;
-      error.value = null; // Clear any general store error
+    // Update status to 'sending' and clear error immediately
+    upsertMessage({ id: messageId, status: 'sending', error: undefined });
+    isLoading.value = true;
+    error.value = null; // Clear any general store error
 
-      try {
-        const response = await sendChatMessage(sessionId.value, messageToRetry.text, interviewId.value);
+    try {
+      const response = await sendChatMessage(sessionId.value, messageToRetry.text, interviewId.value);
 
-        // Update original user message status to 'sent'
-        upsertMessage({ id: messageId, status: 'sent' });
+      // Update original user message status to 'sent'
+      upsertMessage({ id: messageId, status: 'sent' });
 
-        // Add AI response message if not already present
-        if (response.output && response.output.message) {
-          // Check if there's already an AI response after this message
-          const messagePosition = findMessageIndexById(messageId);
-          const nextMessage = messagePosition < messages.value.length - 1 ? 
-                             messages.value[messagePosition + 1] : null;
-          
-          // Only add if there's no next message or the next one isn't from the AI
-          if (!nextMessage || nextMessage.sender !== 'ai') {
-            const aiMessage = {
-                id: uuidv4(),
-                sender: 'ai',
-                text: response.output.message,
-                status: 'sent',
-            };
-            upsertMessage(aiMessage);
-          }
+      // Add AI response message if not already present
+      if (response.output && response.output.message) {
+        // Check if there's already an AI response after this message
+        const messagePosition = findMessageIndexById(messageId);
+        const nextMessage = messagePosition < messages.value.length - 1 ? 
+                           messages.value[messagePosition + 1] : null;
+        
+        // Only add if there's no next message or the next one isn't from the AI
+        if (!nextMessage || nextMessage.sender !== 'ai') {
+          const aiMessage = {
+            id: `${sessionId.value}_${Date.now()}`,
+            sender: 'ai',
+            text: response.output.message,
+            status: 'sent',
+          };
+          upsertMessage(aiMessage);
         }
-
-        // Check for interview end condition
-        if (response.output && response.output.final_output !== null && response.output.final_output !== undefined) {
-          endInterview(response.output.final_output); // This sets isLoading = false
-        } else {
-          isLoading.value = false; // Set loading false if interview didn't end
-        }
-      } catch (err) {
-        const errorMessage = err.message || 'An unknown error occurred during retry.';
-        // Update original user message status back to 'error' with new error message
-        upsertMessage({ id: messageId, status: 'error', error: errorMessage });
-        isLoading.value = false;
-        // Optionally set general error
-        // error.value = errorMessage;
       }
-      updateStoredMessages();
+
+      // Check for interview end condition
+      if (response.output && response.output.final_output !== null && response.output.final_output !== undefined) {
+        endInterview(response.output.final_output); // This sets isLoading = false
+      } else {
+        isLoading.value = false; // Set loading false if interview didn't end
+      }
+    } catch (err) {
+      const errorMessage = err.message || 'An unknown error occurred during retry.';
+      // Update original user message status back to 'error' with new error message
+      upsertMessage({ id: messageId, status: 'error', error: errorMessage });
+      isLoading.value = false;
+    }
   }
 
   // Action to end the interview
@@ -218,15 +163,6 @@ export const useChatStore = defineStore('chat', () => {
     finalOutput.value = output;
     isLoading.value = false;
     console.log('Interview ended. Final Output:', output);
-    // Clear storage when interview ends?
-    // clearSession();
-  }
-
-  // Action to clear session storage
-  function clearSession() {
-     sessionStorage.removeItem(SESSION_ID_STORAGE_KEY);
-     sessionStorage.removeItem(MESSAGES_STORAGE_KEY);
-     // initializeSession(); // Optionally start a new session
   }
 
   // Return state and actions
@@ -242,6 +178,5 @@ export const useChatStore = defineStore('chat', () => {
     sendMessage,
     retryFailedMessage, // Expose retry action
     endInterview, // Expose endInterview if needed externally
-    clearSession, // Expose clearSession
   };
 });

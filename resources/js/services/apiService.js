@@ -29,12 +29,13 @@ export async function sendChatMessage(sessionId, chatInput, interviewId) {
 
     return response.data; // Contains { output: { message: string, final_output: any } }
   } catch (error) {
+    // Handle the case where the error is an Axios error and has a status
     if (axios.isAxiosError(error)) {
-      // Format and throw specific message for Axios errors
-      throw new Error(`API Error: ${error.response?.status || 'Network Error'} - ${error.message}`);
-    } else if (error instanceof Error && error.message === 'Received invalid response structure from API.') {
-       // Re-throw the specific validation error message
-       throw error;
+      const statusText = error.response?.status || 'Network Error';
+      throw new Error(`API Error: ${statusText} - ${error.message}`);
+    } else if (error.message === 'Received invalid response structure from API.') {
+      // Re-throw the specific validation error message
+      throw error;
     } else {
       // Throw a generic message for any other unexpected errors
       throw new Error('An unexpected error occurred while processing the API response.');

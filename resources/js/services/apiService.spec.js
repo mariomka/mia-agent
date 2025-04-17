@@ -8,7 +8,8 @@ vi.mock('axios');
 describe('API Service - sendChatMessage', () => {
   const mockSessionId = 'test-session-id';
   const mockChatInput = 'Hello, AI!';
-  const N8N_WEBHOOK_URL = 'http://localhost:5678/webhook/d73aaa78-0487-4818-9364-fdf93f37a45d/chat';
+  const mockInterviewId = 123;
+  const CHAT_URL = 'http://127.0.0.1:8000/chat';
 
   afterEach(() => {
     vi.restoreAllMocks();
@@ -23,26 +24,34 @@ describe('API Service - sendChatMessage', () => {
     };
     axios.post.mockResolvedValue({ data: mockResponseData });
 
-    const result = await sendChatMessage(mockSessionId, mockChatInput);
+    const result = await sendChatMessage(mockSessionId, mockChatInput, mockInterviewId);
 
     expect(axios.post).toHaveBeenCalledTimes(1);
-    expect(axios.post).toHaveBeenCalledWith(N8N_WEBHOOK_URL, {
+    expect(axios.post).toHaveBeenCalledWith(CHAT_URL, {
       sessionId: mockSessionId,
       chatInput: mockChatInput,
+      interviewId: mockInterviewId,
     });
     expect(result).toEqual(mockResponseData);
   });
 
   it('should throw an error if session ID is missing', async () => {
-    await expect(sendChatMessage(null, mockChatInput)).rejects.toThrow(
-      'Session ID and chat input are required.'
+    await expect(sendChatMessage(null, mockChatInput, mockInterviewId)).rejects.toThrow(
+      'Session ID, chat input, and interview ID are required.'
     );
     expect(axios.post).not.toHaveBeenCalled();
   });
 
   it('should throw an error if chat input is missing', async () => {
-    await expect(sendChatMessage(mockSessionId, '')).rejects.toThrow(
-      'Session ID and chat input are required.'
+    await expect(sendChatMessage(mockSessionId, '', mockInterviewId)).rejects.toThrow(
+      'Session ID, chat input, and interview ID are required.'
+    );
+    expect(axios.post).not.toHaveBeenCalled();
+  });
+
+  it('should throw an error if interview ID is missing', async () => {
+    await expect(sendChatMessage(mockSessionId, mockChatInput, null)).rejects.toThrow(
+      'Session ID, chat input, and interview ID are required.'
     );
     expect(axios.post).not.toHaveBeenCalled();
   });
@@ -52,7 +61,7 @@ describe('API Service - sendChatMessage', () => {
     networkError.isAxiosError = true; // Mock Axios error properties
     axios.post.mockRejectedValue(networkError);
 
-    await expect(sendChatMessage(mockSessionId, mockChatInput)).rejects.toThrow(
+    await expect(sendChatMessage(mockSessionId, mockChatInput, mockInterviewId)).rejects.toThrow(
       'An unexpected error occurred while processing the API response.'
     );
     expect(axios.post).toHaveBeenCalledTimes(1);
@@ -64,7 +73,7 @@ describe('API Service - sendChatMessage', () => {
     apiError.response = { status: 500 };
     axios.post.mockRejectedValue(apiError);
 
-    await expect(sendChatMessage(mockSessionId, mockChatInput)).rejects.toThrow(
+    await expect(sendChatMessage(mockSessionId, mockChatInput, mockInterviewId)).rejects.toThrow(
       'An unexpected error occurred while processing the API response.'
     );
     expect(axios.post).toHaveBeenCalledTimes(1);
@@ -74,7 +83,7 @@ describe('API Service - sendChatMessage', () => {
     const invalidResponseData = { message: 'Missing output field' };
     axios.post.mockResolvedValue({ data: invalidResponseData });
 
-    await expect(sendChatMessage(mockSessionId, mockChatInput)).rejects.toThrow(
+    await expect(sendChatMessage(mockSessionId, mockChatInput, mockInterviewId)).rejects.toThrow(
       'Received invalid response structure from API.'
     );
     expect(axios.post).toHaveBeenCalledTimes(1);
@@ -84,7 +93,7 @@ describe('API Service - sendChatMessage', () => {
     const genericError = new Error('Something unexpected happened');
     axios.post.mockRejectedValue(genericError); // Simulate non-Axios error
 
-    await expect(sendChatMessage(mockSessionId, mockChatInput)).rejects.toThrow(
+    await expect(sendChatMessage(mockSessionId, mockChatInput, mockInterviewId)).rejects.toThrow(
       'An unexpected error occurred while processing the API response.'
     );
     expect(axios.post).toHaveBeenCalledTimes(1);

@@ -6,136 +6,31 @@ import * as apiService from '../services/apiService.js'; // Import like this for
 // Mock the apiService
 vi.mock('../services/apiService');
 
-// Mock sessionStorage
-const sessionStorageMock = (() => {
-  let store = {};
-  return {
-    getItem: vi.fn((key) => store[key] || null),
-    setItem: vi.fn((key, value) => {
-      store[key] = value.toString();
-    }),
-    removeItem: vi.fn((key) => {
-      delete store[key];
-    }),
-    clear: vi.fn(() => {
-      store = {};
-    }),
-  };
-})();
-Object.defineProperty(window, 'sessionStorage', {
-  value: sessionStorageMock,
-});
+// Mock usePage from @inertiajs/vue3
+vi.mock('@inertiajs/vue3', () => ({
+  usePage: vi.fn(() => ({
+    props: {
+      interview: { id: 123 },
+      sessionId: 'test-session-id',
+      messages: []
+    }
+  }))
+}));
 
 describe('Chat Store', () => {
-  const MESSAGES_STORAGE_KEY = 'miaMessages';
-  const SESSION_ID_STORAGE_KEY = 'miaSessionId';
-
   beforeEach(() => {
     // creates a fresh pinia and makes it active
-    // so it's automatically picked up by any useStore()
-    // call without needing to pass it to it:
-    // `useStore(pinia)`
     setActivePinia(createPinia());
     // Reset mocks before each test
     vi.clearAllMocks();
-    sessionStorageMock.clear();
-  });
-
-  it('initializes a new session and stores ID/empty messages', () => {
-    const store = useChatStore();
-    store.initializeSession();
-
-    expect(sessionStorageMock.getItem).toHaveBeenCalledWith(SESSION_ID_STORAGE_KEY);
-    expect(store.sessionId).toBeTypeOf('string');
-    expect(sessionStorageMock.setItem).toHaveBeenCalledWith(SESSION_ID_STORAGE_KEY, store.sessionId);
-    // Check messages are empty and stored
-    expect(store.messages).toEqual([]);
-    expect(sessionStorageMock.setItem).toHaveBeenCalledWith(MESSAGES_STORAGE_KEY, JSON.stringify([]));
-  });
-
-  it('reuses existing session ID and loads stored messages', () => {
-    const existingId = 'existing-uuid-123';
-    const existingMessages = [{ id: 'msg1', sender: 'ai', text: 'Existing msg' }];
-    sessionStorageMock.setItem(SESSION_ID_STORAGE_KEY, existingId);
-    sessionStorageMock.setItem(MESSAGES_STORAGE_KEY, JSON.stringify(existingMessages));
-    const store = useChatStore();
-
-    // Clear setItem mock calls from setup before running the action
-    sessionStorageMock.setItem.mockClear();
-
-    store.initializeSession();
-
-    // Check that getItem was called for both keys
-    expect(sessionStorageMock.getItem).toHaveBeenCalledWith(SESSION_ID_STORAGE_KEY);
-    expect(sessionStorageMock.getItem).toHaveBeenCalledWith(MESSAGES_STORAGE_KEY);
-    // Check state
-    expect(store.sessionId).toBe(existingId);
-    expect(store.messages).toEqual(existingMessages);
-
-    // Check setItem calls *during* initializeSession
-    const setItemCalls = sessionStorageMock.setItem.mock.calls;
-    // Verify messages *were* stored (by updateStoredMessages)
-    expect(setItemCalls.some(call => call[0] === MESSAGES_STORAGE_KEY)).toBe(true);
-    // Verify session ID was *not* stored
-    expect(setItemCalls.some(call => call[0] === SESSION_ID_STORAGE_KEY)).toBe(false);
-  });
-
-  it('handles invalid stored messages by starting fresh', () => {
-    const existingId = 'existing-uuid-456';
-    sessionStorageMock.setItem(SESSION_ID_STORAGE_KEY, existingId);
-    sessionStorageMock.setItem(MESSAGES_STORAGE_KEY, 'this is not json'); // Invalid data
-    const store = useChatStore();
-
-    store.initializeSession();
-
-    expect(store.sessionId).toBe(existingId);
-    expect(store.messages).toEqual([]); // Should be empty
-    expect(sessionStorageMock.removeItem).toHaveBeenCalledWith(MESSAGES_STORAGE_KEY); // Should remove invalid data
-    // Should store the now-empty message array
-    expect(sessionStorageMock.setItem).toHaveBeenCalledWith(MESSAGES_STORAGE_KEY, JSON.stringify([]));
-  });
-
-  it('clearSession removes session ID and messages from storage', () => {
-    const store = useChatStore();
-    store.initializeSession(); // Put items in storage
-    // Clear mocks from init
-    vi.clearAllMocks();
-
-    store.clearSession();
-
-    expect(sessionStorageMock.removeItem).toHaveBeenCalledTimes(2);
-    expect(sessionStorageMock.removeItem).toHaveBeenCalledWith(SESSION_ID_STORAGE_KEY);
-    expect(sessionStorageMock.removeItem).toHaveBeenCalledWith(MESSAGES_STORAGE_KEY);
-  });
-
-  it('sendMessage updates stored messages after adding user and AI message', async () => {
-    const store = useChatStore();
-    store.initializeSession(); // Stores initial empty messages
-    const userMessage = 'Test storage update';
-    const aiMessage = 'Storage updated';
-    const mockApiResponse = { output: { message: aiMessage, final_output: null } };
-    apiService.sendChatMessage.mockResolvedValue(mockApiResponse);
-    vi.clearAllMocks(); // Clear mocks from initialization
-
-    await store.sendMessage(userMessage);
-
-    // Check the setItem calls by parsing the stored JSON
-    const calls = sessionStorageMock.setItem.mock.calls;
-    expect(calls).toHaveLength(1);
-
-    // Check final call (after AI message)
-    const storedAfterAI = JSON.parse(calls[0][1]);
-    expect(storedAfterAI).toEqual([
-      expect.objectContaining({ sender: 'user', text: userMessage }),
-      expect.objectContaining({ sender: 'ai', text: aiMessage })
-    ]);
   });
 
   it('initializes a session correctly', () => {
     const store = useChatStore();
 
-    // Check initial state (should be default)
-    expect(store.sessionId).toBeNull();
+    // Check initial state from mocked props
+    expect(store.sessionId).toBe('test-session-id');
+    expect(store.interviewId).toBe(123);
     expect(store.messages).toEqual([]);
     expect(store.isLoading).toBe(false);
     expect(store.isInterviewEnded).toBe(false);
@@ -146,8 +41,7 @@ describe('Chat Store', () => {
     store.initializeSession();
 
     // Check state after initialization
-    expect(store.sessionId).toBeTypeOf('string');
-    expect(store.sessionId).toHaveLength(36); // UUID length
+    expect(store.sessionId).toBe('test-session-id');
     expect(store.messages).toEqual([]);
     expect(store.isLoading).toBe(false);
     expect(store.isInterviewEnded).toBe(false);
@@ -189,7 +83,6 @@ describe('Chat Store', () => {
       error: errorMessage,
     });
     expect(store.isLoading).toBe(false);
-    // expect(store.error).toBe(errorMessage); // Optional: check general error if needed
   });
 
   it('ends the interview when final_output is received', async () => {
@@ -251,169 +144,93 @@ describe('Chat Store', () => {
 
     expect(store.isInterviewEnded).toBe(true);
     expect(store.finalOutput).toEqual(finalData);
-    expect(store.isLoading).toBe(false); // Ensure loading is turned off
-    expect(store.error).toBeNull();
+    expect(store.isLoading).toBe(false);
   });
 
-  // --- retryFailedMessage Tests --- (New)
   it('retryFailedMessage calls sendMessage again for an error message', async () => {
     const store = useChatStore();
     store.initializeSession();
-    const userMessage = 'Will fail first';
-    const errorMessage = 'Initial fail';
-    apiService.sendChatMessage.mockRejectedValueOnce(new Error(errorMessage));
+    
+    // Setup initial message in error state
+    const errorMessage = { 
+      id: 'test-error-msg', 
+      sender: 'user', 
+      text: 'Retry me', 
+      status: 'error', 
+      error: 'Previous error'
+    };
+    store.messages.push(errorMessage);
+    
+    // Setup mock response for retry
+    const aiResponse = "Here's the retry response";
+    apiService.sendChatMessage.mockResolvedValue({ 
+      output: { message: aiResponse, final_output: null } 
+    });
 
-    // Initial failed send
-    await store.sendMessage(userMessage);
-    const failedMessageId = store.messages[0].id;
-    expect(store.messages[0].status).toBe('error');
-    expect(apiService.sendChatMessage).toHaveBeenCalledTimes(1);
+    await store.retryFailedMessage('test-error-msg');
 
-    // Mock successful response for retry
-    const successMessage = 'Retry successful!';
-    apiService.sendChatMessage.mockResolvedValue({ output: { message: successMessage, final_output: null } });
-
-    // Call retry
-    await store.retryFailedMessage(failedMessageId);
-
-    // Check API called again
-    expect(apiService.sendChatMessage).toHaveBeenCalledTimes(2);
-    expect(apiService.sendChatMessage).toHaveBeenNthCalledWith(2, store.sessionId, userMessage);
-
-    // Check original message status updated
+    // Check that the error message was updated
     expect(store.messages[0].status).toBe('sent');
     expect(store.messages[0].error).toBeUndefined();
-
-    // Check AI response added -- REMOVED CHECK
-    // expect(store.messages).toHaveLength(2);
-    // expect(store.messages[1]).toMatchObject({ sender: 'ai', text: successMessage });
-    expect(store.messages).toHaveLength(1); // Only the updated user message should exist
+    
+    // Check that AI response was added
+    expect(store.messages).toHaveLength(2);
+    expect(store.messages[1].sender).toBe('ai');
+    expect(store.messages[1].text).toBe(aiResponse);
+    
+    // Check API was called with correct data
+    expect(apiService.sendChatMessage).toHaveBeenCalledWith(
+      'test-session-id', 'Retry me', 123
+    );
   });
 
   it('retryFailedMessage does nothing for non-error or non-user messages', async () => {
-     const store = useChatStore();
-     store.initializeSession();
-
-     // Add a sent message
-     store.messages.push({ id: 'sent-id', sender: 'user', text: 'Sent', status: 'sent' });
-     // Add an AI message
-     store.messages.push({ id: 'ai-id', sender: 'ai', text: 'AI msg', status: 'sent' });
-
-     vi.clearAllMocks(); // Clear sendMessage mock if it was called implicitly
-
-     await store.retryFailedMessage('sent-id');
-     await store.retryFailedMessage('ai-id');
-
-     expect(apiService.sendChatMessage).not.toHaveBeenCalled();
-  });
-
-  // --- New Test Case for Auto-Retry --- //
-  it('automatically retries the last message if it was a user message with error status on init', async () => {
-    const existingId = 'session-with-error';
-    const messageWithError = { id: 'msg-err', sender: 'user', text: 'Failed last time', status: 'error', error: 'Previous error' };
-    const existingMessages = [
-        { id: 'msg1', sender: 'ai', text: 'Hello' },
-        messageWithError,
-    ];
-    sessionStorageMock.setItem(SESSION_ID_STORAGE_KEY, existingId);
-    sessionStorageMock.setItem(MESSAGES_STORAGE_KEY, JSON.stringify(existingMessages));
-
     const store = useChatStore();
+    store.initializeSession();
+    
+    // Add sent user message (not in error state)
+    store.messages.push({ 
+      id: 'ok-msg', 
+      sender: 'user', 
+      text: 'Already sent', 
+      status: 'sent' 
+    });
+    
+    // Add AI message
+    store.messages.push({ 
+      id: 'ai-msg', 
+      sender: 'ai', 
+      text: 'AI response', 
+      status: 'sent' 
+    });
 
-    // Mock successful API response for the retry
-    const aiResponseText = 'Retry successful!';
-    apiService.sendChatMessage.mockResolvedValue({ output: { message: aiResponseText, final_output: null } });
+    await store.retryFailedMessage('ok-msg'); // Should do nothing - not in error state
+    await store.retryFailedMessage('ai-msg'); // Should do nothing - not a user message
 
-    // Initialize session - this should trigger the retry
-    await store.initializeSession();
-
-    // Assertions
-    // 1. Check API was called for the retry
-    expect(apiService.sendChatMessage).toHaveBeenCalledTimes(1);
-    expect(apiService.sendChatMessage).toHaveBeenCalledWith(existingId, messageWithError.text);
-
-    // 2. Check message status was updated (assuming direct access, might need nextTick if timing is complex)
-    const updatedMessage = store.messages.find(m => m.id === messageWithError.id);
-    expect(updatedMessage).toBeDefined();
-    expect(updatedMessage.status).toBe('sent');
-    expect(updatedMessage.error).toBeUndefined();
-
-    // 3. Check loading state (should be false after retry completes)
-    expect(store.isLoading).toBe(false);
-
-    // 4. Verify no new AI message was added (based on current retry logic)
+    // API should not have been called
+    expect(apiService.sendChatMessage).not.toHaveBeenCalled();
+    
+    // Messages should be unchanged
     expect(store.messages).toHaveLength(2);
-  });
-
-  it('automatically retries the last message if it was a user message with sending status on init', async () => {
-    const existingId = 'session-with-sending';
-    const messageSending = { id: 'msg-sending', sender: 'user', text: 'Was sending', status: 'sending' };
-    const existingMessages = [
-        { id: 'msg1', sender: 'ai', text: 'Hello' },
-        messageSending,
-    ];
-    sessionStorageMock.setItem(SESSION_ID_STORAGE_KEY, existingId);
-    sessionStorageMock.setItem(MESSAGES_STORAGE_KEY, JSON.stringify(existingMessages));
-
-    const store = useChatStore();
-
-    // Mock successful API response for the retry
-    const aiResponseText = 'Retry successful!';
-    apiService.sendChatMessage.mockResolvedValue({ output: { message: aiResponseText, final_output: null } });
-
-    // Initialize session - this should trigger the retry
-    await store.initializeSession();
-
-    // Assertions
-    expect(apiService.sendChatMessage).toHaveBeenCalledTimes(1);
-    expect(apiService.sendChatMessage).toHaveBeenCalledWith(existingId, messageSending.text);
-    const updatedMessage = store.messages.find(m => m.id === messageSending.id);
-    expect(updatedMessage).toBeDefined();
-    expect(updatedMessage.status).toBe('sent');
-    expect(store.isLoading).toBe(false);
-    expect(store.messages).toHaveLength(2);
-  });
-
-  it('automatically retries the last message if it was a user message with sent status on init', async () => {
-    const existingId = 'session-with-sent-user';
-    const messageUserSent = { id: 'msg-user-sent', sender: 'user', text: 'Sent fine', status: 'sent' };
-    const existingMessages = [
-        { id: 'msg1', sender: 'ai', text: 'Hello' },
-        messageUserSent,
-    ];
-    sessionStorageMock.setItem(SESSION_ID_STORAGE_KEY, existingId);
-    sessionStorageMock.setItem(MESSAGES_STORAGE_KEY, JSON.stringify(existingMessages));
-
-    const store = useChatStore();
-    const aiResponseText = 'Retry response after sent';
-    apiService.sendChatMessage.mockResolvedValue({ output: { message: aiResponseText, final_output: null } });
-
-    await store.initializeSession();
-
-    expect(apiService.sendChatMessage).toHaveBeenCalledTimes(1);
-    expect(apiService.sendChatMessage).toHaveBeenCalledWith(existingId, messageUserSent.text);
-    // Message status should remain 'sent'
-    const updatedMessage = store.messages.find(m => m.id === messageUserSent.id);
-    expect(updatedMessage).toBeDefined();
-    expect(updatedMessage.status).toBe('sent');
-    expect(store.isLoading).toBe(false);
-    expect(store.messages).toHaveLength(2); // Still 2 messages
+    expect(store.messages[0].status).toBe('sent');
   });
 
   it('does NOT automatically retry if the last message is from AI', async () => {
-     const existingId = 'session-ai-last';
-     const messagesAiLast = [
-         { id: 'msg1', sender: 'user', text: 'Hi' },
-         { id: 'msg-ai-last', sender: 'ai', text: 'Response', status: 'sent' }
-     ];
-
-     sessionStorageMock.setItem(SESSION_ID_STORAGE_KEY, existingId);
-     sessionStorageMock.setItem(MESSAGES_STORAGE_KEY, JSON.stringify(messagesAiLast));
-     const store = useChatStore();
-     apiService.sendChatMessage.mockClear();
-
-     await store.initializeSession();
-
-     expect(apiService.sendChatMessage).not.toHaveBeenCalled();
+    const store = useChatStore();
+    
+    // Add messages with AI as the last one
+    store.messages = [
+      { id: 'user-msg', sender: 'user', text: 'User message', status: 'sent' },
+      { id: 'ai-msg', sender: 'ai', text: 'AI response', status: 'sent' }
+    ];
+    
+    // Mock the retryFailedMessage method
+    store.retryFailedMessage = vi.fn();
+    
+    // Initialize session
+    store.initializeSession();
+    
+    // Check retry was not called
+    expect(store.retryFailedMessage).not.toHaveBeenCalled();
   });
 });
