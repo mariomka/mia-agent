@@ -64,15 +64,18 @@ export const useChatStore = defineStore('chat', () => {
     try {
       const response = await initializeChat(sessionId.value, interviewId.value);
 
-      // Add AI welcome message
-      if (response.output && response.output.message) {
-        const aiMessage = {
-          id: `${sessionId.value}_${Date.now()}`,
-          sender: 'ai',
-          text: response.output.message,
-          status: 'sent', // AI messages are considered 'sent'
-        };
-        upsertMessage(aiMessage);
+      // Add AI welcome messages
+      if (response.output && response.output.messages && Array.isArray(response.output.messages)) {
+        // Process each message in the array (limited to max 3 messages by the agent)
+        response.output.messages.forEach((messageText, index) => {
+          const aiMessage = {
+            id: `${sessionId.value}_${Date.now()}_${index}`,
+            sender: 'ai',
+            text: messageText,
+            status: 'sent', // AI messages are considered 'sent'
+          };
+          upsertMessage(aiMessage);
+        });
       }
 
       // Check for interview end condition
@@ -110,15 +113,18 @@ export const useChatStore = defineStore('chat', () => {
       // Update user message status to 'sent'
       upsertMessage({ id: userMessageId, status: 'sent' });
 
-      // Add AI response message
-      if (response.output && response.output.message) {
-        const aiMessage = {
-          id: `${sessionId.value}_${Date.now() + 1}`,
-          sender: 'ai',
-          text: response.output.message,
-          status: 'sent', // AI messages are considered 'sent'
-        };
-        upsertMessage(aiMessage);
+      // Add AI response messages
+      if (response.output && response.output.messages && Array.isArray(response.output.messages)) {
+        // Process each message in the array (limited to max 3 messages by the agent)
+        response.output.messages.forEach((messageText, index) => {
+          const aiMessage = {
+            id: `${sessionId.value}_${Date.now()}_${index}`,
+            sender: 'ai',
+            text: messageText,
+            status: 'sent', // AI messages are considered 'sent'
+          };
+          upsertMessage(aiMessage);
+        });
       }
 
       // Check for interview end condition
@@ -161,23 +167,27 @@ export const useChatStore = defineStore('chat', () => {
       // Update original user message status to 'sent'
       upsertMessage({ id: messageId, status: 'sent' });
 
-      // Add AI response message if not already present
-      if (response.output && response.output.message) {
-        // Check if there's already an AI response after this message
+      // Add AI response messages
+      if (response.output && response.output.messages && Array.isArray(response.output.messages)) {
+        // Find current message position
         const messagePosition = findMessageIndexById(messageId);
-        const nextMessage = messagePosition < messages.value.length - 1 ? 
-                           messages.value[messagePosition + 1] : null;
         
-        // Only add if there's no next message or the next one isn't from the AI
-        if (!nextMessage || nextMessage.sender !== 'ai') {
+        // Remove any AI messages that might be after this user message
+        let nextIndex = messagePosition + 1;
+        while (nextIndex < messages.value.length && messages.value[nextIndex].sender === 'ai') {
+          messages.value.splice(nextIndex, 1);
+        }
+        
+        // Add the new AI messages
+        response.output.messages.forEach((messageText, index) => {
           const aiMessage = {
-            id: `${sessionId.value}_${Date.now()}`,
+            id: `${sessionId.value}_${Date.now()}_${index}`,
             sender: 'ai',
-            text: response.output.message,
+            text: messageText,
             status: 'sent',
           };
           upsertMessage(aiMessage);
-        }
+        });
       }
 
       // Check for interview end condition

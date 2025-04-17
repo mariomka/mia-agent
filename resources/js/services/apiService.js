@@ -27,7 +27,12 @@ export async function sendChatMessage(sessionId, chatInput, interviewId) {
       throw new Error('Received invalid response structure from API.');
     }
 
-    return response.data; // Contains { output: { message: string, final_output: any } }
+    // Validate that messages is an array
+    if (response.data.output.messages && !Array.isArray(response.data.output.messages)) {
+      throw new Error('Received invalid messages format from API. Expected an array.');
+    }
+
+    return response.data; // Contains { output: { messages: string[], final_output: any } }
   } catch (error) {
     // Handle the case where the error is an Axios error and has a status
     if (axios.isAxiosError(error)) {
@@ -67,7 +72,12 @@ export async function initializeChat(sessionId, interviewId) {
       throw new Error('Received invalid response structure from API.');
     }
 
-    return response.data; // Contains { output: { message: string, final_output: any } }
+    // Validate that messages is an array
+    if (response.data.output.messages && !Array.isArray(response.data.output.messages)) {
+      throw new Error('Received invalid messages format from API. Expected an array.');
+    }
+
+    return response.data; // Contains { output: { messages: string[], final_output: any } }
   } catch (error) {
     // Handle the case where the error is an Axios error and has a status
     if (axios.isAxiosError(error)) {

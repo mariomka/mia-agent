@@ -20,9 +20,13 @@ class InterviewAgent
             name: 'agent_response',
             description: 'A structured response from the agent',
             properties: [
-                new StringSchema(
-                    'message',
-                    'The message from the agent',
+                new ArraySchema(
+                    name: 'messages',
+                    description: 'An array of messages from the agent to be displayed sequentially',
+                    items: new StringSchema(
+                        name: 'message',
+                        description: 'A single message from the agent',
+                    )
                 ),
                 new ObjectSchema(
                     'final_output',
@@ -63,7 +67,7 @@ class InterviewAgent
                     ],
                 ),
             ],
-            requiredFields: ['message']
+            requiredFields: ['messages']
         );
 
         $messages = $this->loadPreviousMessages($sessionId);
@@ -91,8 +95,13 @@ class InterviewAgent
             ->withMessages($messages)
             ->asStructured();
 
-        // Only save the assistant message to history
-        $messages[] = new AssistantMessage($response->structured['message']);
+        // Save all assistant messages to history
+        if (!empty($response->structured['messages']) && count($response->structured['messages']) > 0) {
+            // Store each message separately in the conversation history
+            foreach ($response->structured['messages'] as $messageContent) {
+                $messages[] = new AssistantMessage($messageContent);
+            }
+        }
 
         $this->saveMessages($sessionId, $messages);
 
@@ -165,6 +174,15 @@ IMPORTANT: You must communicate with the user in {$language}. All your responses
 # Questions
 {$questionsContext}
 
+# Message Structure Guidelines
+- Return your responses in the `messages` array
+- You can split your messages into multiple separate ones for better readability
+- Each message in the array will be displayed to the user sequentially
+- **Limit your response to maximum 2 messages per turn**
+- **Each message must be 300 characters or less**
+- Keep each message focused on a single thought or question
+- For introductions or complex topics, prioritize key information within the character limits
+
 # When starting the interview:
 - Introduce yourself in {$language}: Example in English: "Hi, I'm {$agentName}, an AI that helps the team learn more about our users so we can improve the product." Or in Spanish: "Hola, soy {$agentName}, una IA que ayuda al equipo a aprender más de nuestras personas usuarias para poder mejorar el producto."
 - Briefly explain the purpose in {$language}
@@ -176,7 +194,7 @@ IMPORTANT: You must communicate with the user in {$language}. All your responses
 - When you've covered all required topics, end the interview without asking for additional feedback, you can say to contact with us if they want to add more information
 - Fill in `final_output` with the collected data and send that JSON
 
-Always send the complete object with `"message"` and `"final_output"` even if the latter is empty
+Always send the complete object with `"messages"` and `"final_output"` even if the latter is empty
 
 Pay attention to emotional signals or strong comments, and save relevant verbatim quotes if something stands out.
 PROMPT;
