@@ -12,6 +12,7 @@ const emit = defineEmits(['sendMessage']);
 
 const messageText = ref('');
 const textareaRef = ref(null);
+const MAX_CHARS = 200;
 
 const sendMessage = () => {
   const textToSend = messageText.value.trim();
@@ -27,13 +28,22 @@ const sendMessage = () => {
 const handleKeydown = (event) => {
   if (event.key === 'Enter' && !event.shiftKey) {
     event.preventDefault(); // Prevent default newline behavior
-    sendMessage();
+    if (!props.isLoading) {
+      sendMessage();
+    }
   }
 };
 
 // Basic auto-resize logic for textarea
 const handleInput = (event) => {
   const textarea = event.target;
+  
+  // Limit text to MAX_CHARS characters
+  if (textarea.value.length > MAX_CHARS) {
+    textarea.value = textarea.value.substring(0, MAX_CHARS);
+    messageText.value = textarea.value;
+  }
+  
   textarea.rows = 1; // Reset rows to recalculate height
   const lines = textarea.value.split('\n').length;
   const maxRows = 5; // Maximum number of rows before scrolling
@@ -46,7 +56,6 @@ onMounted(() => {
     textareaRef.value.focus();
   }
 });
-
 </script>
 
 <template>
@@ -59,13 +68,13 @@ onMounted(() => {
         v-model="messageText"
         @keydown="handleKeydown"
         @input="handleInput"
-        :disabled="props.isLoading"
-        class="flex-1 py-2 px-1 bg-transparent border-none rounded-lg focus:outline-none resize-none disabled:placeholder-gray-400 disabled:cursor-not-allowed transition duration-150 ease-in-out text-base"
+        class="flex-1 py-2 px-1 bg-transparent border-none rounded-lg focus:outline-none resize-none transition duration-150 ease-in-out text-base"
         placeholder="Type your message..."
         rows="1"
         style="min-height: 40px; max-height: 120px;"
         aria-label="Chat message input"
         autofocus
+        maxlength="200"
       ></textarea>
       <!-- Icon Button -->
       <button
