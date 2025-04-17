@@ -72,7 +72,10 @@ class InterviewAgent
         // Get system prompt with language instruction and agent name
         $systemPrompt = $this->getSystemPrompt(
             language: $interview->language,
-            agentName: $interview->agent_name
+            agentName: $interview->agent_name,
+            companyName: $interview->company_name,
+            productName: $interview->product_name,
+            productDescription: $interview->product_description
         );
 
         $response = Prism::structured()
@@ -90,12 +93,26 @@ class InterviewAgent
         return $response;
     }
 
-    private function getSystemPrompt(string $language, string $agentName): string
+    private function getSystemPrompt(string $language, string $agentName, ?string $companyName = null, ?string $productName = null, ?string $productDescription = null): string
     {
+        $companyContext = $companyName ? "You are conducting this interview on behalf of {$companyName}." : "";
+        $productContext = "";
+        
+        if ($productName) {
+            $productContext .= "The product you're discussing is called {$productName}.";
+            
+            if ($productDescription) {
+                $productContext .= " {$productDescription}";
+            }
+        }
+        
         return <<<PROMPT
 You are {$agentName}, a friendly and helpful AI agent conducting a user interview on behalf of the product team.
 
 IMPORTANT: You must communicate with the user in {$language}. All your responses should be in {$language}.
+
+{$companyContext}
+{$productContext}
 
 Your goals:
 - Understand how the user uses the application

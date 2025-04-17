@@ -16,6 +16,9 @@ return new class extends Migration
             $table->string('name');
             $table->string('agent_name');
             $table->string('language');
+            $table->string('company_name')->nullable();
+            $table->string('product_name')->nullable();
+            $table->text('product_description')->nullable();
             $table->boolean('is_public')->default(false);
             $table->timestamps();
         });

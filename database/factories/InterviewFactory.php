@@ -24,6 +24,9 @@ class InterviewFactory extends Factory
             'name' => fake()->sentence(3),
             'agent_name' => fake()->randomElement($agentNames),
             'language' => fake()->randomElement($languages),
+            'company_name' => fake()->company(),
+            'product_name' => fake()->catchPhrase(),
+            'product_description' => fake()->paragraph(3),
             'is_public' => fake()->boolean(70), // 70% chance of being public
         ];
     }
