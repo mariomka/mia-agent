@@ -13,7 +13,7 @@ export const useChatStore = defineStore('chat', () => {
   const messages = ref(page.props.messages || []); // Use messages from backend
   const isLoading = ref(false);
   const isInterviewEnded = ref(false);
-  const finalOutput = ref(null);
+  const interviewResult = ref(null);
   const error = ref(null); // General store error
 
   // Actions
@@ -21,7 +21,7 @@ export const useChatStore = defineStore('chat', () => {
     // Reset transient state
     isLoading.value = false;
     isInterviewEnded.value = false;
-    finalOutput.value = null;
+    interviewResult.value = null;
     error.value = null;
     
     // Check if messages are empty or if the last message needs retrying
@@ -78,9 +78,9 @@ export const useChatStore = defineStore('chat', () => {
         });
       }
 
-      // Check for interview end condition
-      if (response.output && response.output.final_output !== null && response.output.final_output !== undefined) {
-        endInterview(response.output.final_output);
+      // Check for interview end condition using the 'finished' flag
+      if (response.output && response.output.finished) {
+        endInterview(response.output.result);
       } else {
         isLoading.value = false;
       }
@@ -127,9 +127,9 @@ export const useChatStore = defineStore('chat', () => {
         });
       }
 
-      // Check for interview end condition
-      if (response.output && response.output.final_output !== null && response.output.final_output !== undefined) {
-        endInterview(response.output.final_output);
+      // Check for interview end condition using the 'finished' flag
+      if (response.output && response.output.finished) {
+        endInterview(response.output.result);
       } else {
         isLoading.value = false;
       }
@@ -190,9 +190,9 @@ export const useChatStore = defineStore('chat', () => {
         });
       }
 
-      // Check for interview end condition
-      if (response.output && response.output.final_output !== null && response.output.final_output !== undefined) {
-        endInterview(response.output.final_output); // This sets isLoading = false
+      // Check for interview end condition using the 'finished' flag
+      if (response.output && response.output.finished) {
+        endInterview(response.output.result); // This sets isLoading = false
       } else {
         isLoading.value = false; // Set loading false if interview didn't end
       }
@@ -205,11 +205,11 @@ export const useChatStore = defineStore('chat', () => {
   }
 
   // Action to end the interview
-  function endInterview(output) {
+  function endInterview(result) {
     isInterviewEnded.value = true;
-    finalOutput.value = output;
+    interviewResult.value = result;
     isLoading.value = false;
-    console.log('Interview ended. Final Output:', output);
+    console.log('Interview ended. Result:', result);
   }
 
   // Return state and actions
@@ -219,7 +219,7 @@ export const useChatStore = defineStore('chat', () => {
     messages,
     isLoading,
     isInterviewEnded,
-    finalOutput,
+    interviewResult,
     error, // Expose error state
     initializeSession,
     sendMessage,

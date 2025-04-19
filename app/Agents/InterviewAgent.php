@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Cache;
 use Prism\Prism\Enums\Provider;
 use Prism\Prism\Prism;
 use Prism\Prism\Schema\ArraySchema;
+use Prism\Prism\Schema\BooleanSchema;
 use Prism\Prism\Schema\ObjectSchema;
 use Prism\Prism\Schema\StringSchema;
 use Prism\Prism\ValueObjects\Messages\AssistantMessage;
@@ -17,6 +18,26 @@ class InterviewAgent
 {
     public function chat(string $sessionId, string $message, Interview $interview): mixed
     {
+        $topicSchema = new ObjectSchema(
+            name: 'topic',
+            description: 'Information collected about a specific topic',
+            properties: [
+                new StringSchema(
+                    name: 'key',
+                    description: 'The unique identifier for the topic (e.g., topic_1, topic_2)'
+                ),
+                new ArraySchema(
+                    name: 'messages',
+                    description: 'Array of messages related to this topic',
+                    items: new StringSchema(
+                        name: 'message',
+                        description: 'A message or piece of information related to the topic'
+                    )
+                )
+            ],
+            requiredFields: ['key', 'messages']
+        );
+
         $schema = new ObjectSchema(
             name: 'agent_response',
             description: 'A structured response from the agent',
@@ -29,46 +50,27 @@ class InterviewAgent
                         description: 'A single message from the agent',
                     )
                 ),
+                new BooleanSchema(
+                    name: 'finished',
+                    description: 'Boolean flag indicating if the interview is finished',
+                ),
                 new ObjectSchema(
-                    'final_output',
-                    'The final output of the agent',
+                    'result',
+                    'The interview results data',
                     properties: [
-                        new ArraySchema(
-                            name: 'app_usage',
-                            description: 'The user usage of the app',
-                            items: new StringSchema(
-                                name: 'usage',
-                                description: 'A usage entry',
-                            )
+                        new StringSchema(
+                            name: 'summary',
+                            description: 'A concise summary of the interview',
                         ),
                         new ArraySchema(
-                            name: 'app_needs',
-                            description: 'The user needs and frustrations',
-                            items: new StringSchema(
-                                name: 'need',
-                                description: 'A need entry',
-                            )
-                        ),
-                        new ArraySchema(
-                            name: 'feature_validation',
-                            description: 'The validation of the new feature',
-                            items: new StringSchema(
-                                name: 'validation',
-                                description: 'A validation entry',
-                            )
-                        ),
-                        new ArraySchema(
-                            name: 'magic_wand_request',
-                            description: 'The magic wand request',
-                            items: new StringSchema(
-                                name: 'request',
-                                description: 'A request entry',
-                            )
-                        ),
+                            name: 'topics',
+                            description: 'Array of topic entries containing information collected during the interview',
+                            items: $topicSchema
+                        )
                     ],
                 ),
             ],
-            requiredFields: ['messages']
+            requiredFields: ['messages', 'finished']
         );
 
         $messages = $this->loadPreviousMessages($sessionId);
