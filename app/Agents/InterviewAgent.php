@@ -89,7 +89,7 @@ class InterviewAgent
         ]);
 
         $response = Prism::structured()
-            ->using(Provider::OpenAI, 'o3-mini')
+            ->using(Provider::OpenAI, 'o4-mini')
             // ->using(Provider::DeepSeek, 'deepseek-chat')
             ->withSchema($schema)
             ->withSystemPrompt($systemPrompt)
