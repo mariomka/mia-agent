@@ -88,7 +88,7 @@ You must output the defined JSON structure, it is the way the system will unders
 3. `result` - Metadata for analysis. Results of the interview. It must include:
   - `summary` - A concise summary of the key points from the interview.
   - `topics` - An array of topic objects, where each topic has:
-    - `key` - The unique identifier for the topic (e.g. "topic_1", "topic_2")
+    - `key` - The unique identifier for the topic (a string of 10 characters, e.g., "a1b2c3d4e5")
     - `messages` - An array of strings containing all relevant messages and information collected about this topic
 When the interview is in progress, the `result` should be an empty object or null.
 When the interview is finished, all fields in `result` should be populated with the gathered information.
@@ -98,17 +98,18 @@ When the interview is finished, all fields in `result` should be populated with 
 These are the topics to cover, they are the key part of the interview.
 You MUST cover ALL the topics.
 
-Every topic is defined by an index, id, type, question and description in this format:
-[index]. [id] ([type]): [question]
-  - [description]
+Every topic is defined by an index, key, approach, question and description.
 
-There are two types of topics, direct and indirect.
+There are two approaches of topics, direct and indirect.
   - Direct topics are questions that you can ask directly to the user.
   - Indirect topics refer to questions that cannot be posed directly to the user. Instead, they must be approached through examples or hypothetical scenarios not related with {{ $targetName }}, rather than through a straightforward inquiry.
 
 These are the topics:
 @foreach($questions as $index => $question)
-{{ $index + 1 }}. {{ $question['topic_id'] }} ({{ $question['approach'] ?? 'direct' }}): {{ $question['question'] }}
-  - {{ $question['description'] }}
+{{ $index + 1 }}. 
+  - key: {{ $question['topic_id'] }}
+  - approach: {{ $question['approach'] ?? 'direct' }}
+  - question: {{ $question['question'] }}
+  - description: {{ $question['description'] }}
 @endforeach
 </topics>

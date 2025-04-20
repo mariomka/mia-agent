@@ -24,7 +24,7 @@ class InterviewAgent
             properties: [
                 new StringSchema(
                     name: 'key',
-                    description: 'The unique identifier for the topic (e.g., topic_1, topic_2)'
+                    description: 'The unique identifier for the topic (a string of 10 characters)'
                 ),
                 new ArraySchema(
                     name: 'messages',
