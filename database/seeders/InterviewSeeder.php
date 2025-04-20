@@ -145,5 +145,78 @@ class InterviewSeeder extends Seeder
                 ]
             ],
         ]);
+
+        // Comprehensive Job Candidate Interview - 10 Questions
+        Interview::factory()->create([
+            'name' => 'NexGen Tech Full-Stack Developer Interview',
+            'language' => 'english',
+            'agent_name' => 'Morgan',
+            'interview_type' => 'Job Interview',
+            'is_public' => true,
+            'target_name' => 'NexGen Technologies',
+            'target_description' => 'NexGen Technologies is a rapidly growing software development company specializing in AI-powered SaaS solutions for healthcare, finance, and education sectors. The company employs a modern tech stack including React, Node.js, Python, and AWS, and values innovation, collaboration, and work-life balance.',
+            'questions' => [
+                [
+                    'topic_key' => Str::random(10),
+                    'question' => 'Could you walk me through your professional background and experience that\'s relevant to this full-stack developer role?',
+                    'description' => 'Assess candidate\'s overall experience and background fit for the position',
+                    'approach' => 'direct'
+                ],
+                [
+                    'topic_key' => Str::random(10),
+                    'question' => 'What aspects of modern web development are you most passionate about?',
+                    'description' => 'Evaluate candidate\'s enthusiasm and areas of technical interest',
+                    'approach' => 'direct'
+                ],
+                [
+                    'topic_key' => Str::random(10),
+                    'question' => 'Describe a technically challenging project you worked on. What problems did you encounter and how did you solve them?',
+                    'description' => 'Assess problem-solving abilities and technical resilience',
+                    'approach' => 'direct'
+                ],
+                [
+                    'topic_key' => Str::random(10),
+                    'question' => 'How do you approach optimizing application performance, and what metrics do you typically focus on?',
+                    'description' => 'Evaluate understanding of performance optimization techniques',
+                    'approach' => 'direct'
+                ],
+                [
+                    'topic_key' => Str::random(10),
+                    'question' => 'How do you stay current with rapidly evolving web technologies and frameworks?',
+                    'description' => 'Assess candidate\'s commitment to continuous learning',
+                    'approach' => 'direct'
+                ],
+                [
+                    'topic_key' => Str::random(10),
+                    'question' => 'Tell me about your experience working with agile development methodologies.',
+                    'description' => 'Evaluate familiarity with agile processes and team collaboration',
+                    'approach' => 'direct'
+                ],
+                [
+                    'topic_key' => Str::random(10),
+                    'question' => 'If you noticed a team member\'s code introducing a potential security vulnerability, how would you address it?',
+                    'description' => 'Assess communication skills and security awareness',
+                    'approach' => 'indirect'
+                ],
+                [
+                    'topic_key' => Str::random(10),
+                    'question' => 'How would you feel about being on call occasionally for production support?',
+                    'description' => 'Gauge willingness to handle responsibilities beyond regular development',
+                    'approach' => 'indirect'
+                ],
+                [
+                    'topic_key' => Str::random(10),
+                    'question' => 'What work environment helps you perform at your best?',
+                    'description' => 'Assess cultural fit and work style preferences',
+                    'approach' => 'direct'
+                ],
+                [
+                    'topic_key' => Str::random(10),
+                    'question' => 'Do you have any questions about NexGen Technologies or the role we haven\'t covered yet?',
+                    'description' => 'Evaluate candidate\'s preparation and genuine interest in the position',
+                    'approach' => 'direct'
+                ]
+            ],
+        ]);
     }
 }
