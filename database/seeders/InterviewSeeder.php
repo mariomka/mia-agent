@@ -126,5 +126,24 @@ class InterviewSeeder extends Seeder
                 ]
             ],
         ]);
+
+        // Quick Test Interview - Single Question
+        Interview::factory()->create([
+            'name' => 'EcoTech Product Validation',
+            'language' => 'english',
+            'agent_name' => 'Alex',
+            'interview_type' => 'Market Research',
+            'is_public' => true,
+            'target_name' => 'SolarPod',
+            'target_description' => 'SolarPod is a portable solar charging device that uses advanced photovoltaic technology to efficiently charge smartphones and small electronics. The product is designed for outdoor enthusiasts, travelers, and environmentally conscious consumers looking for sustainable charging solutions.',
+            'questions' => [
+                [
+                    'topic_key' => Str::random(10),
+                    'question' => 'On a scale of 1-10, how likely would you be to purchase a portable solar charger for $49.99 that can fully charge your smartphone in 2 hours of sunlight?',
+                    'description' => 'Gauge price sensitivity and overall product interest for the core value proposition',
+                    'approach' => 'direct'
+                ]
+            ],
+        ]);
     }
 }
