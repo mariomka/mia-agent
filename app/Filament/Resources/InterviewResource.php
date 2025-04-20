@@ -3,6 +3,7 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\InterviewResource\Pages;
+use App\Http\Controllers\InterviewController;
 use App\Models\Interview;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -278,6 +279,12 @@ class InterviewResource extends Resource
                 Tables\Filters\TernaryFilter::make('is_public'),
             ])
             ->actions([
+                Tables\Actions\Action::make('open_interview')
+                    ->label('Open Interview')
+                    ->icon('heroicon-o-arrow-top-right-on-square')
+                    ->color('success')
+                    ->url(fn (Interview $record) => InterviewController::generateSignedUrl($record))
+                    ->openUrlInNewTab(),
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make(),
             ])
