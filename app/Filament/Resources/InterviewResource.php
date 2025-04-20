@@ -97,7 +97,7 @@ class InterviewResource extends Resource
                                             ->color('gray')
                                     )
                                     ->schema([
-                                        Forms\Components\Hidden::make('topic_id')
+                                        Forms\Components\Hidden::make('topic_key')
                                             ->default(fn () => Str::random(10)),
 
                                         Forms\Components\TextInput::make('question')

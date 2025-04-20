@@ -107,7 +107,7 @@ There are two approaches of topics, direct and indirect.
 These are the topics:
 @foreach($questions as $index => $question)
 {{ $index + 1 }}. 
-  - key: {{ $question['topic_id'] }}
+  - key: {{ $question['topic_key'] }}
   - approach: {{ $question['approach'] ?? 'direct' }}
   - question: {{ $question['question'] }}
   - description: {{ $question['description'] }}
