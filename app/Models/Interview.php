@@ -21,7 +21,7 @@ class Interview extends Model
         'is_public',
         'target_name',
         'target_description',
-        'questions',
+        'topics',
         'interview_type',
     ];
 
@@ -32,6 +32,6 @@ class Interview extends Model
      */
     protected $casts = [
         'is_public' => 'boolean',
-        'questions' => 'array',
+        'topics' => 'array',
     ];
 }

@@ -87,7 +87,7 @@ class InterviewAgent
             'interviewType' => $interview->interview_type,
             'targetName' => $interview->target_name,
             'targetDescription' => $interview->target_description,
-            'questions' => $interview->questions,
+            'topics' => $interview->topics,
         ]);
 
         $response = Prism::structured()

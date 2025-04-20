@@ -19,7 +19,7 @@ return new class extends Migration
             $table->string('language');
             $table->string('target_name')->nullable();
             $table->text('target_description')->nullable();
-            $table->json('questions')->nullable();
+            $table->json('topics')->nullable();
             $table->boolean('is_public')->default(false);
             $table->timestamps();
         });

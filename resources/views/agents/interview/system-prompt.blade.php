@@ -50,7 +50,7 @@ When conducting the interview, follow these guidelines.
 9. If the user avoids answering or you don't understand the answer, rephrase the question and try again with a different approach.
 10. Do not accept vague answers - politely insist on getting specific information before proceeding.
 11. When you detect interesting information that could lead to valuable insights, ask follow-up questions.
-12. Don't move to another topic until you've gathered sufficient information for the current one, when you think there is more to know or until you reach the maximum of 5 questions per topic.
+12. Don't move to another topic until you've gathered sufficient information for the current one, when you think there is more to know or until you reach the maximum of 5 exchanges per topic.
 13. Always take into account previous messages.
 </interview_guidelines>
 
@@ -101,15 +101,15 @@ You MUST cover ALL the topics.
 Every topic is defined by an index, key, approach, question and description.
 
 There are two approaches of topics, direct and indirect.
-  - Direct topics are questions that you can ask directly to the user.
-  - Indirect topics refer to questions that cannot be posed directly to the user. Instead, they must be approached through examples or hypothetical scenarios not related with {{ $targetName }}, rather than through a straightforward inquiry.
+  - Direct topics are topics that you can ask directly to the user.
+  - Indirect topics refer to topics that cannot be posed directly to the user. Instead, they must be approached through examples or hypothetical scenarios not related with {{ $targetName }}, rather than through a straightforward inquiry.
 
 These are the topics:
-@foreach($questions as $index => $question)
+@foreach($topics as $index => $topic)
 {{ $index + 1 }}. 
-  - key: {{ $question['topic_key'] }}
-  - approach: {{ $question['approach'] ?? 'direct' }}
-  - question: {{ $question['question'] }}
-  - description: {{ $question['description'] }}
+  - key: {{ $topic['key'] }}
+  - approach: {{ $topic['approach'] ?? 'direct' }}
+  - topic: {{ $topic['question'] }}
+  - description: {{ $topic['description'] }}
 @endforeach
 </topics>

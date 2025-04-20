@@ -87,7 +87,7 @@ class InterviewResource extends Resource
                                             ),
                                     ]),
 
-                                Forms\Components\Repeater::make('questions')
+                                Forms\Components\Repeater::make('topics')
                                     ->label('Topics')
                                     ->hintAction(
                                         Forms\Components\Actions\Action::make('topics_info')
@@ -97,18 +97,18 @@ class InterviewResource extends Resource
                                             ->color('gray')
                                     )
                                     ->schema([
-                                        Forms\Components\Hidden::make('topic_key')
+                                        Forms\Components\Hidden::make('key')
                                             ->default(fn () => Str::random(10)),
 
                                         Forms\Components\TextInput::make('question')
-                                            ->label('Topic Question')
+                                            ->label('Question')
                                             ->required()
                                             ->maxLength(122)
                                             ->hintAction(
                                                 Forms\Components\Actions\Action::make('question_info')
                                                     ->iconButton()
                                                     ->icon('heroicon-o-information-circle')
-                                                    ->tooltip('The specific question that the AI agent will ask. Make it clear and focused.')
+                                                    ->tooltip('The specific topic that the AI agent will ask about. Make it clear and focused.')
                                                     ->color('gray')
                                             ),
 
@@ -134,7 +134,7 @@ class InterviewResource extends Resource
                                                 Forms\Components\Actions\Action::make('approach_info')
                                                     ->iconButton()
                                                     ->icon('heroicon-o-information-circle')
-                                                    ->tooltip('Direct approach asks questions straightforwardly. Indirect approach uses examples or hypothetical scenarios instead of direct questions.')
+                                                    ->tooltip('Direct approach addresses topics straightforwardly. Indirect approach uses examples or hypothetical scenarios instead of direct questions.')
                                                     ->color('gray')
                                             ),
                                     ])
