@@ -11,6 +11,7 @@ class InterviewSeeder extends Seeder
     {
         // Product/User Interview iDoctus Example
         Interview::factory()->create([
+            'name' => 'iDoctus User Experience Interview',
             'language' => 'spanish',
             'agent_name' => 'Mia',
             'interview_type' => 'User Interview',
@@ -47,6 +48,7 @@ class InterviewSeeder extends Seeder
 
         // Recruitment Interview iDoctus Example
         Interview::factory()->create([
+            'name' => 'iDoctus Developer Screening Interview',
             'language' => 'english',
             'agent_name' => 'Riley',
             'interview_type' => 'Screening Interview',
@@ -83,6 +85,7 @@ class InterviewSeeder extends Seeder
 
         // Customer Feedback Interview Amalfi Restaurant Example
         Interview::factory()->create([
+            'name' => 'Amalfi Restaurant Customer Feedback',
             'language' => 'spanish',
             'agent_name' => 'Lucia',
             'interview_type' => 'Customer Feedback',
