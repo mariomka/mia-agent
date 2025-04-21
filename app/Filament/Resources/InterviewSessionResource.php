@@ -19,7 +19,7 @@ class InterviewSessionResource extends Resource
     protected static ?string $navigationIcon = 'heroicon-o-chat-bubble-left-right';
 
     protected static ?string $navigationLabel = 'Interview Sessions';
-    
+
     protected static ?string $recordTitleAttribute = 'session_id';
 
     public static function getNavigationBadge(): ?string
@@ -36,24 +36,28 @@ class InterviewSessionResource extends Resource
                     ->required()
                     ->searchable()
                     ->preload(),
-                    
+
                 Forms\Components\TextInput::make('session_id')
                     ->required()
                     ->maxLength(255),
-                    
+
                 Forms\Components\Toggle::make('finished')
                     ->required(),
-                    
+
                 Forms\Components\Textarea::make('summary')
                     ->rows(4)
                     ->columnSpanFull(),
-                    
+
                 Forms\Components\Placeholder::make('topics')
                     ->content('Topics are stored in a structured array format and cannot be directly edited here. View the session for details.')
                     ->columnSpanFull(),
-                    
+
                 Forms\Components\Placeholder::make('messages')
                     ->content('Messages data is stored in JSON format and can be viewed in the details page.')
+                    ->columnSpanFull(),
+
+                Forms\Components\Placeholder::make('metadata')
+                    ->content('Query parameters are stored in metadata and can be viewed in the details page.')
                     ->columnSpanFull(),
             ]);
     }
@@ -66,22 +70,22 @@ class InterviewSessionResource extends Resource
                     ->label('Interview')
                     ->sortable()
                     ->searchable(),
-                    
+
                 Tables\Columns\TextColumn::make('session_id')
                     ->searchable(),
-                    
+
                 Tables\Columns\IconColumn::make('finished')
                     ->boolean()
                     ->label('Completed'),
-                    
+
                 Tables\Columns\TextColumn::make('summary')
                     ->limit(50)
                     ->searchable(),
-                    
+
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable(),
-                    
+
                 Tables\Columns\TextColumn::make('updated_at')
                     ->dateTime()
                     ->sortable()
@@ -92,10 +96,10 @@ class InterviewSessionResource extends Resource
                     ->relationship('interview', 'name')
                     ->searchable()
                     ->preload(),
-                    
+
                 Tables\Filters\TernaryFilter::make('finished')
                     ->label('Completed'),
-                    
+
                 Tables\Filters\Filter::make('created_at')
                     ->form([
                         Forms\Components\DatePicker::make('created_from'),
@@ -138,4 +142,4 @@ class InterviewSessionResource extends Resource
             'view' => Pages\ViewInterviewSession::route('/{record}'),
         ];
     }
-} 
+}

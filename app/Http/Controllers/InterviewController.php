@@ -33,7 +33,13 @@ class InterviewController extends Controller
         // Load messages from database
         $session = InterviewSession::firstOrCreate(
             ['session_id' => $sessionId],
-            ['interview_id' => $interview->id, 'messages' => []]
+            [
+                'interview_id' => $interview->id, 
+                'messages' => [],
+                'metadata' => [
+                    'query_parameters' => $request->query()
+                ]
+            ]
         );
         
         $messages = [];

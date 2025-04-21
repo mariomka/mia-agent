@@ -133,6 +133,32 @@ class ViewInterviewSession extends ViewRecord
                                         Infolists\Components\TextEntry::make('updated_at')
                                             ->dateTime(),
                                     ]),
+                                
+                                Infolists\Components\Section::make('Query Parameters')
+                                    ->schema([
+                                        Infolists\Components\TextEntry::make('metadata_formatted')
+                                            ->label('')
+                                            ->state(function ($record) {
+                                                if (!$record->metadata || !is_array($record->metadata) || 
+                                                    !isset($record->metadata['query_parameters']) || 
+                                                    !is_array($record->metadata['query_parameters']) ||
+                                                    count($record->metadata['query_parameters']) === 0) {
+                                                    return '*No query parameters available*';
+                                                }
+                                                
+                                                $markdown = '';
+                                                
+                                                // Display query parameters
+                                                $markdown .= "**Query Parameters:**\n\n";
+                                                foreach ($record->metadata['query_parameters'] as $key => $value) {
+                                                    $markdown .= "- **{$key}**: " . (is_array($value) ? json_encode($value) : $value) . "\n";
+                                                }
+                                                
+                                                return $markdown;
+                                            })
+                                            ->markdown()
+                                            ->columnSpanFull(),
+                                    ]),
                             ])
                             ->columnSpan(1),
                     ]),

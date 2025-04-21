@@ -18,6 +18,7 @@ return new class extends Migration
             $table->json('messages');
             $table->text('summary')->nullable();
             $table->json('topics')->nullable();
+            $table->json('metadata')->nullable();
             $table->boolean('finished')->default(false)->index();
             $table->timestamps();
         });

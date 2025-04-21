@@ -22,6 +22,7 @@ class InterviewSession extends Model
         'summary',
         'topics',
         'finished',
+        'metadata',
     ];
 
     /**
@@ -32,6 +33,7 @@ class InterviewSession extends Model
     protected $casts = [
         'messages' => 'array',
         'topics' => 'array',
+        'metadata' => 'array',
         'finished' => 'boolean',
     ];
 
