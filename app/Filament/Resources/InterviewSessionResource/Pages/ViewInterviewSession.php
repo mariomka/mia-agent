@@ -4,9 +4,9 @@ namespace App\Filament\Resources\InterviewSessionResource\Pages;
 
 use App\Filament\Resources\InterviewSessionResource;
 use Filament\Actions;
-use Filament\Resources\Pages\ViewRecord;
 use Filament\Infolists;
 use Filament\Infolists\Infolist;
+use Filament\Resources\Pages\ViewRecord;
 
 class ViewInterviewSession extends ViewRecord
 {
@@ -42,6 +42,8 @@ class ViewInterviewSession extends ViewRecord
                 Infolists\Components\Section::make('Summary')
                     ->schema([
                         Infolists\Components\TextEntry::make('summary')
+                            ->label('')
+                            ->default('*No summary available*')
                             ->markdown()
                             ->columnSpanFull(),
                     ]),
@@ -49,48 +51,28 @@ class ViewInterviewSession extends ViewRecord
                 Infolists\Components\Section::make('Topics')
                     ->schema([
                         Infolists\Components\TextEntry::make('topics_markdown')
+                            ->label('')
                             ->state(function ($record) {
                                 if (!$record->topics || !is_array($record->topics)) {
                                     return '*No topics data available*';
                                 }
-                                
+
                                 $markdown = '';
-                                
+
                                 foreach ($record->topics as $index => $topic) {
-                                    $markdown .= "## Topic " . ($index + 1) . "\n\n";
-                                    
-                                    if (is_array($topic)) {
-                                        if (isset($topic['key'])) {
-                                            $markdown .= "**Key**: " . $topic['key'] . "\n\n";
-                                        }
-                                        
-                                        if (isset($topic['messages']) && is_array($topic['messages'])) {
-                                            $markdown .= "**Messages**: " . implode(', ', array_map(function($item) {
-                                                return (string)$item;
-                                            }, $topic['messages'])) . "\n\n";
-                                        }
-                                        
-                                        // Add other properties
-                                        foreach ($topic as $key => $value) {
-                                            if ($key !== 'key' && $key !== 'messages') {
-                                                $markdown .= "**" . $key . "**: ";
-                                                
-                                                if (is_array($value)) {
-                                                    $markdown .= json_encode($value);
-                                                } else {
-                                                    $markdown .= (string)$value;
-                                                }
-                                                
-                                                $markdown .= "\n\n";
-                                            }
-                                        }
-                                    } else {
-                                        $markdown .= (string)$topic . "\n\n";
+                                    $markdown .= "### Topic " . ($index + 1) . "\n\n";
+
+                                    if (isset($topic['key'])) {
+                                        $markdown .= "**Key**: " . $topic['key'] . "\n\n";
                                     }
-                                    
-                                    $markdown .= "---\n\n";
+
+                                    if (isset($topic['messages']) && is_array($topic['messages'])) {
+                                        $markdown .= "**Messages**: \n\n";
+                                        $markdown .= implode("\n\n", array_map(fn($item) => (string) $item, $topic['messages']));
+                                        $markdown .= "\n\n";
+                                    }
                                 }
-                                
+
                                 return $markdown;
                             })
                             ->markdown()
@@ -104,25 +86,23 @@ class ViewInterviewSession extends ViewRecord
                                 if (!$record->messages || !is_array($record->messages)) {
                                     return '*No messages available*';
                                 }
-                                
+
                                 $markdown = '';
-                                
+
                                 foreach ($record->messages as $index => $message) {
                                     $type = is_array($message) && isset($message['type']) ? $message['type'] : 'unknown';
                                     $content = is_array($message) && isset($message['content']) ? $message['content'] : json_encode($message);
-                                    
-                                    $icon = match($type) {
+
+                                    $icon = match ($type) {
                                         'user' => '👤',
                                         'assistant' => '🤖',
-                                        'system' => '⚙️',
                                         default => '❓',
                                     };
-                                    
-                                    $markdown .= "### " . $icon . " " . ucfirst($type) . "\n\n";
-                                    $markdown .= (string)$content . "\n\n";
-                                    $markdown .= "---\n\n";
+
+                                    $markdown .= "**" . $icon . " " . ucfirst($type) . "**\n\n";
+                                    $markdown .= (string) $content . "\n\n";
                                 }
-                                
+
                                 return $markdown;
                             })
                             ->markdown()
