@@ -61,8 +61,7 @@ onMounted(() => {
 <template>
   <!-- Remove padding, adjust background and border -->
   <div class="bg-white border-t border-gray-100">
-    <!-- Use flex and items-center for alignment, add padding/spacing -->
-    <div class="flex items-center space-x-1 px-2 py-1 max-w-[800px] mx-auto">
+    <div class="flex items-center space-x-1 max-w-[800px] mx-auto px-4 py-1 sm:px-6">
       <textarea
         ref="textareaRef"
         v-model="messageText"
