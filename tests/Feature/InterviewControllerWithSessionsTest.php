@@ -123,4 +123,93 @@ class InterviewControllerWithSessionsTest extends TestCase
             $page->where('messages.1.text', 'Hi there!')
         );
     }
+    
+    /** @test */
+    public function it_passes_session_finished_status_to_frontend()
+    {
+        // Create a public interview
+        $interview = Interview::factory()->create([
+            'is_public' => true,
+        ]);
+        
+        // Generate the expected session key
+        $interviewSessionKey = "interview_{$interview->id}_session_id";
+        
+        // Create a session ID for this specific interview
+        $sessionId = "interview_{$interview->id}_" . Str::uuid()->toString();
+        session([$interviewSessionKey => $sessionId]);
+        
+        // Create a summary and topics for the completed session
+        $summary = "This is a summary of the interview.";
+        $topics = [
+            ['key' => 'topic1', 'messages' => ['Info 1', 'Info 2']],
+            ['key' => 'topic2', 'messages' => ['Info 3']]
+        ];
+        
+        // Create a finished session in the database
+        InterviewSession::create([
+            'interview_id' => $interview->id,
+            'session_id' => $sessionId,
+            'messages' => [
+                ['type' => 'user', 'content' => 'Hello'],
+                ['type' => 'assistant', 'content' => 'Hi there!'],
+                ['type' => 'user', 'content' => 'Goodbye'],
+                ['type' => 'assistant', 'content' => 'Thank you for completing this interview.'],
+            ],
+            'summary' => $summary,
+            'topics' => $topics,
+            'finished' => true
+        ]);
+        
+        // Visit the interview page
+        $response = $this->get(route('interview', $interview));
+        
+        // Assert response is successful
+        $response->assertStatus(200);
+        
+        // Check that the session finished status is passed to the frontend
+        $response->assertInertia(fn ($page) => 
+            $page->has('is_finished') && 
+            $page->where('is_finished', true)
+        );
+    }
+    
+    /** @test */
+    public function it_passes_unfinished_status_for_ongoing_sessions()
+    {
+        // Create a public interview
+        $interview = Interview::factory()->create([
+            'is_public' => true,
+        ]);
+        
+        // Generate the expected session key
+        $interviewSessionKey = "interview_{$interview->id}_session_id";
+        
+        // Create a session ID for this specific interview
+        $sessionId = "interview_{$interview->id}_" . Str::uuid()->toString();
+        session([$interviewSessionKey => $sessionId]);
+        
+        // Create an ongoing session in the database
+        InterviewSession::create([
+            'interview_id' => $interview->id,
+            'session_id' => $sessionId,
+            'messages' => [
+                ['type' => 'user', 'content' => 'Hello'],
+                ['type' => 'assistant', 'content' => 'Hi there!'],
+            ],
+            'finished' => false
+        ]);
+        
+        // Visit the interview page
+        $response = $this->get(route('interview', $interview));
+        
+        // Assert response is successful
+        $response->assertStatus(200);
+        
+        // Check that the session finished status is false
+        $response->assertInertia(fn ($page) => 
+            $page->has('is_finished') && 
+            $page->where('is_finished', false)
+        );
+    }
 }
