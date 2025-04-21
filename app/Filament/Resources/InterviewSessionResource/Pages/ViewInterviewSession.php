@@ -46,68 +46,70 @@ class ViewInterviewSession extends ViewRecord
                             ->columnSpanFull(),
                     ]),
 
-                Infolists\Components\Section::make('Topics Data')
+                Infolists\Components\Section::make('Topics')
                     ->schema([
-                        Infolists\Components\TextEntry::make('topics_data')
+                        Infolists\Components\TextEntry::make('topics_markdown')
                             ->state(function ($record) {
                                 if (!$record->topics || !is_array($record->topics)) {
-                                    return '<div class="text-gray-500">No topics data available</div>';
+                                    return '*No topics data available*';
                                 }
                                 
-                                $html = '<div class="space-y-4">';
+                                $markdown = '';
                                 
                                 foreach ($record->topics as $index => $topic) {
-                                    $html .= '<div class="p-4 bg-gray-100 rounded-lg">';
-                                    $html .= '<h3 class="text-lg font-bold">Topic ' . ($index + 1) . '</h3>';
-                                    
-                                    $html .= '<dl class="grid grid-cols-2 gap-2 mt-2">';
+                                    $markdown .= "## Topic " . ($index + 1) . "\n\n";
                                     
                                     if (is_array($topic)) {
+                                        if (isset($topic['key'])) {
+                                            $markdown .= "**Key**: " . $topic['key'] . "\n\n";
+                                        }
+                                        
+                                        if (isset($topic['messages']) && is_array($topic['messages'])) {
+                                            $markdown .= "**Messages**: " . implode(', ', array_map(function($item) {
+                                                return (string)$item;
+                                            }, $topic['messages'])) . "\n\n";
+                                        }
+                                        
+                                        // Add other properties
                                         foreach ($topic as $key => $value) {
-                                            $html .= '<dt class="font-medium">' . htmlspecialchars($key) . ':</dt>';
-                                            
-                                            if (is_array($value)) {
-                                                $html .= '<dd>' . htmlspecialchars(json_encode($value)) . '</dd>';
-                                            } else {
-                                                $html .= '<dd>' . htmlspecialchars((string)$value) . '</dd>';
+                                            if ($key !== 'key' && $key !== 'messages') {
+                                                $markdown .= "**" . $key . "**: ";
+                                                
+                                                if (is_array($value)) {
+                                                    $markdown .= json_encode($value);
+                                                } else {
+                                                    $markdown .= (string)$value;
+                                                }
+                                                
+                                                $markdown .= "\n\n";
                                             }
                                         }
                                     } else {
-                                        $html .= '<dd>' . htmlspecialchars((string)$topic) . '</dd>';
+                                        $markdown .= (string)$topic . "\n\n";
                                     }
                                     
-                                    $html .= '</dl>';
-                                    $html .= '</div>';
+                                    $markdown .= "---\n\n";
                                 }
                                 
-                                $html .= '</div>';
-                                
-                                return $html;
+                                return $markdown;
                             })
-                            ->html()
+                            ->markdown()
                             ->columnSpanFull(),
                     ]),
 
                 Infolists\Components\Section::make('Conversation')
                     ->schema([
-                        Infolists\Components\TextEntry::make('messages_data')
+                        Infolists\Components\TextEntry::make('messages_markdown')
                             ->state(function ($record) {
                                 if (!$record->messages || !is_array($record->messages)) {
-                                    return '<div class="text-gray-500">No messages available</div>';
+                                    return '*No messages available*';
                                 }
                                 
-                                $html = '<div class="space-y-4">';
+                                $markdown = '';
                                 
                                 foreach ($record->messages as $index => $message) {
                                     $type = is_array($message) && isset($message['type']) ? $message['type'] : 'unknown';
                                     $content = is_array($message) && isset($message['content']) ? $message['content'] : json_encode($message);
-                                    
-                                    $bgColor = match($type) {
-                                        'user' => 'bg-blue-100',
-                                        'assistant' => 'bg-green-100',
-                                        'system' => 'bg-yellow-100',
-                                        default => 'bg-gray-100',
-                                    };
                                     
                                     $icon = match($type) {
                                         'user' => '👤',
@@ -116,17 +118,14 @@ class ViewInterviewSession extends ViewRecord
                                         default => '❓',
                                     };
                                     
-                                    $html .= '<div class="p-4 rounded-lg ' . $bgColor . '">';
-                                    $html .= '<div class="font-bold">' . $icon . ' ' . ucfirst($type) . '</div>';
-                                    $html .= '<div class="mt-2 whitespace-pre-wrap">' . htmlspecialchars((string)$content) . '</div>';
-                                    $html .= '</div>';
+                                    $markdown .= "### " . $icon . " " . ucfirst($type) . "\n\n";
+                                    $markdown .= (string)$content . "\n\n";
+                                    $markdown .= "---\n\n";
                                 }
                                 
-                                $html .= '</div>';
-                                
-                                return $html;
+                                return $markdown;
                             })
-                            ->html()
+                            ->markdown()
                             ->columnSpanFull(),
                     ]),
             ]);
