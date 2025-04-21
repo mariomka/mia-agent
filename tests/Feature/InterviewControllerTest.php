@@ -15,10 +15,8 @@ use function Pest\Laravel\assertDatabaseHas;
 uses(RefreshDatabase::class);
 
 it('generates session id when none exists', function () {
-    // Create a public interview
-    $interview = Interview::factory()->create([
-        'is_public' => true,
-    ]);
+    // Create an interview
+    $interview = Interview::factory()->create();
 
     // Visit the interview page
     $response = get(route('interview', $interview));
@@ -51,10 +49,8 @@ it('generates session id when none exists', function () {
 });
 
 it('reuses existing session id', function () {
-    // Create a public interview
-    $interview = Interview::factory()->create([
-        'is_public' => true,
-    ]);
+    // Create an interview
+    $interview = Interview::factory()->create();
     
     // Generate the expected session key
     $interviewSessionKey = "interview_{$interview->id}_session_id";
@@ -79,31 +75,9 @@ it('reuses existing session id', function () {
     );
 });
 
-it('requires valid signature for non public interviews', function () {
-    // Create a private interview
-    $interview = Interview::factory()->create([
-        'is_public' => false,
-    ]);
-
-    // Visit the interview page without a signature
-    $response = get(route('interview', $interview));
-
-    // Assert response is forbidden
-    $response->assertStatus(403);
-    
-    // Visit with a signed URL
-    $signedUrl = \App\Http\Controllers\InterviewController::generateSignedUrl($interview);
-    $response = get($signedUrl);
-    
-    // Assert response is successful
-    $response->assertStatus(200);
-});
-
 it('creates new interview session if not exists', function () {
-    // Create a public interview
-    $interview = Interview::factory()->create([
-        'is_public' => true,
-    ]);
+    // Create an interview
+    $interview = Interview::factory()->create();
     
     // Visit the interview page
     $response = get(route('interview', $interview));
@@ -126,10 +100,8 @@ it('creates new interview session if not exists', function () {
 });
 
 it('reuses existing interview session with database', function () {
-    // Create a public interview
-    $interview = Interview::factory()->create([
-        'is_public' => true,
-    ]);
+    // Create an interview
+    $interview = Interview::factory()->create();
     
     // Generate the expected session key
     $interviewSessionKey = "interview_{$interview->id}_session_id";
@@ -166,10 +138,8 @@ it('reuses existing interview session with database', function () {
 });
 
 it('loads messages from session', function () {
-    // Create a public interview
-    $interview = Interview::factory()->create([
-        'is_public' => true,
-    ]);
+    // Create an interview
+    $interview = Interview::factory()->create();
     
     // Generate the expected session key
     $interviewSessionKey = "interview_{$interview->id}_session_id";
@@ -206,10 +176,8 @@ it('loads messages from session', function () {
 });
 
 it('passes session finished status to frontend', function () {
-    // Create a public interview
-    $interview = Interview::factory()->create([
-        'is_public' => true,
-    ]);
+    // Create an interview
+    $interview = Interview::factory()->create();
     
     // Generate the expected session key
     $interviewSessionKey = "interview_{$interview->id}_session_id";
@@ -254,10 +222,8 @@ it('passes session finished status to frontend', function () {
 });
 
 it('passes unfinished status for ongoing sessions', function () {
-    // Create a public interview
-    $interview = Interview::factory()->create([
-        'is_public' => true,
-    ]);
+    // Create an interview
+    $interview = Interview::factory()->create();
     
     // Generate the expected session key
     $interviewSessionKey = "interview_{$interview->id}_session_id";

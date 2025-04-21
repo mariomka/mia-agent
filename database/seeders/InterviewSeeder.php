@@ -17,7 +17,6 @@ class InterviewSeeder extends Seeder
             'language' => 'spanish',
             'agent_name' => 'Mia',
             'interview_type' => 'User Interview',
-            'is_public' => true,
             'target_name' => 'iDoctus',
             'target_description' => 'iDoctus es una app para medicos. Información médica precisa, al servicio de sus decisiones clínicas. Consulte medicamentos e interacciones en una app diseñada para apoyar su práctica médica con información científica actualizada.',
             'topics' => [
@@ -55,7 +54,6 @@ class InterviewSeeder extends Seeder
             'language' => 'english',
             'agent_name' => 'Riley',
             'interview_type' => 'Screening Interview',
-            'is_public' => true,
             'target_name' => 'iDoctus',
             'target_description' => 'iDoctus es una app para medicos. Información médica precisa, al servicio de sus decisiones clínicas. Consulte medicamentos e interacciones en una app diseñada para apoyar su práctica médica con información científica actualizada.',
             'topics' => [
@@ -93,7 +91,6 @@ class InterviewSeeder extends Seeder
             'language' => 'spanish',
             'agent_name' => 'Lucia',
             'interview_type' => 'Customer Feedback',
-            'is_public' => true,
             'target_name' => 'Amalfi',
             'target_description' => 'Amalfi is an authentic Italian restaurant specializing in pasta fresca and traditional pizza. The restaurant offers a warm ambiance with a focus on fresh, locally-sourced ingredients and classic Italian recipes from the Amalfi Coast region.',
             'topics' => [
@@ -137,7 +134,6 @@ class InterviewSeeder extends Seeder
             'language' => 'english',
             'agent_name' => 'Alex',
             'interview_type' => 'Market Research',
-            'is_public' => true,
             'target_name' => 'SolarPod',
             'target_description' => 'SolarPod is a portable solar charging device that uses advanced photovoltaic technology to efficiently charge smartphones and small electronics. The product is designed for outdoor enthusiasts, travelers, and environmentally conscious consumers looking for sustainable charging solutions.',
             'topics' => [
@@ -157,7 +153,6 @@ class InterviewSeeder extends Seeder
             'language' => 'english',
             'agent_name' => 'Morgan',
             'interview_type' => 'Job Interview',
-            'is_public' => true,
             'target_name' => 'NexGen Technologies',
             'target_description' => 'NexGen Technologies is a rapidly growing software development company specializing in AI-powered SaaS solutions for healthcare, finance, and education sectors. The company employs a modern tech stack including React, Node.js, Python, and AWS, and values innovation, collaboration, and work-life balance.',
             'topics' => [

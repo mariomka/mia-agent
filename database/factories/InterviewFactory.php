@@ -53,9 +53,8 @@ class InterviewFactory extends Factory
                     'question' => 'If you could wave a magic wand and change anything about the product, what would it be?',
                     'description' => 'Uncover aspirational needs and unexpected opportunities',
                     'approach' => 'indirect'
-                ]
+                ],
             ],
-            'is_public' => fake()->boolean(70), // 70% chance of being public
         ];
     }
 }

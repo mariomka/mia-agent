@@ -5,20 +5,14 @@ namespace App\Http\Controllers;
 use App\Models\Interview;
 use App\Models\InterviewSession;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Inertia\Response;
-use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
 class InterviewController extends Controller
 {
     public function __invoke(Request $request, Interview $interview): Response
     {
-        if (!$interview->is_public && !$request->hasValidSignature()) {
-            abort(SymfonyResponse::HTTP_FORBIDDEN, 'Invalid or expired interview link');
-        }
-
         // Generate a session key that's tied to the specific interview
         $interviewSessionKey = "interview_{$interview->id}_session_id";
 
@@ -62,7 +56,6 @@ class InterviewController extends Controller
                 'company_name' => $interview->company_name,
                 'product_name' => $interview->product_name,
                 'product_description' => $interview->product_description,
-                'is_public' => $interview->is_public,
             ],
             'sessionId' => $sessionId,
             'messages' => $messages,
@@ -72,10 +65,6 @@ class InterviewController extends Controller
 
     public static function generateSignedUrl(Interview $interview): string
     {
-        if ($interview->is_public) {
-            return route('interview', $interview);
-        }
-
-        return URL::signedRoute('interview', ['interview' => $interview]);
+        return route('interview', $interview);
     }
 }

@@ -187,22 +187,6 @@ class InterviewResource extends Resource
                                                     ->tooltip('The language the AI agent will use throughout the conversation.')
                                                     ->color('gray')
                                             ),
-
-                                        Forms\Components\ToggleButtons::make('is_public')
-                                            ->required()
-                                            ->inline()
-                                            ->options([
-                                                1 => 'Public',
-                                                0 => 'Private',
-                                            ])
-                                            ->default(1)
-                                            ->hintAction(
-                                                Forms\Components\Actions\Action::make('is_public_info')
-                                                    ->iconButton()
-                                                    ->icon('heroicon-o-information-circle')
-                                                    ->tooltip('Public interviews are accessible to all users, private ones are restricted by signed links.')
-                                                    ->color('gray')
-                                            ),
                                     ]),
 
                                 Forms\Components\Section::make('Timestamps')
@@ -240,10 +224,6 @@ class InterviewResource extends Resource
                     ->searchable()
                     ->sortable(),
 
-                Tables\Columns\IconColumn::make('is_public')
-                    ->boolean()
-                    ->sortable(),
-
                 Tables\Columns\TextColumn::make('target_name')
                     ->searchable()
                     ->sortable(),
@@ -275,8 +255,6 @@ class InterviewResource extends Resource
                         'italian' => 'Italian',
                         'portuguese' => 'Portuguese',
                     ]),
-
-                Tables\Filters\TernaryFilter::make('is_public'),
             ])
             ->actions([
                 Tables\Actions\Action::make('open_interview')

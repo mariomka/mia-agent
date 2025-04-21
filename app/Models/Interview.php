@@ -20,7 +20,6 @@ class Interview extends Model
         'name',
         'agent_name',
         'language',
-        'is_public',
         'target_name',
         'target_description',
         'topics',
@@ -33,7 +32,6 @@ class Interview extends Model
      * @var array<string, string>
      */
     protected $casts = [
-        'is_public' => 'boolean',
         'topics' => 'array',
     ];
 
