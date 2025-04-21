@@ -31,6 +31,10 @@ class SessionsRelationManager extends RelationManager
                 Forms\Components\Textarea::make('summary')
                     ->rows(4)
                     ->columnSpanFull(),
+                    
+                Forms\Components\Placeholder::make('topics')
+                    ->content('Topics are stored in a structured array format and cannot be directly edited here.')
+                    ->columnSpanFull(),
             ]);
     }
 

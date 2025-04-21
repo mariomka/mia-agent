@@ -48,7 +48,8 @@ class InterviewSessionResource extends Resource
                     ->rows(4)
                     ->columnSpanFull(),
                     
-                Forms\Components\KeyValue::make('topics')
+                Forms\Components\Placeholder::make('topics')
+                    ->content('Topics are stored in a structured array format and cannot be directly edited here. View the session for details.')
                     ->columnSpanFull(),
                     
                 Forms\Components\Placeholder::make('messages')

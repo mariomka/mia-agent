@@ -44,7 +44,42 @@ class ViewInterviewSession extends ViewRecord
                         Infolists\Components\TextEntry::make('summary')
                             ->markdown()
                             ->columnSpanFull(),
-                        Infolists\Components\KeyValueEntry::make('topics')
+                        Infolists\Components\TextEntry::make('topics')
+                            ->formatStateUsing(function ($state) {
+                                if (!is_array($state)) {
+                                    return 'No topics data';
+                                }
+                                
+                                $formattedOutput = '';
+                                
+                                foreach ($state as $index => $topic) {
+                                    $formattedOutput .= "**Topic " . ($index + 1) . "**\n\n";
+                                    
+                                    if (isset($topic['key'])) {
+                                        $formattedOutput .= "Key: " . $topic['key'] . "\n\n";
+                                    }
+                                    
+                                    if (isset($topic['messages']) && is_array($topic['messages'])) {
+                                        $formattedOutput .= "Messages: " . implode(', ', $topic['messages']) . "\n\n";
+                                    }
+                                    
+                                    // Add other properties if they exist
+                                    foreach ($topic as $key => $value) {
+                                        if ($key !== 'key' && $key !== 'messages') {
+                                            if (is_array($value)) {
+                                                $formattedOutput .= $key . ": " . json_encode($value) . "\n\n";
+                                            } else {
+                                                $formattedOutput .= $key . ": " . $value . "\n\n";
+                                            }
+                                        }
+                                    }
+                                    
+                                    $formattedOutput .= "---\n\n";
+                                }
+                                
+                                return $formattedOutput;
+                            })
+                            ->markdown()
                             ->columnSpanFull(),
                     ]),
 
@@ -67,4 +102,4 @@ class ViewInterviewSession extends ViewRecord
                     ]),
             ]);
     }
-} 
+}
