@@ -88,13 +88,19 @@ class ViewInterviewSession extends ViewRecord
                         Infolists\Components\RepeatableEntry::make('messages')
                             ->schema([
                                 Infolists\Components\TextEntry::make('role')
-                                    ->color(fn (array $state): string => match ($state) {
+                                    ->color(fn ($state): string => match (is_array($state) ? json_encode($state) : $state) {
                                         'user' => 'info',
                                         'system' => 'warning',
                                         'assistant' => 'success',
                                         default => 'gray',
                                     }),
                                 Infolists\Components\TextEntry::make('content')
+                                    ->formatStateUsing(function ($state) {
+                                        if (is_array($state)) {
+                                            return json_encode($state, JSON_PRETTY_PRINT);
+                                        }
+                                        return $state;
+                                    })
                                     ->markdown()
                                     ->columnSpanFull(),
                             ])
