@@ -3,8 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Interview;
+use App\Models\InterviewSession;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
@@ -30,11 +30,14 @@ class InterviewController extends Controller
             $request->session()->put($interviewSessionKey, $sessionId);
         }
 
-        // Load messages from cache
-        $cachedMessages = Cache::get("chat_{$sessionId}", []);
+        // Load messages from database
+        $session = InterviewSession::firstOrCreate(
+            ['session_id' => $sessionId],
+            ['interview_id' => $interview->id, 'messages' => []]
+        );
+        
         $messages = [];
-
-        foreach ($cachedMessages as $index => $message) {
+        foreach ($session->messages as $index => $message) {
             $messages[] = [
                 'id' => "{$sessionId}_{$index}",
                 'sender' => $message['type'] === 'assistant' ? 'ai' : $message['type'],

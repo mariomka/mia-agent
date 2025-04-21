@@ -1,0 +1,45 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+
+class InterviewSession extends Model
+{
+    use HasUuids;
+
+    /**
+     * The attributes that are mass assignable.
+     *
+     * @var array<int, string>
+     */
+    protected $fillable = [
+        'interview_id',
+        'session_id',
+        'messages',
+        'summary',
+        'topics',
+        'finished',
+    ];
+
+    /**
+     * The attributes that should be cast.
+     *
+     * @var array<string, string>
+     */
+    protected $casts = [
+        'messages' => 'array',
+        'topics' => 'array',
+        'finished' => 'boolean',
+    ];
+
+    /**
+     * Get the interview that owns the session.
+     */
+    public function interview(): BelongsTo
+    {
+        return $this->belongsTo(Interview::class);
+    }
+}

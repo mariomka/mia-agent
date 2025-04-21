@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Interview extends Model
 {
@@ -34,4 +35,12 @@ class Interview extends Model
         'is_public' => 'boolean',
         'topics' => 'array',
     ];
+
+    /**
+     * Get the sessions for the interview.
+     */
+    public function sessions(): HasMany
+    {
+        return $this->hasMany(InterviewSession::class);
+    }
 }

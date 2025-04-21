@@ -3,7 +3,9 @@
 namespace App\Agents;
 
 use App\Models\Interview;
+use App\Models\InterviewSession;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Str;
 use Prism\Prism\Enums\Provider;
 use Prism\Prism\Prism;
 use Prism\Prism\Schema\ArraySchema;
@@ -117,6 +119,15 @@ class InterviewAgent
 
         $this->saveMessages($sessionId, $messages);
 
+        // Check if the interview is finished and update the session record
+        if (!empty($output['finished']) && $output['finished'] === true) {
+            $this->finalizeSession(
+                $sessionId, 
+                $output['result']['summary'] ?? null, 
+                $output['result']['topics'] ?? null
+            );
+        }
+
         // Create a new response object to return if needed
         // or just return the original response - the filtered messages have been saved to history
         return $output;
@@ -124,7 +135,8 @@ class InterviewAgent
 
     private function loadPreviousMessages(string $sessionId): array
     {
-        $cachedMessages = Cache::get("chat_{$sessionId}", []);
+        $session = InterviewSession::where('session_id', $sessionId)->first();
+        $cachedMessages = $session ? $session->messages : [];
         $messages = [];
 
         foreach ($cachedMessages as $message) {
@@ -151,6 +163,27 @@ class InterviewAgent
             ];
         }
 
-        Cache::put("chat_{$sessionId}", $cachedMessages, now()->addMinutes(30));
+        // Extract interview_id from sessionId (format: "interview_{interview_id}_{uuid}")
+        preg_match('/interview_(\d+)_/', $sessionId, $matches);
+        $interviewId = $matches[1] ?? null;
+
+        if ($interviewId) {
+            InterviewSession::updateOrCreate(
+                ['session_id' => $sessionId],
+                [
+                    'interview_id' => $interviewId,
+                    'messages' => $cachedMessages,
+                ]
+            );
+        }
+    }
+
+    private function finalizeSession(string $sessionId, ?string $summary, ?array $topics): void
+    {
+        InterviewSession::where('session_id', $sessionId)->update([
+            'summary' => $summary,
+            'topics' => $topics,
+            'finished' => true,
+        ]);
     }
 }
