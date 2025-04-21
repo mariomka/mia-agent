@@ -172,8 +172,8 @@ class InterviewAgent
         $outputPrice = Config::get("prism.pricing.{$provider}.{$model}.output", 0);
         
         // Calculate cost (convert from per million tokens to per token)
-        $inputCost = ($inputTokens / 1000000) * $inputPrice;
-        $outputCost = ($outputTokens / 1000000) * $outputPrice;
+        $inputCost = ($inputTokens / 1_000_000) * $inputPrice;
+        $outputCost = ($outputTokens / 1_000_000) * $outputPrice;
         
         return $inputCost + $outputCost;
     }
