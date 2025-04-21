@@ -299,7 +299,7 @@ class InterviewResource extends Resource
     public static function getRelations(): array
     {
         return [
-            //
+            \App\Filament\Resources\InterviewResource\RelationManagers\SessionsRelationManager::class,
         ];
     }
 
