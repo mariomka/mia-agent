@@ -27,39 +27,9 @@ class InterviewSessionResource extends Resource
         return static::getModel()::count();
     }
 
-    public static function form(Form $form): Form
+    public static function canCreate(): bool
     {
-        return $form
-            ->schema([
-                Forms\Components\Select::make('interview_id')
-                    ->relationship('interview', 'name')
-                    ->required()
-                    ->searchable()
-                    ->preload(),
-
-                Forms\Components\TextInput::make('session_id')
-                    ->required()
-                    ->maxLength(255),
-
-                Forms\Components\Toggle::make('finished')
-                    ->required(),
-
-                Forms\Components\Textarea::make('summary')
-                    ->rows(4)
-                    ->columnSpanFull(),
-
-                Forms\Components\Placeholder::make('topics')
-                    ->content('Topics are stored in a structured array format and cannot be directly edited here. View the session for details.')
-                    ->columnSpanFull(),
-
-                Forms\Components\Placeholder::make('messages')
-                    ->content('Messages data is stored in JSON format and can be viewed in the details page.')
-                    ->columnSpanFull(),
-
-                Forms\Components\Placeholder::make('metadata')
-                    ->content('Query parameters are stored in metadata and can be viewed in the details page.')
-                    ->columnSpanFull(),
-            ]);
+        return false; // Disable creation of interview sessions in the admin panel
     }
 
     public static function table(Table $table): Table
@@ -138,7 +108,6 @@ class InterviewSessionResource extends Resource
     {
         return [
             'index' => Pages\ListInterviewSessions::route('/'),
-            'create' => Pages\CreateInterviewSession::route('/create'),
             'view' => Pages\ViewInterviewSession::route('/{record}'),
         ];
     }

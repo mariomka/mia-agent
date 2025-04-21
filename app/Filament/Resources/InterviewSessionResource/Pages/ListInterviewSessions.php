@@ -13,7 +13,7 @@ class ListInterviewSessions extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make(),
+            // Remove CreateAction as interview sessions are created automatically via the website
         ];
     }
 } 
