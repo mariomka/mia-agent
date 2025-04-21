@@ -219,4 +219,141 @@ class ChatControllerWithSessionsTest extends TestCase
         $this->assertEquals('assistant', $session->messages[0]['type']);
         $this->assertEquals('Welcome to the interview!', $session->messages[0]['content']);
     }
+
+    /** @test */
+    public function it_rejects_new_messages_for_finished_interviews()
+    {
+        // Create a fake interview
+        $interview = Interview::factory()->create();
+        
+        // Create a session ID
+        $sessionId = "interview_{$interview->id}_" . Str::uuid()->toString();
+        
+        // Create a pre-existing finished session in the database
+        InterviewSession::create([
+            'interview_id' => $interview->id,
+            'session_id' => $sessionId,
+            'messages' => [
+                ['type' => 'user', 'content' => 'Hello'],
+                ['type' => 'assistant', 'content' => 'Hi there!'],
+                ['type' => 'user', 'content' => 'Goodbye'],
+                ['type' => 'assistant', 'content' => 'Thank you for completing this interview.'],
+            ],
+            'summary' => 'This is a summary',
+            'topics' => [['key' => 'topic1', 'messages' => ['Info 1']]],
+            'finished' => true
+        ]);
+        
+        // Send a new message to a finished interview
+        $response = $this->postJson('/chat', [
+            'sessionId' => $sessionId,
+            'interviewId' => $interview->id,
+            'chatInput' => 'One more question...'
+        ]);
+        
+        // Assert response has error status
+        $response->assertStatus(400);
+        
+        // Assert it contains an error message about the interview being completed
+        $response->assertJson([
+            'error' => 'This interview is already completed and cannot accept new messages.',
+            'finished' => true
+        ]);
+        
+        // Mock should not be called as we return early
+        $this->mock(InterviewAgent::class, function ($mock) {
+            $mock->shouldNotReceive('chat');
+        });
+    }
+    
+    /** @test */
+    public function it_filters_out_result_data_from_response()
+    {
+        // Create a fake interview
+        $interview = Interview::factory()->create();
+        
+        // Create a session ID
+        $sessionId = "interview_{$interview->id}_" . Str::uuid()->toString();
+        
+        // Create test summary and topics that should be filtered out
+        $summary = "This is the interview summary.";
+        $topics = [
+            ['key' => 'topic1', 'messages' => ['Info 1', 'Info 2']]
+        ];
+        
+        // Mock the InterviewAgent to return result data
+        $this->mock(InterviewAgent::class, function ($mock) use ($summary, $topics) {
+            $mock->shouldReceive('chat')
+                ->andReturn([
+                    'messages' => ['Thank you for your answers.'],
+                    'finished' => true,
+                    'result' => [
+                        'summary' => $summary,
+                        'topics' => $topics
+                    ]
+                ]);
+        });
+        
+        // Send a message via the chat endpoint
+        $response = $this->postJson('/chat', [
+            'sessionId' => $sessionId,
+            'interviewId' => $interview->id,
+            'chatInput' => 'My final answer'
+        ]);
+        
+        // Assert response is successful
+        $response->assertStatus(200);
+        
+        // Assert that the response contains messages and finished but not result
+        $response->assertJson([
+            'output' => [
+                'messages' => ['Thank you for your answers.'],
+                'finished' => true
+            ]
+        ]);
+        
+        // Assert that the result data is not included
+        $responseData = $response->json();
+        $this->assertArrayNotHasKey('result', $responseData['output']);
+    }
+
+    /** @test */
+    public function it_rejects_initialization_for_finished_interviews()
+    {
+        // Create a fake interview
+        $interview = Interview::factory()->create();
+        
+        // Create a session ID
+        $sessionId = "interview_{$interview->id}_" . Str::uuid()->toString();
+        
+        // Create a pre-existing finished session in the database
+        InterviewSession::create([
+            'interview_id' => $interview->id,
+            'session_id' => $sessionId,
+            'messages' => [
+                ['type' => 'user', 'content' => 'Hello'],
+                ['type' => 'assistant', 'content' => 'Hi there!'],
+                ['type' => 'user', 'content' => 'Goodbye'],
+                ['type' => 'assistant', 'content' => 'Thank you for completing this interview.'],
+            ],
+            'summary' => 'This is a summary',
+            'topics' => [['key' => 'topic1', 'messages' => ['Info 1']]],
+            'finished' => true
+        ]);
+        
+        // Send initialization request for a finished interview
+        $response = $this->postJson('/chat', [
+            'sessionId' => $sessionId,
+            'interviewId' => $interview->id
+        ]);
+        
+        // Assert response has error status
+        $response->assertStatus(400);
+        
+        // Assert it contains an error message about the interview being completed
+        $response->assertJson([
+            'error' => 'This interview is already completed and cannot accept new messages.',
+            'finished' => true
+        ]);
+    }
 }

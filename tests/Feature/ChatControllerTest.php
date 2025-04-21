@@ -46,6 +46,10 @@ it('sends messages with session id', function () {
                 'finished' => false
             ]
         ]);
+        
+    // Assert that there's no result data
+    $responseData = $response->json();
+    $this->assertArrayNotHasKey('result', $responseData['output']);
 });
 
 it('stores messages in cache', function () {
