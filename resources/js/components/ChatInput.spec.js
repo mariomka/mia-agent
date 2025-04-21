@@ -78,7 +78,7 @@ describe('ChatInput.vue', () => {
     expect(textarea.element.value).toContain('\n'); // Check if newline was added
   });
 
-  it('disables input and button when isLoading is true', async () => {
+  it('disables button but not input when isLoading is true', async () => {
     const wrapper = mount(ChatInput, { props: { isLoading: false } });
     const textarea = wrapper.find('textarea');
     const button = wrapper.find('button');
@@ -90,7 +90,9 @@ describe('ChatInput.vue', () => {
     // Set isLoading to true
     await wrapper.setProps({ isLoading: true });
 
-    expect(textarea.attributes('disabled')).toBeDefined();
+    // Textarea should NOT be disabled (this is the change you requested)
+    expect(textarea.attributes('disabled')).toBeUndefined();
+    // Button should still be disabled
     expect(button.attributes('disabled')).toBeDefined();
     // Check that the send icon SVG is still present
     expect(button.find('svg').exists()).toBe(true);
