@@ -12,6 +12,7 @@ class InterviewSeeder extends Seeder
     {
         // Product/User Interview iDoctus Example
         Interview::factory()->create([
+            'id' => 'cc9b9356-ecfa-489e-b8b8-8a965e252a49',
             'name' => 'iDoctus User Experience Interview',
             'language' => 'spanish',
             'agent_name' => 'Mia',
@@ -49,6 +50,7 @@ class InterviewSeeder extends Seeder
 
         // Recruitment Interview iDoctus Example
         Interview::factory()->create([
+            'id' => 'd0e5cd66-e508-4c41-b714-f252dd5fac04',
             'name' => 'iDoctus Developer Screening Interview',
             'language' => 'english',
             'agent_name' => 'Riley',
@@ -86,6 +88,7 @@ class InterviewSeeder extends Seeder
 
         // Customer Feedback Interview Amalfi Restaurant Example
         Interview::factory()->create([
+            'id' => 'c62ac6b1-4bab-4ab4-b8b5-d47d371c82ba',
             'name' => 'Amalfi Restaurant Customer Feedback',
             'language' => 'spanish',
             'agent_name' => 'Lucia',
@@ -129,6 +132,7 @@ class InterviewSeeder extends Seeder
 
         // Quick Test Interview - Single Question
         Interview::factory()->create([
+            'id' => 'a5ac4f1e-77db-4934-b016-3d0cbb2f3218',
             'name' => 'EcoTech Product Validation',
             'language' => 'english',
             'agent_name' => 'Alex',
@@ -148,6 +152,7 @@ class InterviewSeeder extends Seeder
 
         // Comprehensive Job Candidate Interview - 10 Questions
         Interview::factory()->create([
+            'id' => 'fc6ca0c2-730e-4c79-b446-1b6c0c05ca09',
             'name' => 'NexGen Tech Full-Stack Developer Interview',
             'language' => 'english',
             'agent_name' => 'Morgan',

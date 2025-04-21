@@ -13,7 +13,8 @@ return new class extends Migration
     {
         Schema::create('interview_sessions', function (Blueprint $table) {
             $table->uuid('id')->primary();
-            $table->foreignId('interview_id')->constrained()->onDelete('cascade');
+            $table->uuid('interview_id');
+            $table->foreign('interview_id')->references('id')->on('interviews')->onDelete('cascade');
             $table->string('session_id')->unique()->index();
             $table->json('messages');
             $table->text('summary')->nullable();

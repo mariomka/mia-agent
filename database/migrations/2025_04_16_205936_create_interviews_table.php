@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('interviews', function (Blueprint $table) {
-            $table->id();
+            $table->uuid('id')->primary();
             $table->string('name');
             $table->string('interview_type')->nullable();
             $table->string('agent_name');
