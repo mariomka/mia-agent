@@ -14,6 +14,7 @@ test('it has the correct fillable attributes', function () {
         'summary',
         'topics',
         'finished',
+        'metadata',
     ];
 
     $interviewSession = new InterviewSession();
