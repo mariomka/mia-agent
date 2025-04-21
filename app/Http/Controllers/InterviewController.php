@@ -46,6 +46,7 @@ class InterviewController extends Controller
             ];
         }
 
+        // Send is_finished directly instead of wrapping it in a session object
         return Inertia::render('Chat', [
             'interview' => [
                 'id' => $interview->id,
@@ -58,7 +59,8 @@ class InterviewController extends Controller
                 'is_public' => $interview->is_public,
             ],
             'sessionId' => $sessionId,
-            'messages' => $messages
+            'messages' => $messages,
+            'is_finished' => (bool) $session->finished
         ]);
     }
 

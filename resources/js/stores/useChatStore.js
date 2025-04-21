@@ -12,17 +12,20 @@ export const useChatStore = defineStore('chat', () => {
   // State
   const messages = ref(page.props.messages || []); // Use messages from backend
   const isLoading = ref(false);
-  const isInterviewEnded = ref(false);
-  const interviewResult = ref(null);
+  const isInterviewEnded = ref(page.props.is_finished || false); // Get finished status directly
   const error = ref(null); // General store error
 
   // Actions
   function initializeSession() {
     // Reset transient state
     isLoading.value = false;
-    isInterviewEnded.value = false;
-    interviewResult.value = null;
     error.value = null;
+    
+    // If session is already marked as finished in the backend, don't initialize
+    if (isInterviewEnded.value) {
+      console.log('Session is already finished, skipping initialization');
+      return;
+    }
     
     // Check if messages are empty or if the last message needs retrying
     if (messages.value.length === 0) {
@@ -64,6 +67,13 @@ export const useChatStore = defineStore('chat', () => {
     try {
       const response = await initializeChat(sessionId.value, interviewId.value);
 
+      // Handle error response (finished interview)
+      if (response.error && response.finished) {
+        endInterview();
+        error.value = response.error;
+        return;
+      }
+
       // Add AI welcome messages
       if (response.output && response.output.messages && Array.isArray(response.output.messages)) {
         // Process each message in the array (limited to max 3 messages by the agent)
@@ -80,14 +90,19 @@ export const useChatStore = defineStore('chat', () => {
 
       // Check for interview end condition using the 'finished' flag
       if (response.output && response.output.finished) {
-        endInterview(response.output.result);
+        endInterview();
       } else {
         isLoading.value = false;
       }
     } catch (err) {
-      const errorMessage = err.message || 'An unknown error occurred during initialization.';
-      error.value = errorMessage;
-      isLoading.value = false;
+      // Check if error is due to finished session
+      if (err.response?.status === 400 && err.response?.data?.finished) {
+        endInterview();
+      } else {
+        const errorMessage = err.message || 'An unknown error occurred during initialization.';
+        error.value = errorMessage;
+        isLoading.value = false;
+      }
     }
   }
 
@@ -110,6 +125,13 @@ export const useChatStore = defineStore('chat', () => {
     try {
       const response = await sendChatMessage(sessionId.value, messageText, interviewId.value);
 
+      // Handle error response (finished interview)
+      if (response.error && response.finished) {
+        upsertMessage({ id: userMessageId, status: 'error', error: response.error });
+        endInterview();
+        return;
+      }
+
       // Update user message status to 'sent'
       upsertMessage({ id: userMessageId, status: 'sent' });
 
@@ -129,20 +151,28 @@ export const useChatStore = defineStore('chat', () => {
 
       // Check for interview end condition using the 'finished' flag
       if (response.output && response.output.finished) {
-        endInterview(response.output.result);
+        endInterview();
       } else {
         isLoading.value = false;
       }
     } catch (err) {
-      const errorMessage = err.message || 'An unknown error occurred.';
-      // Update user message status to 'error'
-      upsertMessage({ id: userMessageId, status: 'error', error: errorMessage });
-      isLoading.value = false;
+      // Check if error is due to finished session
+      if (err.response?.status === 400 && err.response?.data?.finished) {
+        upsertMessage({ id: userMessageId, status: 'error', error: err.response.data.error });
+        endInterview();
+      } else {
+        const errorMessage = err.message || 'An unknown error occurred.';
+        // Update user message status to 'error'
+        upsertMessage({ id: userMessageId, status: 'error', error: errorMessage });
+        isLoading.value = false;
+      }
     }
   }
 
   // Action to retry sending a failed message
   async function retryFailedMessage(messageId, options = {}) {
+    if (isInterviewEnded.value) return; // Don't retry if interview is ended
+    
     const { force = false } = options;
     const messageIndex = findMessageIndexById(messageId);
     if (messageIndex === -1) {
@@ -163,6 +193,13 @@ export const useChatStore = defineStore('chat', () => {
 
     try {
       const response = await sendChatMessage(sessionId.value, messageToRetry.text, interviewId.value);
+
+      // Handle error response (finished interview)
+      if (response.error && response.finished) {
+        upsertMessage({ id: messageId, status: 'error', error: response.error });
+        endInterview();
+        return;
+      }
 
       // Update original user message status to 'sent'
       upsertMessage({ id: messageId, status: 'sent' });
@@ -192,24 +229,28 @@ export const useChatStore = defineStore('chat', () => {
 
       // Check for interview end condition using the 'finished' flag
       if (response.output && response.output.finished) {
-        endInterview(response.output.result); // This sets isLoading = false
+        endInterview();
       } else {
         isLoading.value = false; // Set loading false if interview didn't end
       }
     } catch (err) {
-      const errorMessage = err.message || 'An unknown error occurred during retry.';
-      // Update original user message status back to 'error' with new error message
-      upsertMessage({ id: messageId, status: 'error', error: errorMessage });
-      isLoading.value = false;
+      // Check if error is due to finished session
+      if (err.response?.status === 400 && err.response?.data?.finished) {
+        upsertMessage({ id: messageId, status: 'error', error: err.response.data.error });
+        endInterview();
+      } else {
+        const errorMessage = err.message || 'An unknown error occurred during retry.';
+        // Update original user message status back to 'error' with new error message
+        upsertMessage({ id: messageId, status: 'error', error: errorMessage });
+        isLoading.value = false;
+      }
     }
   }
 
   // Action to end the interview
-  function endInterview(result) {
+  function endInterview() {
     isInterviewEnded.value = true;
-    interviewResult.value = result;
     isLoading.value = false;
-    console.log('Interview ended. Result:', result);
   }
 
   // Return state and actions
@@ -219,7 +260,6 @@ export const useChatStore = defineStore('chat', () => {
     messages,
     isLoading,
     isInterviewEnded,
-    interviewResult,
     error, // Expose error state
     initializeSession,
     sendMessage,
