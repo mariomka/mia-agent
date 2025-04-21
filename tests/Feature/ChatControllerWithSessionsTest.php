@@ -122,11 +122,13 @@ class ChatControllerWithSessionsTest extends TestCase
                     );
                     
                     // Then finalize with summary and topics (simulating finalizeSession)
-                    InterviewSession::where('session_id', $actualSessionId)->update([
-                        'summary' => $summary,
-                        'topics' => $topics,
-                        'finished' => true,
-                    ]);
+                    InterviewSession::where('session_id', $actualSessionId)
+                        ->where('interview_id', $interview->id)
+                        ->update([
+                            'summary' => $summary,
+                            'topics' => $topics,
+                            'finished' => true,
+                        ]);
                     
                     return [
                         'messages' => ['Thank you for completing this interview.'],

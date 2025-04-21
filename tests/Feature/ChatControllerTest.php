@@ -25,11 +25,9 @@ it('sends messages with session id', function () {
     $this->mock(InterviewAgent::class, function ($mock) {
         $mock->shouldReceive('chat')
             ->once()
-            ->andReturn((object)[
-                'structured' => [
-                    'message' => 'Test response',
-                    'final_output' => null
-                ]
+            ->andReturn([
+                'messages' => ['Test response'],
+                'finished' => false
             ]);
     });
 
@@ -44,8 +42,8 @@ it('sends messages with session id', function () {
     $response->assertStatus(200)
         ->assertJson([
             'output' => [
-                'message' => 'Test response',
-                'final_output' => null
+                'messages' => ['Test response'],
+                'finished' => false
             ]
         ]);
 });
@@ -76,11 +74,9 @@ it('stores messages in cache', function () {
                 
                 Cache::put("chat_{$actualSessionId}", $messages, now()->addMinutes(30));
                 
-                return (object)[
-                    'structured' => [
-                        'message' => 'Mock response',
-                        'final_output' => null
-                    ]
+                return [
+                    'messages' => ['Mock response'],
+                    'finished' => false
                 ];
             });
     });
@@ -109,11 +105,9 @@ it('requires session id and interview id', function () {
     // Mock the InterviewAgent to avoid calling the real instance
     $this->mock(InterviewAgent::class, function ($mock) {
         // We don't expect this to be called, but mocking it prevents errors
-        $mock->shouldReceive('chat')->andReturn((object)[
-            'structured' => [
-                'message' => 'Test response',
-                'final_output' => null
-            ]
+        $mock->shouldReceive('chat')->andReturn([
+            'messages' => ['Test response'],
+            'finished' => false
         ]);
     });
 
@@ -150,11 +144,9 @@ it('can initialize chat with empty message', function () {
     $this->mock(InterviewAgent::class, function ($mock) {
         $mock->shouldReceive('chat')
             ->once()
-            ->andReturn((object)[
-                'structured' => [
-                    'message' => 'Welcome message',
-                    'final_output' => null
-                ]
+            ->andReturn([
+                'messages' => ['Welcome message'],
+                'finished' => false
             ]);
     });
 
@@ -168,8 +160,8 @@ it('can initialize chat with empty message', function () {
     $response->assertStatus(200)
         ->assertJson([
             'output' => [
-                'message' => 'Welcome message',
-                'final_output' => null
+                'messages' => ['Welcome message'],
+                'finished' => false
             ]
         ]);
 });
@@ -201,11 +193,9 @@ it('does not store empty user messages in history', function () {
                 
                 Cache::put("chat_{$actualSessionId}", $messages, now()->addMinutes(30));
                 
-                return (object)[
-                    'structured' => [
-                        'message' => 'Welcome response',
-                        'final_output' => null
-                    ]
+                return [
+                    'messages' => ['Welcome response'],
+                    'finished' => false
                 ];
             });
     });

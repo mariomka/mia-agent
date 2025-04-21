@@ -117,14 +117,15 @@ class InterviewAgent
             }
         }
 
-        $this->saveMessages($sessionId, $messages);
+        $this->saveMessages($sessionId, $messages, $interview);
 
         // Check if the interview is finished and update the session record
         if (!empty($output['finished']) && $output['finished'] === true) {
             $this->finalizeSession(
                 $sessionId, 
                 $output['result']['summary'] ?? null, 
-                $output['result']['topics'] ?? null
+                $output['result']['topics'] ?? null,
+                $interview
             );
         }
 
@@ -149,7 +150,7 @@ class InterviewAgent
         return $messages;
     }
 
-    private function saveMessages(string $sessionId, array $messages): void
+    private function saveMessages(string $sessionId, array $messages, Interview $interview): void
     {
         $cachedMessages = [];
 
@@ -163,27 +164,23 @@ class InterviewAgent
             ];
         }
 
-        // Extract interview_id from sessionId (format: "interview_{interview_id}_{uuid}")
-        preg_match('/interview_(\d+)_/', $sessionId, $matches);
-        $interviewId = $matches[1] ?? null;
-
-        if ($interviewId) {
-            InterviewSession::updateOrCreate(
-                ['session_id' => $sessionId],
-                [
-                    'interview_id' => $interviewId,
-                    'messages' => $cachedMessages,
-                ]
-            );
-        }
+        InterviewSession::updateOrCreate(
+            ['session_id' => $sessionId],
+            [
+                'interview_id' => $interview->id,
+                'messages' => $cachedMessages,
+            ]
+        );
     }
 
-    private function finalizeSession(string $sessionId, ?string $summary, ?array $topics): void
+    private function finalizeSession(string $sessionId, ?string $summary, ?array $topics, Interview $interview): void
     {
-        InterviewSession::where('session_id', $sessionId)->update([
-            'summary' => $summary,
-            'topics' => $topics,
-            'finished' => true,
-        ]);
+        InterviewSession::where('session_id', $sessionId)
+            ->where('interview_id', $interview->id)
+            ->update([
+                'summary' => $summary,
+                'topics' => $topics,
+                'finished' => true,
+            ]);
     }
 }
