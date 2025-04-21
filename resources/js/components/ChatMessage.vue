@@ -53,7 +53,7 @@ const handleRetry = () => {
   <div :class="['flex w-full', alignmentClass]">
     <!-- Updated bubble styling with custom rounded corners -->
     <div :class="[
-        'py-2 px-4 text-lg sm:text-xl max-w-xs sm:max-w-md lg:max-w-lg relative group',
+        'py-2 px-4 text-lg sm:text-xl max-w-xs sm:max-w-md lg:max-w-lg relative group rounded-lg',
         bubbleClass,
         roundedCornerClass
       ]"

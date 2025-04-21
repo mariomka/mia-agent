@@ -96,7 +96,8 @@ describe('Chat Store', () => {
     
     const userMessage = 'Hello there';
     const aiMessage = 'General Kenobi!';
-    const mockApiResponse = { output: { message: aiMessage, final_output: null } };
+    // Use messages array format for compatibility with updated code
+    const mockApiResponse = { output: { messages: [aiMessage], final_output: null } };
     apiService.sendChatMessage.mockResolvedValue(mockApiResponse);
 
     await store.sendMessage(userMessage);
@@ -148,8 +149,9 @@ describe('Chat Store', () => {
     
     const userMessage = 'Final question';
     const finalData = { summary: 'Interview complete' };
+    const aiResponse = 'Thanks for your time.';
     const mockApiResponse = {
-      output: { message: 'Thanks for your time.', final_output: finalData },
+      output: { messages: [aiResponse], final_output: finalData },
     };
     apiService.sendChatMessage.mockResolvedValue(mockApiResponse);
 
@@ -157,7 +159,7 @@ describe('Chat Store', () => {
 
     // Check messages
     expect(store.messages).toHaveLength(3); // Welcome + User + AI
-    expect(store.messages[2].text).toBe(mockApiResponse.output.message);
+    expect(store.messages[2].text).toBe(aiResponse);
 
     // Check final state
     expect(store.isLoading).toBe(false); // Loading should be off

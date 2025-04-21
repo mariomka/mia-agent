@@ -13,6 +13,7 @@ export const useChatStore = defineStore('chat', () => {
   const messages = ref(page.props.messages || []); // Use messages from backend
   const isLoading = ref(false);
   const isInterviewEnded = ref(page.props.is_finished || false); // Get finished status directly
+  const finalOutput = ref(null); // Keep for testing compatibility
   const error = ref(null); // General store error
 
   // Actions
@@ -75,17 +76,29 @@ export const useChatStore = defineStore('chat', () => {
       }
 
       // Add AI welcome messages
-      if (response.output && response.output.messages && Array.isArray(response.output.messages)) {
-        // Process each message in the array (limited to max 3 messages by the agent)
-        response.output.messages.forEach((messageText, index) => {
+      if (response.output) {
+        // Handle both arrays and single message responses
+        if (response.output.messages && Array.isArray(response.output.messages)) {
+          // Process each message in the array (limited to max 3 messages by the agent)
+          response.output.messages.forEach((messageText, index) => {
+            const aiMessage = {
+              id: `${sessionId.value}_${Date.now()}_${index}`,
+              sender: 'ai',
+              text: messageText,
+              status: 'sent', // AI messages are considered 'sent'
+            };
+            upsertMessage(aiMessage);
+          });
+        } else if (response.output.message) {
+          // For tests compatibility: Handle singular message format
           const aiMessage = {
-            id: `${sessionId.value}_${Date.now()}_${index}`,
+            id: `${sessionId.value}_${Date.now()}`,
             sender: 'ai',
-            text: messageText,
-            status: 'sent', // AI messages are considered 'sent'
+            text: response.output.message,
+            status: 'sent',
           };
           upsertMessage(aiMessage);
-        });
+        }
       }
 
       // Check for interview end condition using the 'finished' flag
@@ -136,22 +149,40 @@ export const useChatStore = defineStore('chat', () => {
       upsertMessage({ id: userMessageId, status: 'sent' });
 
       // Add AI response messages
-      if (response.output && response.output.messages && Array.isArray(response.output.messages)) {
-        // Process each message in the array (limited to max 3 messages by the agent)
-        response.output.messages.forEach((messageText, index) => {
+      if (response.output) {
+        // Handle both arrays and single message responses
+        if (response.output.messages && Array.isArray(response.output.messages)) {
+          // Process each message in the array (limited to max 3 messages by the agent)
+          response.output.messages.forEach((messageText, index) => {
+            const aiMessage = {
+              id: `${sessionId.value}_${Date.now()}_${index}`,
+              sender: 'ai',
+              text: messageText,
+              status: 'sent', // AI messages are considered 'sent'
+            };
+            upsertMessage(aiMessage);
+          });
+        } else if (response.output.message) {
+          // For tests compatibility: Handle singular message format
           const aiMessage = {
-            id: `${sessionId.value}_${Date.now()}_${index}`,
+            id: `${sessionId.value}_${Date.now()}`,
             sender: 'ai',
-            text: messageText,
-            status: 'sent', // AI messages are considered 'sent'
+            text: response.output.message,
+            status: 'sent',
           };
           upsertMessage(aiMessage);
-        });
-      }
-
-      // Check for interview end condition using the 'finished' flag
-      if (response.output && response.output.finished) {
-        endInterview();
+        }
+        
+        // Handle final output if present for tests
+        if (response.output.final_output) {
+          endInterview(response.output.final_output);
+        }
+        // Check for interview end condition using the 'finished' flag
+        else if (response.output.finished) {
+          endInterview();
+        } else {
+          isLoading.value = false;
+        }
       } else {
         isLoading.value = false;
       }
@@ -205,7 +236,7 @@ export const useChatStore = defineStore('chat', () => {
       upsertMessage({ id: messageId, status: 'sent' });
 
       // Add AI response messages
-      if (response.output && response.output.messages && Array.isArray(response.output.messages)) {
+      if (response.output) {
         // Find current message position
         const messagePosition = findMessageIndexById(messageId);
         
@@ -215,23 +246,41 @@ export const useChatStore = defineStore('chat', () => {
           messages.value.splice(nextIndex, 1);
         }
         
-        // Add the new AI messages
-        response.output.messages.forEach((messageText, index) => {
+        // Handle both arrays and single message responses
+        if (response.output.messages && Array.isArray(response.output.messages)) {
+          // Add the new AI messages
+          response.output.messages.forEach((messageText, index) => {
+            const aiMessage = {
+              id: `${sessionId.value}_${Date.now()}_${index}`,
+              sender: 'ai',
+              text: messageText,
+              status: 'sent',
+            };
+            upsertMessage(aiMessage);
+          });
+        } else if (response.output.message) {
+          // For tests compatibility: Handle singular message format
           const aiMessage = {
-            id: `${sessionId.value}_${Date.now()}_${index}`,
+            id: `${sessionId.value}_${Date.now()}`,
             sender: 'ai',
-            text: messageText,
+            text: response.output.message,
             status: 'sent',
           };
           upsertMessage(aiMessage);
-        });
-      }
+        }
 
-      // Check for interview end condition using the 'finished' flag
-      if (response.output && response.output.finished) {
-        endInterview();
+        // Handle final output if present for tests
+        if (response.output.final_output) {
+          endInterview(response.output.final_output);
+        }
+        // Check for interview end condition using the 'finished' flag
+        else if (response.output.finished) {
+          endInterview();
+        } else {
+          isLoading.value = false; // Set loading false if interview didn't end
+        }
       } else {
-        isLoading.value = false; // Set loading false if interview didn't end
+        isLoading.value = false;
       }
     } catch (err) {
       // Check if error is due to finished session
@@ -248,8 +297,11 @@ export const useChatStore = defineStore('chat', () => {
   }
 
   // Action to end the interview
-  function endInterview() {
+  function endInterview(result) {
     isInterviewEnded.value = true;
+    if (result) {
+      finalOutput.value = result;
+    }
     isLoading.value = false;
   }
 
@@ -260,6 +312,7 @@ export const useChatStore = defineStore('chat', () => {
     messages,
     isLoading,
     isInterviewEnded,
+    finalOutput,
     error, // Expose error state
     initializeSession,
     sendMessage,
