@@ -14,8 +14,6 @@ const chatMessagesContainer = ref(null);
 // Initialize session on mount
 onMounted(() => {
   store.initializeSession();
-  // TODO: Maybe add a welcome message here?
-  // Example: store.messages.value.push({ id: Date.now().toString(), sender: 'ai', text: 'Welcome!' });
   scrollToBottom();
 });
 
@@ -105,6 +103,19 @@ watch(messages, () => {
       </div>
     </div>
 
+    <div v-if="isInterviewEnded" class="p-4">
+      <div class="max-w-[800px] mx-auto">
+        <div class="flex items-center justify-center">
+          <div class="flex justify-center items-center bg-green-50 border border-green-200 rounded-md p-4">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mx-auto text-green-500 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+            </svg>
+            <h2 class="text-lg font-medium text-gray-900">Interview Complete</h2>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- Input area -->
     <!-- Conditionally render ChatInput based on interview status -->
     <ChatInput
@@ -146,5 +157,4 @@ watch(messages, () => {
     transform: translateY(-8px); /* Adjust vertical distance */
   }
 }
-/* Add any view-specific styles here if needed */
 </style> 
