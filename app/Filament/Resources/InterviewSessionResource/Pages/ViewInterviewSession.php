@@ -39,85 +39,94 @@ class ViewInterviewSession extends ViewRecord
                             ->dateTime(),
                     ]),
 
-                Infolists\Components\Section::make('Summary & Topics')
+                Infolists\Components\Section::make('Summary')
                     ->schema([
                         Infolists\Components\TextEntry::make('summary')
                             ->markdown()
                             ->columnSpanFull(),
-                        Infolists\Components\TextEntry::make('topics')
-                            ->formatStateUsing(function ($state) {
-                                if (!is_array($state)) {
-                                    return 'No topics data';
+                    ]),
+
+                Infolists\Components\Section::make('Topics Data')
+                    ->schema([
+                        Infolists\Components\TextEntry::make('topics_data')
+                            ->state(function ($record) {
+                                if (!$record->topics || !is_array($record->topics)) {
+                                    return '<div class="text-gray-500">No topics data available</div>';
                                 }
                                 
-                                $formattedOutput = '';
+                                $html = '<div class="space-y-4">';
                                 
-                                foreach ($state as $index => $topic) {
-                                    $formattedOutput .= "**Topic " . ($index + 1) . "**\n\n";
+                                foreach ($record->topics as $index => $topic) {
+                                    $html .= '<div class="p-4 bg-gray-100 rounded-lg">';
+                                    $html .= '<h3 class="text-lg font-bold">Topic ' . ($index + 1) . '</h3>';
                                     
-                                    if (isset($topic['key'])) {
-                                        $formattedOutput .= "Key: " . $topic['key'] . "\n\n";
-                                    }
+                                    $html .= '<dl class="grid grid-cols-2 gap-2 mt-2">';
                                     
-                                    if (isset($topic['messages']) && is_array($topic['messages'])) {
-                                        $formattedOutput .= "Messages: " . implode(', ', $topic['messages']) . "\n\n";
-                                    }
-                                    
-                                    // Add other properties if they exist
-                                    foreach ($topic as $key => $value) {
-                                        if ($key !== 'key' && $key !== 'messages') {
+                                    if (is_array($topic)) {
+                                        foreach ($topic as $key => $value) {
+                                            $html .= '<dt class="font-medium">' . htmlspecialchars($key) . ':</dt>';
+                                            
                                             if (is_array($value)) {
-                                                $formattedOutput .= $key . ": " . json_encode($value) . "\n\n";
+                                                $html .= '<dd>' . htmlspecialchars(json_encode($value)) . '</dd>';
                                             } else {
-                                                $formattedOutput .= $key . ": " . $value . "\n\n";
+                                                $html .= '<dd>' . htmlspecialchars((string)$value) . '</dd>';
                                             }
                                         }
+                                    } else {
+                                        $html .= '<dd>' . htmlspecialchars((string)$topic) . '</dd>';
                                     }
                                     
-                                    $formattedOutput .= "---\n\n";
+                                    $html .= '</dl>';
+                                    $html .= '</div>';
                                 }
                                 
-                                return $formattedOutput;
+                                $html .= '</div>';
+                                
+                                return $html;
                             })
-                            ->markdown()
+                            ->html()
                             ->columnSpanFull(),
                     ]),
 
                 Infolists\Components\Section::make('Conversation')
                     ->schema([
-                        Infolists\Components\TextEntry::make('messages')
-                            ->formatStateUsing(function ($state) {
-                                if (!is_array($state)) {
-                                    return 'No messages data';
-                                }
-
-                                $formattedOutput = '';
-                                
-                                foreach ($state as $index => $message) {
-                                    if (is_array($message)) {
-                                        $type = $message['type'] ?? 'unknown';
-                                        $content = $message['content'] ?? 'No content';
-                                        
-                                        $typeLabel = match($type) {
-                                            'user' => '👤 User',
-                                            'assistant' => '🤖 Assistant',
-                                            'system' => '⚙️ System',
-                                            default => '❓ ' . $type,
-                                        };
-                                        
-                                        $formattedOutput .= "### {$typeLabel}\n\n";
-                                        $formattedOutput .= "{$content}\n\n";
-                                        $formattedOutput .= "---\n\n";
-                                    } else {
-                                        $formattedOutput .= "### Message {$index}\n\n";
-                                        $formattedOutput .= json_encode($message) . "\n\n";
-                                        $formattedOutput .= "---\n\n";
-                                    }
+                        Infolists\Components\TextEntry::make('messages_data')
+                            ->state(function ($record) {
+                                if (!$record->messages || !is_array($record->messages)) {
+                                    return '<div class="text-gray-500">No messages available</div>';
                                 }
                                 
-                                return $formattedOutput;
+                                $html = '<div class="space-y-4">';
+                                
+                                foreach ($record->messages as $index => $message) {
+                                    $type = is_array($message) && isset($message['type']) ? $message['type'] : 'unknown';
+                                    $content = is_array($message) && isset($message['content']) ? $message['content'] : json_encode($message);
+                                    
+                                    $bgColor = match($type) {
+                                        'user' => 'bg-blue-100',
+                                        'assistant' => 'bg-green-100',
+                                        'system' => 'bg-yellow-100',
+                                        default => 'bg-gray-100',
+                                    };
+                                    
+                                    $icon = match($type) {
+                                        'user' => '👤',
+                                        'assistant' => '🤖',
+                                        'system' => '⚙️',
+                                        default => '❓',
+                                    };
+                                    
+                                    $html .= '<div class="p-4 rounded-lg ' . $bgColor . '">';
+                                    $html .= '<div class="font-bold">' . $icon . ' ' . ucfirst($type) . '</div>';
+                                    $html .= '<div class="mt-2 whitespace-pre-wrap">' . htmlspecialchars((string)$content) . '</div>';
+                                    $html .= '</div>';
+                                }
+                                
+                                $html .= '</div>';
+                                
+                                return $html;
                             })
-                            ->markdown()
+                            ->html()
                             ->columnSpanFull(),
                     ]),
             ]);
