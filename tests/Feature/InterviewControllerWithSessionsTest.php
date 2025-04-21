@@ -7,12 +7,13 @@ use App\Models\InterviewSession;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
 use Tests\TestCase;
+use PHPUnit\Framework\Attributes\Test;
 
 class InterviewControllerWithSessionsTest extends TestCase
 {
     use RefreshDatabase;
 
-    /** @test */
+    #[Test]
     public function it_creates_new_interview_session_if_not_exists()
     {
         // Create a public interview
@@ -40,7 +41,7 @@ class InterviewControllerWithSessionsTest extends TestCase
         ]);
     }
     
-    /** @test */
+    #[Test]
     public function it_reuses_existing_interview_session()
     {
         // Create a public interview
@@ -82,7 +83,7 @@ class InterviewControllerWithSessionsTest extends TestCase
         );
     }
     
-    /** @test */
+    #[Test]
     public function it_loads_messages_from_session()
     {
         // Create a public interview
@@ -124,7 +125,7 @@ class InterviewControllerWithSessionsTest extends TestCase
         );
     }
     
-    /** @test */
+    #[Test]
     public function it_passes_session_finished_status_to_frontend()
     {
         // Create a public interview
@@ -174,7 +175,7 @@ class InterviewControllerWithSessionsTest extends TestCase
         );
     }
     
-    /** @test */
+    #[Test]
     public function it_passes_unfinished_status_for_ongoing_sessions()
     {
         // Create a public interview

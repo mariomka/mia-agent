@@ -6,12 +6,13 @@ use App\Models\Interview;
 use App\Models\InterviewSession;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
+use PHPUnit\Framework\Attributes\Test;
 
 class InterviewSessionTest extends TestCase
 {
     use RefreshDatabase;
 
-    /** @test */
+    #[Test]
     public function it_has_the_correct_fillable_attributes()
     {
         $fillable = [
@@ -27,7 +28,7 @@ class InterviewSessionTest extends TestCase
         $this->assertEquals($fillable, $interviewSession->getFillable());
     }
 
-    /** @test */
+    #[Test]
     public function it_casts_attributes_correctly()
     {
         $interviewSession = new InterviewSession();
@@ -38,7 +39,7 @@ class InterviewSessionTest extends TestCase
         $this->assertEquals('boolean', $casts['finished']);
     }
 
-    /** @test */
+    #[Test]
     public function it_belongs_to_an_interview()
     {
         $interview = Interview::factory()->create();
@@ -52,7 +53,7 @@ class InterviewSessionTest extends TestCase
         $this->assertEquals($interview->id, $interviewSession->interview->id);
     }
 
-    /** @test */
+    #[Test]
     public function it_stores_and_retrieves_messages_as_array()
     {
         $messages = [
@@ -71,7 +72,7 @@ class InterviewSessionTest extends TestCase
         $this->assertEquals($messages, $interviewSession->messages);
     }
 
-    /** @test */
+    #[Test]
     public function it_stores_and_retrieves_topics_as_array()
     {
         $topics = [
@@ -91,7 +92,7 @@ class InterviewSessionTest extends TestCase
         $this->assertEquals($topics, $interviewSession->topics);
     }
 
-    /** @test */
+    #[Test]
     public function it_has_default_value_for_finished()
     {
         $interview = Interview::factory()->create();

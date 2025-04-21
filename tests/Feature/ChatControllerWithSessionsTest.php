@@ -8,12 +8,13 @@ use App\Models\InterviewSession;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
 use Tests\TestCase;
+use PHPUnit\Framework\Attributes\Test;
 
 class ChatControllerWithSessionsTest extends TestCase
 {
     use RefreshDatabase;
 
-    /** @test */
+    #[Test]
     public function it_stores_messages_in_database_session()
     {
         // Create a fake interview
@@ -75,7 +76,7 @@ class ChatControllerWithSessionsTest extends TestCase
         $this->assertEquals('assistant', $session->messages[1]['type']);
     }
     
-    /** @test */
+    #[Test]
     public function it_finalizes_session_when_interview_is_completed()
     {
         // Create a fake interview
@@ -161,7 +162,7 @@ class ChatControllerWithSessionsTest extends TestCase
         $this->assertEquals($topics, $session->topics);
     }
     
-    /** @test */
+    #[Test]
     public function it_handles_session_initialization_with_empty_message()
     {
         // Create a fake interview
@@ -220,7 +221,7 @@ class ChatControllerWithSessionsTest extends TestCase
         $this->assertEquals('Welcome to the interview!', $session->messages[0]['content']);
     }
 
-    /** @test */
+    #[Test]
     public function it_rejects_new_messages_for_finished_interviews()
     {
         // Create a fake interview
@@ -266,7 +267,7 @@ class ChatControllerWithSessionsTest extends TestCase
         });
     }
     
-    /** @test */
+    #[Test]
     public function it_filters_out_result_data_from_response()
     {
         // Create a fake interview
@@ -317,7 +318,7 @@ class ChatControllerWithSessionsTest extends TestCase
         $this->assertArrayNotHasKey('result', $responseData['output']);
     }
 
-    /** @test */
+    #[Test]
     public function it_rejects_initialization_for_finished_interviews()
     {
         // Create a fake interview
