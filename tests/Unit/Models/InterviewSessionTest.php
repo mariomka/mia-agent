@@ -1,108 +1,89 @@
 <?php
 
-namespace Tests\Unit\Models;
-
 use App\Models\Interview;
 use App\Models\InterviewSession;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Tests\TestCase;
-use PHPUnit\Framework\Attributes\Test;
 
-class InterviewSessionTest extends TestCase
-{
-    use RefreshDatabase;
+uses(RefreshDatabase::class);
 
-    #[Test]
-    public function it_has_the_correct_fillable_attributes()
-    {
-        $fillable = [
-            'interview_id',
-            'session_id',
-            'messages',
-            'summary',
-            'topics',
-            'finished',
-        ];
+test('it has the correct fillable attributes', function () {
+    $fillable = [
+        'interview_id',
+        'session_id',
+        'messages',
+        'summary',
+        'topics',
+        'finished',
+    ];
 
-        $interviewSession = new InterviewSession();
-        $this->assertEquals($fillable, $interviewSession->getFillable());
-    }
+    $interviewSession = new InterviewSession();
+    expect($interviewSession->getFillable())->toBe($fillable);
+});
 
-    #[Test]
-    public function it_casts_attributes_correctly()
-    {
-        $interviewSession = new InterviewSession();
-        $casts = $interviewSession->getCasts();
+test('it casts attributes correctly', function () {
+    $interviewSession = new InterviewSession();
+    $casts = $interviewSession->getCasts();
 
-        $this->assertEquals('array', $casts['messages']);
-        $this->assertEquals('array', $casts['topics']);
-        $this->assertEquals('boolean', $casts['finished']);
-    }
+    expect($casts['messages'])->toBe('array');
+    expect($casts['topics'])->toBe('array');
+    expect($casts['finished'])->toBe('boolean');
+});
 
-    #[Test]
-    public function it_belongs_to_an_interview()
-    {
-        $interview = Interview::factory()->create();
-        $interviewSession = InterviewSession::create([
-            'interview_id' => $interview->id,
-            'session_id' => 'test_session_id',
-            'messages' => [],
-        ]);
+test('it belongs to an interview', function () {
+    $interview = Interview::factory()->create();
+    $interviewSession = InterviewSession::create([
+        'interview_id' => $interview->id,
+        'session_id' => 'test_session_id',
+        'messages' => [],
+    ]);
 
-        $this->assertInstanceOf(Interview::class, $interviewSession->interview);
-        $this->assertEquals($interview->id, $interviewSession->interview->id);
-    }
+    expect($interviewSession->interview)->toBeInstanceOf(Interview::class);
+    expect($interviewSession->interview->id)->toBe($interview->id);
+});
 
-    #[Test]
-    public function it_stores_and_retrieves_messages_as_array()
-    {
-        $messages = [
-            ['type' => 'user', 'content' => 'Hello'],
-            ['type' => 'assistant', 'content' => 'Hi there!'],
-        ];
+test('it stores and retrieves messages as array', function () {
+    $messages = [
+        ['type' => 'user', 'content' => 'Hello'],
+        ['type' => 'assistant', 'content' => 'Hi there!'],
+    ];
 
-        $interview = Interview::factory()->create();
-        $interviewSession = InterviewSession::create([
-            'interview_id' => $interview->id,
-            'session_id' => 'test_session_id',
-            'messages' => $messages,
-        ]);
+    $interview = Interview::factory()->create();
+    $interviewSession = InterviewSession::create([
+        'interview_id' => $interview->id,
+        'session_id' => 'test_session_id',
+        'messages' => $messages,
+    ]);
 
-        $this->assertIsArray($interviewSession->messages);
-        $this->assertEquals($messages, $interviewSession->messages);
-    }
+    expect($interviewSession->messages)->toBeArray();
+    expect($interviewSession->messages)->toBe($messages);
+});
 
-    #[Test]
-    public function it_stores_and_retrieves_topics_as_array()
-    {
-        $topics = [
-            ['key' => 'topic1', 'messages' => ['Message 1', 'Message 2']],
-            ['key' => 'topic2', 'messages' => ['Message 3']],
-        ];
+test('it stores and retrieves topics as array', function () {
+    $topics = [
+        ['key' => 'topic1', 'messages' => ['Message 1', 'Message 2']],
+        ['key' => 'topic2', 'messages' => ['Message 3']],
+    ];
 
-        $interview = Interview::factory()->create();
-        $interviewSession = InterviewSession::create([
-            'interview_id' => $interview->id,
-            'session_id' => 'test_session_id',
-            'messages' => [],
-            'topics' => $topics,
-        ]);
+    $interview = Interview::factory()->create();
+    $interviewSession = InterviewSession::create([
+        'interview_id' => $interview->id,
+        'session_id' => 'test_session_id',
+        'messages' => [],
+        'topics' => $topics,
+    ]);
 
-        $this->assertIsArray($interviewSession->topics);
-        $this->assertEquals($topics, $interviewSession->topics);
-    }
+    expect($interviewSession->topics)->toBeArray();
+    expect($interviewSession->topics)->toBe($topics);
+});
 
-    #[Test]
-    public function it_has_default_value_for_finished()
-    {
-        $interview = Interview::factory()->create();
-        $interviewSession = InterviewSession::create([
-            'interview_id' => $interview->id,
-            'session_id' => 'test_session_id',
-            'messages' => [],
-            'finished' => false,
-        ]);
+test('it has default value for finished', function () {
+    $interview = Interview::factory()->create();
+    $interviewSession = InterviewSession::create([
+        'interview_id' => $interview->id,
+        'session_id' => 'test_session_id',
+        'messages' => [],
+        'finished' => false,
+    ]);
 
-        $this->assertFalse($interviewSession->finished);
-    }
-}
+    expect($interviewSession->finished)->toBeFalse();
+}); 
