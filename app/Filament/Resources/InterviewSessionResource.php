@@ -115,7 +115,6 @@ class InterviewSessionResource extends Resource
             ])
             ->actions([
                 Tables\Actions\ViewAction::make(),
-                Tables\Actions\EditAction::make(),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
@@ -137,7 +136,6 @@ class InterviewSessionResource extends Resource
             'index' => Pages\ListInterviewSessions::route('/'),
             'create' => Pages\CreateInterviewSession::route('/create'),
             'view' => Pages\ViewInterviewSession::route('/{record}'),
-            'edit' => Pages\EditInterviewSession::route('/{record}/edit'),
         ];
     }
 } 
