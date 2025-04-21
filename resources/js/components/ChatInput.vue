@@ -75,7 +75,6 @@ onMounted(() => {
         aria-label="Chat message input"
         autofocus
         maxlength="200"
-        :disabled="props.isLoading"
       ></textarea>
       <!-- Icon Button -->
       <button
