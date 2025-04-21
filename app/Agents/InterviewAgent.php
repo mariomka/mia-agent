@@ -180,7 +180,7 @@ class InterviewAgent
 
     private function loadPreviousMessages(string $sessionId): array
     {
-        $session = InterviewSession::where('session_id', $sessionId)->first();
+        $session = InterviewSession::where('id', $sessionId)->first();
         $cachedMessages = $session ? $session->messages : [];
         $messages = [];
 
@@ -215,14 +215,14 @@ class InterviewAgent
         }
 
         // Get current session to accumulate token counts
-        $session = InterviewSession::where('session_id', $sessionId)->first();
+        $session = InterviewSession::where('id', $sessionId)->first();
         
         $currentInputTokens = ($session ? $session->input_tokens : 0) + $inputTokens;
         $currentOutputTokens = ($session ? $session->output_tokens : 0) + $outputTokens;
         $currentCost = ($session ? $session->cost : 0) + $cost;
 
         InterviewSession::updateOrCreate(
-            ['session_id' => $sessionId],
+            ['id' => $sessionId],
             [
                 'interview_id' => $interview->id,
                 'messages' => $cachedMessages,
@@ -235,7 +235,7 @@ class InterviewAgent
 
     private function finalizeSession(string $sessionId, ?string $summary, ?array $topics, Interview $interview): void
     {
-        InterviewSession::where('session_id', $sessionId)
+        InterviewSession::where('id', $sessionId)
             ->where('interview_id', $interview->id)
             ->update([
                 'summary' => $summary,

@@ -3,18 +3,21 @@
 use App\Models\Interview;
 use App\Models\InterviewSession;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Str;
 
 uses(RefreshDatabase::class);
 
 test('it has the correct fillable attributes', function () {
     $fillable = [
         'interview_id',
-        'session_id',
         'messages',
         'summary',
         'topics',
         'finished',
         'metadata',
+        'input_tokens',
+        'output_tokens',
+        'cost',
     ];
 
     $interviewSession = new InterviewSession();
@@ -32,9 +35,10 @@ test('it casts attributes correctly', function () {
 
 test('it belongs to an interview', function () {
     $interview = Interview::factory()->create();
+    $sessionId = (string) Str::uuid7();
     $interviewSession = InterviewSession::create([
+        'id' => $sessionId,
         'interview_id' => $interview->id,
-        'session_id' => 'test_session_id',
         'messages' => [],
     ]);
 
@@ -49,9 +53,10 @@ test('it stores and retrieves messages as array', function () {
     ];
 
     $interview = Interview::factory()->create();
+    $sessionId = (string) Str::uuid7();
     $interviewSession = InterviewSession::create([
+        'id' => $sessionId,
         'interview_id' => $interview->id,
-        'session_id' => 'test_session_id',
         'messages' => $messages,
     ]);
 
@@ -66,9 +71,10 @@ test('it stores and retrieves topics as array', function () {
     ];
 
     $interview = Interview::factory()->create();
+    $sessionId = (string) Str::uuid7();
     $interviewSession = InterviewSession::create([
+        'id' => $sessionId,
         'interview_id' => $interview->id,
-        'session_id' => 'test_session_id',
         'messages' => [],
         'topics' => $topics,
     ]);
@@ -79,9 +85,10 @@ test('it stores and retrieves topics as array', function () {
 
 test('it has default value for finished', function () {
     $interview = Interview::factory()->create();
+    $sessionId = (string) Str::uuid7();
     $interviewSession = InterviewSession::create([
+        'id' => $sessionId,
         'interview_id' => $interview->id,
-        'session_id' => 'test_session_id',
         'messages' => [],
         'finished' => false,
     ]);

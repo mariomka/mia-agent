@@ -15,15 +15,16 @@ class SessionsRelationManager extends RelationManager
 {
     protected static string $relationship = 'sessions';
 
-    protected static ?string $recordTitleAttribute = 'session_id';
+    protected static ?string $recordTitleAttribute = 'id';
 
     public function form(Form $form): Form
     {
         return $form
             ->schema([
-                Forms\Components\TextInput::make('session_id')
+                Forms\Components\TextInput::make('id')
                     ->required()
-                    ->maxLength(255),
+                    ->maxLength(255)
+                    ->disabled(),
                 
                 Forms\Components\Toggle::make('finished')
                     ->required(),
@@ -45,7 +46,7 @@ class SessionsRelationManager extends RelationManager
                 fn (Model $record): string => InterviewSessionResource::getUrl('view', ['record' => $record])
             )
             ->columns([
-                Tables\Columns\TextColumn::make('session_id')
+                Tables\Columns\TextColumn::make('id')
                     ->searchable(),
                 
                 Tables\Columns\IconColumn::make('finished')

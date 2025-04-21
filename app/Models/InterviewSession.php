@@ -3,11 +3,13 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class InterviewSession extends Model
 {
+    use HasFactory;
     use HasUuids;
 
     /**
@@ -17,7 +19,6 @@ class InterviewSession extends Model
      */
     protected $fillable = [
         'interview_id',
-        'session_id',
         'messages',
         'summary',
         'topics',
@@ -42,6 +43,13 @@ class InterviewSession extends Model
         'output_tokens' => 'integer',
         'cost' => 'decimal:6',
     ];
+
+    /**
+     * Indicates if the model should be timestamped.
+     *
+     * @var bool
+     */
+    public $timestamps = true;
 
     /**
      * Get the interview that owns the session.

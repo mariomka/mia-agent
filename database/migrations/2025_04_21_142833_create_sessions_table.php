@@ -15,7 +15,6 @@ return new class extends Migration
             $table->uuid('id')->primary();
             $table->uuid('interview_id');
             $table->foreign('interview_id')->references('id')->on('interviews')->onDelete('cascade');
-            $table->string('session_id')->unique()->index();
             $table->json('messages');
             $table->text('summary')->nullable();
             $table->json('topics')->nullable();

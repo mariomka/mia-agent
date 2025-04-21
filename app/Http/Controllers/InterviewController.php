@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Models\Interview;
 use App\Models\InterviewSession;
 use Illuminate\Http\Request;
-use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -13,40 +12,41 @@ class InterviewController extends Controller
 {
     public function __invoke(Request $request, Interview $interview): Response
     {
-        // Generate a session key that's tied to the specific interview
         $interviewSessionKey = "interview_{$interview->id}_session_id";
 
-        // Generate a new session ID or retrieve existing one from session
         $sessionId = $request->session()->get($interviewSessionKey);
 
-        if (!$sessionId) {
-            $sessionId = "interview_{$interview->id}_" . Str::uuid()->toString();
-            $request->session()->put($interviewSessionKey, $sessionId);
+        if ($sessionId) {
+            $session = InterviewSession::find($sessionId);
+
+            if ($session === null) {
+                $sessionId = null;
+            }
         }
 
-        // Load messages from database
-        $session = InterviewSession::firstOrCreate(
-            ['session_id' => $sessionId],
-            [
-                'interview_id' => $interview->id, 
+        if ($sessionId === null) {
+            $session = InterviewSession::create([
+                'interview_id' => $interview->id,
+                // Ensure default values are set if creating
                 'messages' => [],
-                'metadata' => [
-                    'query_parameters' => $request->query()
-                ]
-            ]
-        );
-        
+                'metadata' => ['query_parameters' => $request->query()],
+                'finished' => false,
+            ]);
+        }
+
+        $request->session()->put($interviewSessionKey, $session->id);
+
         $messages = [];
         foreach ($session->messages as $index => $message) {
             $messages[] = [
-                'id' => "{$sessionId}_{$index}",
+                'id' => "{$session->id}_{$index}", // Use session->id for consistency
                 'sender' => $message['type'] === 'assistant' ? 'ai' : $message['type'],
                 'text' => $message['content'],
                 'status' => 'sent'
             ];
         }
 
-        // Send is_finished directly instead of wrapping it in a session object
+        // Send data to frontend
         return Inertia::render('Chat', [
             'interview' => [
                 'id' => $interview->id,
@@ -57,7 +57,7 @@ class InterviewController extends Controller
                 'product_name' => $interview->product_name,
                 'product_description' => $interview->product_description,
             ],
-            'sessionId' => $sessionId,
+            'sessionId' => $session->id, // Use the definitive session ID
             'messages' => $messages,
             'is_finished' => (bool) $session->finished
         ]);

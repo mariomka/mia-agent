@@ -28,7 +28,7 @@ class ChatController extends Controller
         $interview = Interview::findOrFail($request->input('interviewId'));
 
         // Check if this interview session is already finished
-        $session = InterviewSession::where('session_id', $sessionId)
+        $session = InterviewSession::where('id', $sessionId)
             ->where('interview_id', $interview->id)
             ->first();
 

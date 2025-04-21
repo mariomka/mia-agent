@@ -239,7 +239,7 @@ it('stores messages in database session', function () {
                 ];
                 
                 InterviewSession::updateOrCreate(
-                    ['session_id' => $actualSessionId],
+                    ['id' => $actualSessionId],
                     [
                         'interview_id' => $interview->id,
                         'messages' => $messages,
@@ -263,17 +263,11 @@ it('stores messages in database session', function () {
     // Assert response is successful
     $response->assertStatus(200);
     
-    // Assert that a session record was created
-    assertDatabaseHas('interview_sessions', [
-        'session_id' => $sessionId,
-        'interview_id' => $interview->id,
-    ]);
-    
-    // Get the session from the database
-    $session = InterviewSession::where('session_id', $sessionId)->first();
+    // Assert that a session record was created with this interview_id and expected content
+    $session = InterviewSession::where('interview_id', $interview->id)->first();
+    expect($session)->not->toBeNull();
     
     // Assert that the messages were stored
-    expect($session)->not->toBeNull();
     expect($session->messages)->toBeArray();
     expect($session->messages)->toHaveCount(2);
     expect($session->messages[0]['type'])->toBe('user');
@@ -294,15 +288,17 @@ it('finalizes session when interview is completed', function () {
         ['key' => 'topic1', 'messages' => ['Info 1', 'Info 2']]
     ];
     
-    // Create an initial session
-    InterviewSession::create([
+    // Create a session for this interview
+    $sessionBeforeRequest = InterviewSession::create([
         'interview_id' => $interview->id,
-        'session_id' => $sessionId,
         'messages' => [
             ['type' => 'user', 'content' => 'Hello'],
             ['type' => 'assistant', 'content' => 'Hi there!'],
         ],
     ]);
+    
+    // Store the session ID in the request
+    $sessionId = $sessionBeforeRequest->id;
     
     // Mock the InterviewAgent to return a finished response and update the session
     $this->mock(InterviewAgent::class, function ($mock) use ($sessionId, $interview, $summary, $topics) {
@@ -318,7 +314,7 @@ it('finalizes session when interview is completed', function () {
                 
                 // First update messages
                 InterviewSession::updateOrCreate(
-                    ['session_id' => $actualSessionId],
+                    ['id' => $actualSessionId],
                     [
                         'interview_id' => $interview->id,
                         'messages' => $messages,
@@ -326,7 +322,7 @@ it('finalizes session when interview is completed', function () {
                 );
                 
                 // Then finalize with summary and topics (simulating finalizeSession)
-                InterviewSession::where('session_id', $actualSessionId)
+                InterviewSession::where('id', $actualSessionId)
                     ->where('interview_id', $interview->id)
                     ->update([
                         'summary' => $summary,
@@ -356,7 +352,7 @@ it('finalizes session when interview is completed', function () {
     $response->assertStatus(200);
     
     // Get the updated session from the database
-    $session = InterviewSession::where('session_id', $sessionId)->first();
+    $session = InterviewSession::where('interview_id', $interview->id)->first();
     
     // Assert that the session was finalized with summary and topics
     expect($session)->not->toBeNull();
@@ -370,83 +366,61 @@ it('handles session initialization with empty message in database', function () 
     $interview = Interview::factory()->create();
     
     // Create a session ID
-    $sessionId = "interview_{$interview->id}_" . Str::uuid()->toString();
+    $sessionId = Str::uuid()->toString();
     
-    // Mock the InterviewAgent to handle initialization
+    // Mock the InterviewAgent to verify it's called with correct parameters
     $this->mock(InterviewAgent::class, function ($mock) use ($sessionId, $interview) {
         $mock->shouldReceive('chat')
-            ->andReturnUsing(function ($actualSessionId, $message, $interviewObj) use ($sessionId, $interview) {
-                // For empty message (initialization), only add assistant message
-                $messages = [
-                    ['type' => 'assistant', 'content' => 'Welcome to the interview!'],
-                ];
-                
-                InterviewSession::updateOrCreate(
-                    ['session_id' => $actualSessionId],
-                    [
-                        'interview_id' => $interview->id,
-                        'messages' => $messages,
-                    ]
-                );
-                
-                return [
-                    'messages' => ['Welcome to the interview!'],
-                    'finished' => false
-                ];
-            });
+            ->once()
+            ->with($sessionId, '', \Mockery::type(Interview::class))
+            ->andReturn([
+                'messages' => ['Welcome to the interview!'],
+                'finished' => false
+            ]);
     });
     
     // Send an initialization request (empty chatInput)
     $response = postJson('/chat', [
         'sessionId' => $sessionId,
-        'interviewId' => $interview->id,
+        'interviewId' => $interview->id
     ]);
     
     // Assert response is successful
     $response->assertStatus(200);
     
-    // Assert that a session record was created
-    assertDatabaseHas('interview_sessions', [
-        'session_id' => $sessionId,
-        'interview_id' => $interview->id,
+    // Assert the response contains the expected output
+    $response->assertJson([
+        'output' => [
+            'messages' => ['Welcome to the interview!'],
+            'finished' => false
+        ]
     ]);
-    
-    // Get the session from the database
-    $session = InterviewSession::where('session_id', $sessionId)->first();
-    
-    // Assert that only the assistant message was stored (no user message)
-    expect($session)->not->toBeNull();
-    expect($session->messages)->toBeArray();
-    expect($session->messages)->toHaveCount(1);
-    expect($session->messages[0]['type'])->toBe('assistant');
-    expect($session->messages[0]['content'])->toBe('Welcome to the interview!');
 });
 
 it('rejects new messages for finished interviews', function () {
     // Create a fake interview
     $interview = Interview::factory()->create();
     
-    // Create a session ID
-    $sessionId = "interview_{$interview->id}_" . Str::uuid()->toString();
-    
-    // Create a pre-existing finished session in the database
-    InterviewSession::create([
+    // Create a session with finished status
+    $session = InterviewSession::create([
         'interview_id' => $interview->id,
-        'session_id' => $sessionId,
         'messages' => [
             ['type' => 'user', 'content' => 'Hello'],
-            ['type' => 'assistant', 'content' => 'Hi there!'],
-            ['type' => 'user', 'content' => 'Goodbye'],
-            ['type' => 'assistant', 'content' => 'Thank you for completing this interview.'],
+            ['type' => 'assistant', 'content' => 'Thank you for completing this interview.']
         ],
         'summary' => 'This is a summary',
         'topics' => [['key' => 'topic1', 'messages' => ['Info 1']]],
         'finished' => true
     ]);
     
+    // Mock the InterviewAgent - it should not be called
+    $this->mock(InterviewAgent::class, function ($mock) {
+        $mock->shouldNotReceive('chat');
+    });
+    
     // Send a new message to a finished interview
     $response = postJson('/chat', [
-        'sessionId' => $sessionId,
+        'sessionId' => $session->id,
         'interviewId' => $interview->id,
         'chatInput' => 'One more question...'
     ]);
@@ -459,11 +433,6 @@ it('rejects new messages for finished interviews', function () {
         'error' => 'This interview is already completed and cannot accept new messages.',
         'finished' => true
     ]);
-    
-    // Mock should not be called as we return early
-    $this->mock(InterviewAgent::class, function ($mock) {
-        $mock->shouldNotReceive('chat');
-    });
 });
 
 it('filters out result data from response', function () {
@@ -471,7 +440,7 @@ it('filters out result data from response', function () {
     $interview = Interview::factory()->create();
     
     // Create a session ID
-    $sessionId = "interview_{$interview->id}_" . Str::uuid()->toString();
+    $sessionId = Str::uuid()->toString();
     
     // Create test summary and topics that should be filtered out
     $summary = "This is the interview summary.";
@@ -482,6 +451,7 @@ it('filters out result data from response', function () {
     // Mock the InterviewAgent to return result data
     $this->mock(InterviewAgent::class, function ($mock) use ($summary, $topics) {
         $mock->shouldReceive('chat')
+            ->once()
             ->andReturn([
                 'messages' => ['Thank you for your answers.'],
                 'finished' => true,
@@ -519,27 +489,26 @@ it('rejects initialization for finished interviews', function () {
     // Create a fake interview
     $interview = Interview::factory()->create();
     
-    // Create a session ID
-    $sessionId = "interview_{$interview->id}_" . Str::uuid()->toString();
-    
-    // Create a pre-existing finished session in the database
-    InterviewSession::create([
+    // Create a session with finished status
+    $session = InterviewSession::create([
         'interview_id' => $interview->id,
-        'session_id' => $sessionId,
         'messages' => [
             ['type' => 'user', 'content' => 'Hello'],
-            ['type' => 'assistant', 'content' => 'Hi there!'],
-            ['type' => 'user', 'content' => 'Goodbye'],
-            ['type' => 'assistant', 'content' => 'Thank you for completing this interview.'],
+            ['type' => 'assistant', 'content' => 'Thank you for completing this interview.']
         ],
         'summary' => 'This is a summary',
         'topics' => [['key' => 'topic1', 'messages' => ['Info 1']]],
         'finished' => true
     ]);
     
+    // Mock the InterviewAgent - it should not be called
+    $this->mock(InterviewAgent::class, function ($mock) {
+        $mock->shouldNotReceive('chat');
+    });
+    
     // Send initialization request for a finished interview
     $response = postJson('/chat', [
-        'sessionId' => $sessionId,
+        'sessionId' => $session->id,
         'interviewId' => $interview->id
     ]);
     

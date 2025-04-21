@@ -20,7 +20,7 @@ class InterviewSessionResource extends Resource
 
     protected static ?string $navigationLabel = 'Interview Sessions';
 
-    protected static ?string $recordTitleAttribute = 'session_id';
+    protected static ?string $recordTitleAttribute = 'id';
 
     public static function getNavigationBadge(): ?string
     {
@@ -41,7 +41,7 @@ class InterviewSessionResource extends Resource
                     ->sortable()
                     ->searchable(),
 
-                Tables\Columns\TextColumn::make('session_id')
+                Tables\Columns\TextColumn::make('id')
                     ->searchable(),
 
                 Tables\Columns\IconColumn::make('finished')
