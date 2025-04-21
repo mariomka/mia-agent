@@ -83,7 +83,7 @@ class InterviewAgent
         $messages = $this->loadPreviousMessages($sessionId);
 
         // Only add the user message to the history if it's not empty (initialization case)
-        if (!empty(trim($message))) {
+        if (strlen(trim($message)) > 0) {
             $messages[] = new UserMessage($message);
         }
 
@@ -111,16 +111,16 @@ class InterviewAgent
             ->asStructured();
 
         $output = $response->structured ?? [];
-        
+
         // Get token usage from the response
         $inputTokens = $response->usage->promptTokens ?? 0;
         $outputTokens = $response->usage->completionTokens ?? 0;
-        
+
         // Calculate cost based on token usage and configuration
         $cost = $this->calculateCost(
-            self::DEFAULT_PROVIDER, 
-            $model, 
-            $inputTokens, 
+            self::DEFAULT_PROVIDER,
+            $model,
+            $inputTokens,
             $outputTokens
         );
 
@@ -144,8 +144,8 @@ class InterviewAgent
         // Check if the interview is finished and update the session record
         if (!empty($output['finished']) && $output['finished'] === true) {
             $this->finalizeSession(
-                $sessionId, 
-                $output['result']['summary'] ?? null, 
+                $sessionId,
+                $output['result']['summary'] ?? null,
                 $output['result']['topics'] ?? null,
                 $interview
             );
@@ -170,11 +170,11 @@ class InterviewAgent
         // Get pricing from config
         $inputPrice = Config::get("prism.pricing.{$provider}.{$model}.input", 0);
         $outputPrice = Config::get("prism.pricing.{$provider}.{$model}.output", 0);
-        
+
         // Calculate cost (convert from per million tokens to per token)
         $inputCost = ($inputTokens / 1_000_000) * $inputPrice;
         $outputCost = ($outputTokens / 1_000_000) * $outputPrice;
-        
+
         return $inputCost + $outputCost;
     }
 
@@ -195,11 +195,11 @@ class InterviewAgent
     }
 
     private function saveMessages(
-        string $sessionId, 
-        array $messages, 
-        Interview $interview, 
-        int $inputTokens = 0, 
-        int $outputTokens = 0, 
+        string $sessionId,
+        array $messages,
+        Interview $interview,
+        int $inputTokens = 0,
+        int $outputTokens = 0,
         float $cost = 0
     ): void {
         $cachedMessages = [];
@@ -216,7 +216,7 @@ class InterviewAgent
 
         // Get current session to accumulate token counts
         $session = InterviewSession::where('id', $sessionId)->first();
-        
+
         $currentInputTokens = ($session ? $session->input_tokens : 0) + $inputTokens;
         $currentOutputTokens = ($session ? $session->output_tokens : 0) + $outputTokens;
         $currentCost = ($session ? $session->cost : 0) + $cost;
