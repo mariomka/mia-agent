@@ -5,6 +5,7 @@ namespace App\Agents;
 use App\Models\Interview;
 use App\Models\InterviewSession;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Str;
 use Prism\Prism\Enums\Provider;
 use Prism\Prism\Prism;
@@ -18,6 +19,10 @@ use function view;
 
 class InterviewAgent
 {
+    // Default model
+    private const DEFAULT_MODEL = 'o4-mini';
+    private const DEFAULT_PROVIDER = 'openai';
+
     public function chat(string $sessionId, string $message, Interview $interview): mixed
     {
         $topicSchema = new ObjectSchema(
@@ -92,8 +97,12 @@ class InterviewAgent
             'topics' => $interview->topics,
         ]);
 
+        // Define the model
+        $model = self::DEFAULT_MODEL;
+        $provider = Provider::OpenAI;
+
         $response = Prism::structured()
-            ->using(Provider::OpenAI, 'o4-mini')
+            ->using($provider, $model)
             // ->using(Provider::DeepSeek, 'deepseek-chat')
             ->withSchema($schema)
             ->withSystemPrompt($systemPrompt)
@@ -102,6 +111,18 @@ class InterviewAgent
             ->asStructured();
 
         $output = $response->structured ?? [];
+        
+        // Get token usage from the response
+        $inputTokens = $response->usage->promptTokens ?? 0;
+        $outputTokens = $response->usage->completionTokens ?? 0;
+        
+        // Calculate cost based on token usage and configuration
+        $cost = $this->calculateCost(
+            self::DEFAULT_PROVIDER, 
+            $model, 
+            $inputTokens, 
+            $outputTokens
+        );
 
         // Create a filtered version of the messages
         $filteredMessages = [];
@@ -117,7 +138,8 @@ class InterviewAgent
             }
         }
 
-        $this->saveMessages($sessionId, $messages, $interview);
+        // Save messages along with token usage and cost
+        $this->saveMessages($sessionId, $messages, $interview, $inputTokens, $outputTokens, $cost);
 
         // Check if the interview is finished and update the session record
         if (!empty($output['finished']) && $output['finished'] === true) {
@@ -132,6 +154,28 @@ class InterviewAgent
         // Create a new response object to return if needed
         // or just return the original response - the filtered messages have been saved to history
         return $output;
+    }
+
+    /**
+     * Calculate the cost of token usage based on the provider and model
+     *
+     * @param string $provider The provider name (e.g., 'openai')
+     * @param string $model The model name (e.g., 'o4-mini')
+     * @param int $inputTokens Number of input tokens
+     * @param int $outputTokens Number of output tokens
+     * @return float The calculated cost
+     */
+    private function calculateCost(string $provider, string $model, int $inputTokens, int $outputTokens): float
+    {
+        // Get pricing from config
+        $inputPrice = Config::get("prism.pricing.{$provider}.{$model}.input", 0);
+        $outputPrice = Config::get("prism.pricing.{$provider}.{$model}.output", 0);
+        
+        // Calculate cost (convert from per million tokens to per token)
+        $inputCost = ($inputTokens / 1000000) * $inputPrice;
+        $outputCost = ($outputTokens / 1000000) * $outputPrice;
+        
+        return $inputCost + $outputCost;
     }
 
     private function loadPreviousMessages(string $sessionId): array
@@ -150,8 +194,14 @@ class InterviewAgent
         return $messages;
     }
 
-    private function saveMessages(string $sessionId, array $messages, Interview $interview): void
-    {
+    private function saveMessages(
+        string $sessionId, 
+        array $messages, 
+        Interview $interview, 
+        int $inputTokens = 0, 
+        int $outputTokens = 0, 
+        float $cost = 0
+    ): void {
         $cachedMessages = [];
 
         foreach ($messages as $message) {
@@ -164,11 +214,21 @@ class InterviewAgent
             ];
         }
 
+        // Get current session to accumulate token counts
+        $session = InterviewSession::where('session_id', $sessionId)->first();
+        
+        $currentInputTokens = ($session ? $session->input_tokens : 0) + $inputTokens;
+        $currentOutputTokens = ($session ? $session->output_tokens : 0) + $outputTokens;
+        $currentCost = ($session ? $session->cost : 0) + $cost;
+
         InterviewSession::updateOrCreate(
             ['session_id' => $sessionId],
             [
                 'interview_id' => $interview->id,
                 'messages' => $cachedMessages,
+                'input_tokens' => $currentInputTokens,
+                'output_tokens' => $currentOutputTokens,
+                'cost' => $currentCost,
             ]
         );
     }

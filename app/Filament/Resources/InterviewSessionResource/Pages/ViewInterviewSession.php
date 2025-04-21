@@ -134,6 +134,17 @@ class ViewInterviewSession extends ViewRecord
                                             ->dateTime(),
                                     ]),
                                 
+                                Infolists\Components\Section::make('Usage Statistics')
+                                    ->schema([
+                                        Infolists\Components\TextEntry::make('input_tokens')
+                                            ->label('Input Tokens'),
+                                        Infolists\Components\TextEntry::make('output_tokens')
+                                            ->label('Output Tokens'),
+                                        Infolists\Components\TextEntry::make('cost')
+                                            ->label('Total Cost')
+                                            ->money('USD'),
+                                    ]),
+                                
                                 Infolists\Components\Section::make('Query Parameters')
                                     ->schema([
                                         Infolists\Components\TextEntry::make('metadata_formatted')

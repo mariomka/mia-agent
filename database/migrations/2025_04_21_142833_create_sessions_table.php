@@ -21,6 +21,9 @@ return new class extends Migration
             $table->json('topics')->nullable();
             $table->json('metadata')->nullable();
             $table->boolean('finished')->default(false)->index();
+            $table->integer('input_tokens')->default(0);
+            $table->integer('output_tokens')->default(0);
+            $table->decimal('cost', 10, 6)->default(0);
             $table->timestamps();
         });
     }

@@ -48,4 +48,14 @@ return [
             'url' => env('VOYAGEAI_URL', 'https://api.voyageai.com/v1'),
         ],
     ],
+    
+    // Token pricing configuration per million tokens (in USD)
+    'pricing' => [
+        'openai' => [
+            'o4-mini' => [
+                'input' => env('OPENAI_O4_MINI_INPUT_PRICE', 1.10),    // $1.10 per 1M input tokens
+                'output' => env('OPENAI_O4_MINI_OUTPUT_PRICE', 4.40),  // $4.40 per 1M output tokens
+            ],
+        ],
+    ],
 ];

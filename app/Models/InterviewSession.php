@@ -23,6 +23,9 @@ class InterviewSession extends Model
         'topics',
         'finished',
         'metadata',
+        'input_tokens',
+        'output_tokens',
+        'cost',
     ];
 
     /**
@@ -35,6 +38,9 @@ class InterviewSession extends Model
         'topics' => 'array',
         'metadata' => 'array',
         'finished' => 'boolean',
+        'input_tokens' => 'integer',
+        'output_tokens' => 'integer',
+        'cost' => 'decimal:6',
     ];
 
     /**
