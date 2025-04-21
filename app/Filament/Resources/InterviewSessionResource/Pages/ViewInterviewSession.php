@@ -47,12 +47,27 @@ class ViewInterviewSession extends ViewRecord
                                                 }
                                                 
                                                 $markdown = '';
+                                                $interviewTopics = $record->interview->topics ?? [];
+                                                
+                                                // Create a lookup map to quickly find interview topics by key
+                                                $topicMap = [];
+                                                foreach ($interviewTopics as $topic) {
+                                                    if (isset($topic['key'])) {
+                                                        $topicMap[$topic['key']] = $topic;
+                                                    }
+                                                }
                                                 
                                                 foreach ($record->topics as $index => $topic) {
                                                     $markdown .= "### Topic " . ($index + 1) . "\n\n";
-                                                
-                                                    if (isset($topic['key'])) {
-                                                        $markdown .= "**Key**: " . $topic['key'] . "\n\n";
+                                                    
+                                                    $key = $topic['key'] ?? null;
+                                                    
+                                                    if ($key && isset($topicMap[$key]) && isset($topicMap[$key]['question'])) {
+                                                        // Display the question from the interview's topic
+                                                        $markdown .= "**Question**: " . $topicMap[$key]['question'] . "\n\n";
+                                                    } else {
+                                                        // Fallback to key if question isn't available
+                                                        $markdown .= "**Key**: " . ($key ?? 'Unknown') . "\n\n";
                                                     }
                                                 
                                                     if (isset($topic['messages']) && is_array($topic['messages'])) {
