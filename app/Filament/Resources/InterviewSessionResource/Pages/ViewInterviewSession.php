@@ -85,25 +85,39 @@ class ViewInterviewSession extends ViewRecord
 
                 Infolists\Components\Section::make('Conversation')
                     ->schema([
-                        Infolists\Components\RepeatableEntry::make('messages')
-                            ->schema([
-                                Infolists\Components\TextEntry::make('role')
-                                    ->color(fn ($state): string => match (is_array($state) ? json_encode($state) : $state) {
-                                        'user' => 'info',
-                                        'system' => 'warning',
-                                        'assistant' => 'success',
-                                        default => 'gray',
-                                    }),
-                                Infolists\Components\TextEntry::make('content')
-                                    ->formatStateUsing(function ($state) {
-                                        if (is_array($state)) {
-                                            return json_encode($state, JSON_PRETTY_PRINT);
-                                        }
-                                        return $state;
-                                    })
-                                    ->markdown()
-                                    ->columnSpanFull(),
-                            ])
+                        Infolists\Components\TextEntry::make('messages')
+                            ->formatStateUsing(function ($state) {
+                                if (!is_array($state)) {
+                                    return 'No messages data';
+                                }
+
+                                $formattedOutput = '';
+                                
+                                foreach ($state as $index => $message) {
+                                    if (is_array($message)) {
+                                        $type = $message['type'] ?? 'unknown';
+                                        $content = $message['content'] ?? 'No content';
+                                        
+                                        $typeLabel = match($type) {
+                                            'user' => '👤 User',
+                                            'assistant' => '🤖 Assistant',
+                                            'system' => '⚙️ System',
+                                            default => '❓ ' . $type,
+                                        };
+                                        
+                                        $formattedOutput .= "### {$typeLabel}\n\n";
+                                        $formattedOutput .= "{$content}\n\n";
+                                        $formattedOutput .= "---\n\n";
+                                    } else {
+                                        $formattedOutput .= "### Message {$index}\n\n";
+                                        $formattedOutput .= json_encode($message) . "\n\n";
+                                        $formattedOutput .= "---\n\n";
+                                    }
+                                }
+                                
+                                return $formattedOutput;
+                            })
+                            ->markdown()
                             ->columnSpanFull(),
                     ]),
             ]);
