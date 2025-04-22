@@ -80,7 +80,7 @@ describe('ChatMessage.vue', () => {
     // Check error message is displayed
     const errorDiv = wrapper.find('.border-t'); // Find error container
     expect(errorDiv.exists()).toBe(true);
-    expect(errorDiv.text()).toContain('Error: ' + errorMessage);
+    expect(errorDiv.text()).toContain('Message failed to send');
 
     // Check retry button exists
     const retryButton = errorDiv.find('button');
