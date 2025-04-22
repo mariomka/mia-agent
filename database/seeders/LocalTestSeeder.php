@@ -2,23 +2,29 @@
 
 namespace Database\Seeders;
 
+use App\Models\User;
 use App\Models\Interview;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Str;
 
-class InterviewSeeder extends Seeder
+class LocalTestSeeder extends Seeder
 {
     public function run(): void
     {
-        // Product/User Interview iDoctus Example
+        User::factory()->create([
+            'name' => 'Mario',
+            'email' => 'mario@mjp.one',
+        ]);
+
+        // Product/User Interview Example
         Interview::factory()->create([
             'id' => 'cc9b9356-ecfa-489e-b8b8-8a965e252a49',
-            'name' => 'iDoctus User Experience Interview',
+            'name' => 'Foodie App User Experience Interview',
             'language' => 'spanish',
             'agent_name' => 'Mia',
             'interview_type' => 'User Interview',
-            'target_name' => 'iDoctus',
-            'target_description' => 'iDoctus es una app para medicos. Información médica precisa, al servicio de sus decisiones clínicas. Consulte medicamentos e interacciones en una app diseñada para apoyar su práctica médica con información científica actualizada.',
+            'target_name' => 'Foodie',
+            'target_description' => 'Foodie es una app para encontrar restaurantes. Descubre los mejores lugares para comer cerca de ti, lee reseñas y calificaciones, y explora menús detallados con fotos. Una app diseñada para los amantes de la gastronomía.',
             'topics' => [
                 [
                     'key' => Str::random(10),
@@ -34,8 +40,8 @@ class InterviewSeeder extends Seeder
                 ],
                 [
                     'key' => Str::random(10),
-                    'question' => 'How would you feel about a chat feature to talk with colleagues?',
-                    'description' => 'Validate interest in proposed communication feature',
+                    'question' => 'How would you feel about a reservation feature to book tables directly in the app?',
+                    'description' => 'Validate interest in proposed reservation feature',
                     'approach' => 'indirect'
                 ],
                 [
@@ -47,15 +53,15 @@ class InterviewSeeder extends Seeder
             ],
         ]);
 
-        // Recruitment Interview iDoctus Example
+        // Recruitment Interview Example
         Interview::factory()->create([
             'id' => 'd0e5cd66-e508-4c41-b714-f252dd5fac04',
-            'name' => 'iDoctus Developer Screening Interview',
+            'name' => 'Foodie Developer Screening Interview',
             'language' => 'english',
             'agent_name' => 'Riley',
             'interview_type' => 'Screening Interview',
-            'target_name' => 'iDoctus',
-            'target_description' => 'iDoctus es una app para medicos. Información médica precisa, al servicio de sus decisiones clínicas. Consulte medicamentos e interacciones en una app diseñada para apoyar su práctica médica con información científica actualizada.',
+            'target_name' => 'Foodie',
+            'target_description' => 'Foodie es una app para encontrar restaurantes. Descubre los mejores lugares para comer cerca de ti, lee reseñas y calificaciones, y explora menús detallados con fotos. Una app diseñada para los amantes de la gastronomía.',
             'topics' => [
                 [
                     'key' => Str::random(10),
