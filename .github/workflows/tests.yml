@@ -67,4 +67,4 @@ jobs:
         run: npm ci
 
       - name: Run Vitest Tests
-        run: npm run test
+        run: LARAVEL_BYPASS_ENV_CHECK=1 npm run test
