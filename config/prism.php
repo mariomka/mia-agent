@@ -56,6 +56,10 @@ return [
                 'input' => env('OPENAI_O4_MINI_INPUT_PRICE', 1.10),
                 'output' => env('OPENAI_O4_MINI_OUTPUT_PRICE', 4.40),
             ],
+            'gpt-4.1-mini' => [
+                'input' => env('OPENAI_GPT_4_1_MINI_INPUT_PRICE', 0.40),
+                'output' => env('OPENAI_GPT_4_1_MINI_OUTPUT_PRICE', 1.60),
+            ],
         ],
         'deepseek' => [
             'deepseek-chat' => [

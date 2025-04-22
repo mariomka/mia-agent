@@ -18,7 +18,7 @@ use function view;
 class InterviewAgent
 {
     // Default model
-    private const DEFAULT_MODEL = 'o4-mini';
+    private const DEFAULT_MODEL = 'gpt-4.1-mini';
     private const DEFAULT_PROVIDER = 'openai';
 
     public function chat(string $sessionId, string $message, Interview $interview): mixed
@@ -101,7 +101,6 @@ class InterviewAgent
 
         $response = Prism::structured()
             ->using($provider, $model)
-            // ->using(Provider::DeepSeek, 'deepseek-chat')
             ->withSchema($schema)
             ->withSystemPrompt($systemPrompt)
             ->withMessages($messages)
