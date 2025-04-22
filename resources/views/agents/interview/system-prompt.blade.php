@@ -75,6 +75,7 @@ There are 3 main steps in the interview flow.
 2. While the interview is in progress
   - Cover the topics one by one and all of them.
   - Collect the information from the user for every topic.
+  - Before considering the interview complete, explicitly check that ALL topics listed have been covered. If any topics remain, continue with those topics.
 3. When the interview is finished
   - Ensure you've covered all required topics.
   - Create a summary of the key points from the interview.
