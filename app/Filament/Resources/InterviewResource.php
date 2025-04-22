@@ -222,7 +222,11 @@ class InterviewResource extends Resource
 
                 Tables\Columns\TextColumn::make('sessions_count')
                     ->label('Sessions')
-                    ->counts('sessions')
+                    ->state(function (Interview $record): string {
+                        $totalSessions = $record->sessions()->count();
+                        $completedSessions = $record->sessions()->where('finished', true)->count();
+                        return "{$completedSessions} / {$totalSessions}";
+                    })
                     ->sortable(),
 
                 Tables\Columns\TextColumn::make('created_at')
