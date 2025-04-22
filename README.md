@@ -62,3 +62,7 @@ Run tests with:
 ```bash
 composer run test
 ```
+
+## Personal Note
+
+This project, Mia Agent, represents my second project created with significant AI agent assistance, though it includes manual edits and revisions. We are exploring new collaborative workflows with AI Agents, and while the project should function properly, it has not been fully reviewed.
