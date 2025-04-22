@@ -211,31 +211,52 @@ it('handles very long messages appropriately', function () {
     $sessionId = Str::uuid()->toString();
     $interview = Interview::factory()->create();
 
-    // 10KB message
-    $longMessage = str_repeat('This is a long message. ', 500);
+    // Message exactly 200 characters - should pass
+    $validMessage = str_repeat('a', 200);
+    
+    // Message over 200 characters - should fail
+    $longMessage = str_repeat('b', 201);
 
     $this->mock(InterviewAgent::class, function ($mock) {
         $mock->shouldReceive('chat')
             ->once()
             ->andReturn([
-                'messages' => ['Response to long message'],
+                'messages' => ['Response to valid message'],
                 'finished' => false
             ]);
     });
 
-    $response = $this->postJson('/chat', [
+    // Valid message (exactly 200 chars)
+    $validResponse = $this->postJson('/chat', [
+        'sessionId' => $sessionId,
+        'chatInput' => $validMessage,
+        'interviewId' => $interview->id
+    ]);
+
+    $validResponse->assertStatus(200)
+        ->assertJson([
+            'output' => [
+                'messages' => ['Response to valid message'],
+                'finished' => false
+            ]
+        ]);
+        
+    // Too long message (over 200 chars)
+    $invalidResponse = $this->postJson('/chat', [
         'sessionId' => $sessionId,
         'chatInput' => $longMessage,
         'interviewId' => $interview->id
     ]);
-
-    $response->assertStatus(200)
-        ->assertJson([
-            'output' => [
-                'messages' => ['Response to long message'],
-                'finished' => false
+    
+    $invalidResponse->assertStatus(422);
+    $invalidResponse->assertJsonValidationErrors(['chatInput']);
+    $invalidResponse->assertJson([
+        'errors' => [
+            'chatInput' => [
+                'The chat input field must not be greater than 200 characters.'
             ]
-        ]);
+        ]
+    ]);
 });
 
 it('gracefully handles agent exceptions', function () {

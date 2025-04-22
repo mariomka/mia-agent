@@ -17,7 +17,7 @@ class ChatController extends Controller
         $validator = Validator::make($request->all(), [
             'sessionId' => 'required|string',
             'interviewId' => 'required|exists:interviews,id',
-            'chatInput' => 'nullable|string', // Make chatInput optional for initialization
+            'chatInput' => 'nullable|string|max:200',
         ]);
 
         if ($validator->fails()) {
