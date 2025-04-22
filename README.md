@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="resources/images/logo-mia-agent.png" alt="Mia Agent Logo" width="150">
+  <img src="public/images/logo-mia-agent.png" alt="Mia Agent Logo" width="150">
 </p>
 
 # Mia Agent
