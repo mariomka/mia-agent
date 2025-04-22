@@ -228,6 +228,11 @@ class InterviewResource extends Resource
                     ->searchable()
                     ->sortable(),
 
+                Tables\Columns\TextColumn::make('sessions_count')
+                    ->label('Sessions')
+                    ->counts('sessions')
+                    ->sortable(),
+
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
