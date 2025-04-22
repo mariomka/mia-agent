@@ -22,11 +22,6 @@ class InterviewSessionResource extends Resource
 
     protected static ?string $recordTitleAttribute = 'id';
 
-    public static function getNavigationBadge(): ?string
-    {
-        return static::getModel()::count();
-    }
-
     public static function canCreate(): bool
     {
         return false; // Disable creation of interview sessions in the admin panel
