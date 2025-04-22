@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="resources/images/logo-mia-agent.png" alt="Mia Agent Logo" width="150">
+</p>
+
 # Mia Agent
 
 AI Interview Agent - An intelligent interviewing system using AI to conduct automated interviews.
