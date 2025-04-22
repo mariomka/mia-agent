@@ -94,4 +94,21 @@ test('it has default value for finished', function () {
     ]);
 
     expect($interviewSession->finished)->toBeFalse();
+});
+
+test('session belongs to interview', function () {
+    $interview = Interview::factory()->create();
+    $session = InterviewSession::factory()->create(['interview_id' => $interview->id]);
+    
+    expect($session->interview)->toBeInstanceOf(Interview::class);
+    expect($session->interview->id)->toBe($interview->id);
+});
+
+test('session attributes are properly cast', function () {
+    $session = InterviewSession::factory()->create([
+        'messages' => [['role' => 'system', 'content' => 'test']]
+    ]);
+    
+    expect($session->messages)->toBeArray();
+    expect($session->messages[0]['role'])->toBe('system');
 }); 

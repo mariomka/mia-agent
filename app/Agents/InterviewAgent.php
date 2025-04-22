@@ -4,9 +4,7 @@ namespace App\Agents;
 
 use App\Models\Interview;
 use App\Models\InterviewSession;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Config;
-use Illuminate\Support\Str;
 use Prism\Prism\Enums\Provider;
 use Prism\Prism\Prism;
 use Prism\Prism\Schema\ArraySchema;
@@ -201,7 +199,8 @@ class InterviewAgent
         int $inputTokens = 0,
         int $outputTokens = 0,
         float $cost = 0
-    ): void {
+    ): void
+    {
         $cachedMessages = [];
 
         foreach ($messages as $message) {
