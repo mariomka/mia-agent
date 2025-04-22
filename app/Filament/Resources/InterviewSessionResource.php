@@ -5,12 +5,10 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\InterviewSessionResource\Pages;
 use App\Models\InterviewSession;
 use Filament\Forms;
-use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Model;
 
 class InterviewSessionResource extends Resource
 {
@@ -31,21 +29,27 @@ class InterviewSessionResource extends Resource
     {
         return $table
             ->columns([
+                Tables\Columns\TextColumn::make('id')
+                    ->searchable()
+                    ->toggleable(isToggledHiddenByDefault: true),
+
+                Tables\Columns\IconColumn::make('finished')
+                    ->label('Status')
+                    ->boolean()
+                    ->trueIcon('heroicon-o-check-circle')
+                    ->falseIcon('heroicon-o-clock')
+                    ->trueColor('success')
+                    ->falseColor('warning'),
+
                 Tables\Columns\TextColumn::make('interview.name')
                     ->label('Interview')
                     ->sortable()
                     ->searchable(),
 
-                Tables\Columns\TextColumn::make('id')
-                    ->searchable(),
-
-                Tables\Columns\IconColumn::make('finished')
-                    ->boolean()
-                    ->label('Completed'),
-
                 Tables\Columns\TextColumn::make('summary')
                     ->limit(50)
-                    ->searchable(),
+                    ->searchable()
+                    ->default('n/a'),
 
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
@@ -74,11 +78,11 @@ class InterviewSessionResource extends Resource
                         return $query
                             ->when(
                                 $data['created_from'],
-                                fn (Builder $query, $date): Builder => $query->whereDate('created_at', '>=', $date),
+                                fn(Builder $query, $date): Builder => $query->whereDate('created_at', '>=', $date),
                             )
                             ->when(
                                 $data['created_until'],
-                                fn (Builder $query, $date): Builder => $query->whereDate('created_at', '<=', $date),
+                                fn(Builder $query, $date): Builder => $query->whereDate('created_at', '<=', $date),
                             );
                     }),
             ])

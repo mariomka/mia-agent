@@ -4,8 +4,6 @@ namespace App\Filament\Widgets;
 
 use App\Models\InterviewSession;
 use Filament\Tables;
-use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Table;
 use Filament\Widgets\TableWidget as BaseWidget;
 
@@ -25,21 +23,23 @@ class RecentSessionsWidget extends BaseWidget
                     ->limit(15)
             )
             ->columns([
-                TextColumn::make('interview.name')
-                    ->label('Interview')
-                    ->searchable()
-                    ->sortable(),
-                IconColumn::make('finished')
+                Tables\Columns\IconColumn::make('finished')
                     ->label('Status')
                     ->boolean()
                     ->trueIcon('heroicon-o-check-circle')
                     ->falseIcon('heroicon-o-clock')
                     ->trueColor('success')
                     ->falseColor('warning'),
-                TextColumn::make('summary')
+
+                Tables\Columns\TextColumn::make('interview.name')
+                    ->label('Interview')
+                    ->sortable(),
+
+                Tables\Columns\TextColumn::make('summary')
                     ->limit(50)
-                    ->searchable(),
-                TextColumn::make('created_at')
+                    ->default('n/a'),
+
+                Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable(),
             ])
