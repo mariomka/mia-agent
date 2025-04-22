@@ -220,14 +220,6 @@ class InterviewResource extends Resource
                     ->searchable()
                     ->sortable(),
 
-                Tables\Columns\TextColumn::make('language')
-                    ->searchable()
-                    ->sortable(),
-
-                Tables\Columns\TextColumn::make('target_name')
-                    ->searchable()
-                    ->sortable(),
-
                 Tables\Columns\TextColumn::make('sessions_count')
                     ->label('Sessions')
                     ->counts('sessions')
@@ -263,14 +255,17 @@ class InterviewResource extends Resource
             ])
             ->actions([
                 Tables\Actions\Action::make('open_interview')
-                    ->label('Open Interview')
+                    ->label('')
                     ->icon('heroicon-o-arrow-top-right-on-square')
                     ->color('success')
                     ->url(fn (Interview $record) => InterviewController::generateSignedUrl($record))
                     ->openUrlInNewTab(),
-                Tables\Actions\ViewAction::make(),
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
+                Tables\Actions\ViewAction::make()
+                    ->label(''),
+                Tables\Actions\EditAction::make()
+                    ->label(''),
+                Tables\Actions\DeleteAction::make()
+                    ->label(''),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
