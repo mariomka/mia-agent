@@ -1,0 +1,120 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# PHP Testing with Pest
+
+This guide outlines best practices for writing tests using Pest PHP for our codebase.
+
+## Unit Tests
+
+Unit tests validate individual components in isolation and should:
+
+- **Mock all dependencies**: Use mocks/stubs for all external dependencies
+- **Follow code structure**: Mirror the same directory structure as the source code
+- **Test one unit**: Focus on testing a single class or function
+- **Be fast**: Unit tests should run quickly (milliseconds)
+
+### Directory Structure
+
+Unit tests should follow the same directory structure as the code being tested:
+
+```
+app/Services/Payment/PaymentProcessor.php → tests/Unit/Services/Payment/PaymentProcessorTest.php
+app/Models/User.php → tests/Unit/Models/UserTest.php
+```
+
+### Example Unit Test
+
+```php
+<?php
+
+use App\Services\Payment\PaymentProcessor;
+use App\Services\Payment\PaymentGateway;
+
+test('processes payment successfully', function () {
+    // Mock dependencies
+    $gateway = mock(PaymentGateway::class);
+    $gateway->shouldReceive('charge')
+        ->once()
+        ->with(100, 'USD', 'card_123')
+        ->andReturn(true);
+        
+    // Inject mocked dependency
+    $processor = new PaymentProcessor($gateway);
+    
+    // Test the unit
+    $result = $processor->processPayment(100, 'USD', 'card_123');
+    
+    // Assert result
+    expect($result)->toBeTrue();
+});
+```
+
+## Feature Tests
+
+Feature tests validate complete flows and should:
+
+- **Mock distant dependencies**: Only mock external services, APIs, etc.
+- **Test entire flows**: Verify controllers and console commands work end-to-end
+- **Organize by feature**: Group tests by feature rather than mirroring source structure
+- **Use database transactions**: Reset the database after each test with `RefreshDatabase`
+
+### Directory Structure
+
+Feature tests are organized by feature, not source code structure:
+
+```
+tests/Feature/Auth/RegistrationTest.php
+tests/Feature/Orders/PlaceOrderTest.php
+tests/Feature/Admin/ManageUsersTest.php
+```
+
+### Example Feature Test
+
+```php
+<?php
+
+use App\Models\User;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+
+uses(RefreshDatabase::class);
+
+test('user can register', function () {
+    // Mock external service if needed
+    $this->mock(EmailVerificationService::class, function ($mock) {
+        $mock->shouldReceive('sendVerificationEmail')->andReturn(true);
+    });
+    
+    // Execute the controller action via HTTP request
+    $response = $this->post('/register', [
+        'name' => 'John Doe',
+        'email' => 'john@example.com',
+        'password' => 'password',
+        'password_confirmation' => 'password',
+    ]);
+    
+    // Assert response and database state
+    $response->assertRedirect('/dashboard');
+    $this->assertDatabaseHas('users', [
+        'email' => 'john@example.com',
+    ]);
+});
+```
+
+## Best Practices
+
+1. **Descriptive test names**: Write test names that clearly describe what's being tested
+2. **One assertion per test**: Ideally, each test should have a single assertion
+3. **Use data providers**: For testing multiple cases with the same logic
+4. **Arrange-Act-Assert**: Structure tests with clear separation between setup, execution, and verification
+5. **Clean up**: Ensure tests clean up after themselves and don't affect other tests
+
+## Common Pitfalls
+
+1. Avoid testing implementation details
+2. Don't mock the system under test
+3. Don't use real external services in tests
+4. Be careful with static methods and global state
+5. Don't test framework code
