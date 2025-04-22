@@ -263,6 +263,7 @@ class InterviewResource extends Resource
                     ->color('success')
                     ->url(fn (Interview $record) => InterviewController::generateSignedUrl($record))
                     ->openUrlInNewTab(),
+                Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make(),
             ])
@@ -286,6 +287,7 @@ class InterviewResource extends Resource
         return [
             'index' => Pages\ListInterviews::route('/'),
             'create' => Pages\CreateInterview::route('/create'),
+            'view' => Pages\ViewInterview::route('/{record}'),
             'edit' => Pages\EditInterview::route('/{record}/edit'),
         ];
     }
