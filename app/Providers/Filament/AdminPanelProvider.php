@@ -30,8 +30,9 @@ class AdminPanelProvider extends PanelProvider
             ->path('admin')
             ->login()
             ->brandName('Mia Agent')
-            ->brandLogo(asset('images/logo-mia-agent.png'))
-            ->favicon(asset('images/logo-mia-agent.png'))
+            ->brandLogo(asset('images/mia-agent-logo.png'))
+            ->brandLogoHeight('30px')
+            ->favicon(asset('images/mia-agent-logo.png'))
             ->colors([
                 'primary' => Color::Indigo,
             ])
