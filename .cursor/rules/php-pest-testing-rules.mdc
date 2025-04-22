@@ -103,6 +103,32 @@ test('user can register', function () {
 });
 ```
 
+## Creating Tests with Artisan
+
+Laravel provides convenient Artisan commands to generate Pest test files:
+
+### Generate Feature Tests
+
+Use the following command to create a new feature test:
+
+```bash
+php artisan make:test --pest NameOfFeatureTest
+```
+
+This will create a new test file at `tests/Feature/NameOfFeatureTest.php` with the Pest syntax.
+
+### Generate Unit Tests
+
+For unit tests, add the `--unit` flag:
+
+```bash
+php artisan make:test --pest --unit NameOfUnitTest
+```
+
+This will create a new test file at `tests/Unit/NameOfUnitTest.php`.
+
+The generated test files will include the Pest syntax structure, ready for you to add your test cases.
+
 ## Best Practices
 
 1. **Descriptive test names**: Write test names that clearly describe what's being tested
