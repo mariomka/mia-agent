@@ -101,8 +101,8 @@ test('chat method handles interview completion', function () {
 });
 
 test('chat method calculates cost correctly', function () {
-    Config::set('prism.pricing.openai.o4-mini.input', 1); // $1 per million tokens
-    Config::set('prism.pricing.openai.o4-mini.output', 2); // $2 per million tokens
+    Config::set('prism.pricing.openai.gpt-4.1-mini.input', 1); // $1 per million tokens
+    Config::set('prism.pricing.openai.gpt-4.1-mini.output', 2); // $2 per million tokens
 
     $session = InterviewSession::factory()->create();
     $userMessage = 'Test message';
@@ -134,8 +134,8 @@ test('chat method calculates cost correctly', function () {
 });
 
 test('chat method accumulates tokens and cost across multiple calls', function () {
-    Config::set('prism.pricing.openai.o4-mini.input', 1); // $1 per million tokens
-    Config::set('prism.pricing.openai.o4-mini.output', 2); // $2 per million tokens
+    Config::set('prism.pricing.openai.gpt-4.1-mini.input', 1); // $1 per million tokens
+    Config::set('prism.pricing.openai.gpt-4.1-mini.output', 2); // $2 per million tokens
 
     $session = InterviewSession::factory()->create();
     $interview = Interview::factory()->create();
@@ -191,7 +191,7 @@ test('chat method updates session with messages and result when completed', func
     $session = InterviewSession::factory()->create();
     $interview = Interview::factory()->create();
     $userMessage = 'Final message';
-    
+
     $summary = "This is a summary of the interview";
     $topics = [
         [
@@ -199,7 +199,7 @@ test('chat method updates session with messages and result when completed', func
             'messages' => ['User mentioned X', 'User prefers Y']
         ]
     ];
-    
+
     $response = [
         'messages' => ['Thank you for completing this interview.'],
         'finished' => true,
@@ -208,7 +208,7 @@ test('chat method updates session with messages and result when completed', func
             'topics' => $topics
         ]
     ];
-    
+
     $fakeResponse = new StructuredResponse(
         steps: collect([]),
         responseMessages: collect([]),
@@ -219,18 +219,18 @@ test('chat method updates session with messages and result when completed', func
         meta: new Meta('fake-1', 'fake-model'),
         additionalContent: []
     );
-    
+
     Prism::fake([$fakeResponse]);
-    
+
     $agent = new InterviewAgent();
     $result = $agent->chat($session->id, $userMessage, $interview);
-    
+
     $session->refresh();
-    
+
     expect($result['finished'])->toBeTrue();
     expect($result['result']['summary'])->toBe($summary);
     expect($result['result']['topics'])->toBe($topics);
-    
+
     // Verify the session was updated
     expect($session->finished)->toBeTrue();
     expect($session->summary)->toBe($summary);
@@ -246,7 +246,7 @@ test('chat method stores messages in session', function () {
     ]);
     $interview = Interview::factory()->create();
     $userMessage = 'New message';
-    
+
     $response = [
         'messages' => ['This is my response'],
         'finished' => false,
@@ -255,7 +255,7 @@ test('chat method stores messages in session', function () {
             'topics' => null
         ]
     ];
-    
+
     $fakeResponse = new StructuredResponse(
         steps: collect([]),
         responseMessages: collect([]),
@@ -266,14 +266,14 @@ test('chat method stores messages in session', function () {
         meta: new Meta('fake-1', 'fake-model'),
         additionalContent: []
     );
-    
+
     Prism::fake([$fakeResponse]);
-    
+
     $agent = new InterviewAgent();
     $agent->chat($session->id, $userMessage, $interview);
-    
+
     $session->refresh();
-    
+
     expect($session->messages)->toHaveCount(4);
     expect($session->messages[2]['type'])->toBe('user');
     expect($session->messages[2]['content'])->toBe('New message');
@@ -287,7 +287,7 @@ test('chat method does not add empty user messages to history', function () {
     ]);
     $interview = Interview::factory()->create();
     $userMessage = '';
-    
+
     $response = [
         'messages' => ['Welcome to the interview!'],
         'finished' => false,
@@ -296,7 +296,7 @@ test('chat method does not add empty user messages to history', function () {
             'topics' => null
         ]
     ];
-    
+
     $fakeResponse = new StructuredResponse(
         steps: collect([]),
         responseMessages: collect([]),
@@ -307,14 +307,14 @@ test('chat method does not add empty user messages to history', function () {
         meta: new Meta('fake-1', 'fake-model'),
         additionalContent: []
     );
-    
+
     Prism::fake([$fakeResponse]);
-    
+
     $agent = new InterviewAgent();
     $agent->chat($session->id, $userMessage, $interview);
-    
+
     $session->refresh();
-    
+
     expect($session->messages)->toHaveCount(1);
     expect($session->messages[0]['type'])->toBe('assistant');
     expect($session->messages[0]['content'])->toBe('Welcome to the interview!');
