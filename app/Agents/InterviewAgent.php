@@ -128,11 +128,19 @@ class InterviewAgent
             $filteredMessages = array_values(
                 array_filter($output['messages'], fn($msg) => !empty(trim($msg)))
             );
+            
+            // Limit to maximum of 2 messages as per system prompt
+            $filteredMessages = array_slice($filteredMessages, 0, 2);
 
             // Store each non-empty message in the conversation history
             foreach ($filteredMessages as $messageContent) {
                 $messages[] = new AssistantMessage($messageContent);
             }
+        }
+
+        // Also limit messages in the output
+        if (isset($output['messages'])) {
+            $output['messages'] = $filteredMessages;
         }
 
         // Save messages along with token usage and cost

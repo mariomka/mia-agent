@@ -319,3 +319,58 @@ test('chat method does not add empty user messages to history', function () {
     expect($session->messages[0]['type'])->toBe('assistant');
     expect($session->messages[0]['content'])->toBe('Welcome to the interview!');
 });
+
+test('chat method limits output to maximum of two messages per turn', function () {
+    $session = InterviewSession::factory()->create([
+        'messages' => []
+    ]);
+    $interview = Interview::factory()->create();
+    $userMessage = 'Hello';
+
+    // Create a response with more than 2 messages
+    $response = [
+        'messages' => [
+            'Message 1',
+            'Message 2',
+            'Message 3',
+            'Message 4'
+        ],
+        'finished' => false,
+        'result' => [
+            'summary' => null,
+            'topics' => null
+        ]
+    ];
+
+    $fakeResponse = new StructuredResponse(
+        steps: collect([]),
+        responseMessages: collect([]),
+        text: json_encode($response),
+        structured: $response,
+        finishReason: FinishReason::Stop,
+        usage: new Usage(200, 100),
+        meta: new Meta('fake-1', 'fake-model'),
+        additionalContent: []
+    );
+
+    Prism::fake([$fakeResponse]);
+
+    $agent = new InterviewAgent();
+    $result = $agent->chat($session->id, $userMessage, $interview);
+
+    $session->refresh();
+
+    // Verify result only contains the first two messages
+    expect($result['messages'])->toHaveCount(2);
+    expect($result['messages'][0])->toBe('Message 1');
+    expect($result['messages'][1])->toBe('Message 2');
+    
+    // Verify session messages also only includes the first two assistant messages
+    expect($session->messages)->toHaveCount(3); // 1 user message + 2 assistant messages
+    expect($session->messages[0]['type'])->toBe('user');
+    expect($session->messages[0]['content'])->toBe('Hello');
+    expect($session->messages[1]['type'])->toBe('assistant');
+    expect($session->messages[1]['content'])->toBe('Message 1');
+    expect($session->messages[2]['type'])->toBe('assistant');
+    expect($session->messages[2]['content'])->toBe('Message 2');
+});
