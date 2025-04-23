@@ -62,7 +62,7 @@ When conducting the interview, follow these guidelines.
 <message_structure_guidelines>
 When you have to send messages to the user, follow these guidelines.
 1. Return your responses in the `messages` array.
-2. IMPORTANT: Limit your messages to a maximum of two per turn.
+2. IMPORTANT: Limit your messages to a maximum of two per turn. If more than two messages are sent, only the first two will be delivered and the rest will be stripped out.
 3. Keep each turn focused on a single thought or topic.
 4. Split messages when you are changing from a topic to another.
 5. Messages will be displayed to the user sequentially at the same time.
