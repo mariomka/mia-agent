@@ -1,5 +1,5 @@
 <script setup>
-import { computed } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 
 const props = defineProps({
   message: {
@@ -17,6 +17,16 @@ const props = defineProps({
 });
 
 const emit = defineEmits(['retry']);
+
+// Animation state
+const isVisible = ref(false);
+
+// Show the message with a slight delay
+onMounted(() => {
+  setTimeout(() => {
+    isVisible.value = true;
+  }, 50);
+});
 
 // Use computed properties for classes for better readability
 const alignmentClass = computed(() => {
@@ -43,6 +53,13 @@ const roundedCornerClass = computed(() => {
     : 'rounded-t-2xl rounded-l-2xl rounded-br-xs'; // User: squared bottom right
 });
 
+// Animation classes
+const animationClass = computed(() => {
+  return isVisible.value 
+    ? 'opacity-100 translate-y-0' 
+    : 'opacity-0 translate-y-3';
+});
+
 const handleRetry = () => {
   emit('retry', props.message.id);
 }
@@ -51,11 +68,14 @@ const handleRetry = () => {
 
 <template>
   <div :class="['flex w-full', alignmentClass]">
-    <!-- Updated bubble styling with custom rounded corners -->
-    <div :class="[
+    <!-- Using Tailwind for animation -->
+    <div 
+      :class="[
         'py-2 px-4 text-lg sm:text-xl max-w-xs sm:max-w-md lg:max-w-lg relative group rounded-lg',
+        'transition-all duration-300 ease-out transform',
         bubbleClass,
-        roundedCornerClass
+        roundedCornerClass,
+        animationClass
       ]"
     >
        <p class="whitespace-pre-wrap">{{ message.text }}</p>
