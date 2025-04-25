@@ -542,3 +542,66 @@ test('chat method uses custom goodbye message for last interaction', closure: fu
     expect($session->messages[0]['content'])->toBe($goodbyeMessage);
 });
 
+test('turnsExhausted flag is set correctly when maximum turns are reached', function () {
+    $session = InterviewSession::factory()->create([
+        'messages' => [
+            ['type' => 'user', 'content' => 'Message 1'],
+            ['type' => 'assistant', 'content' => 'Response 1'],
+            ['type' => 'user', 'content' => 'Message 2'],
+            ['type' => 'assistant', 'content' => 'Response 2'],
+            ['type' => 'user', 'content' => 'Message 3'],
+            ['type' => 'assistant', 'content' => 'Response 3'],
+        ]
+    ]);
+
+    $interview = Interview::factory()->create([
+        'topics' => [
+            ['key' => 'topic1', 'question' => 'Question 1', 'description' => 'Description 1']
+        ]
+    ]);
+
+    $response = [
+        'messages' => ['This is a response'],
+        'finished' => false
+    ];
+
+    $fakeResponse = new StructuredResponse(
+        steps: collect([]),
+        responseMessages: collect([]),
+        text: json_encode($response),
+        structured: $response,
+        finishReason: FinishReason::Stop,
+        usage: new Usage(100, 50),
+        meta: new Meta('fake-1', 'fake-model'),
+        additionalContent: []
+    );
+
+    $fake = Prism::fake([$fakeResponse, $fakeResponse]);
+
+    // Not exhausted
+    $agent = new InterviewAgent();
+    $agent->chat($session->id, 'New message', $interview);
+
+    $fake->assertRequest(function (array $requests) {
+        expect($requests[0]->systemPrompts()[0]->content)
+            ->not
+            ->toContain('The maximum number of turns has been reached.');
+    });
+
+    // Exhausted
+    $session->update([
+        'messages' => [
+            ...$session->messages,
+            ['type' => 'user', 'content' => 'Message 4'],
+            ['type' => 'assistant', 'content' => 'Response 4'],
+        ],
+    ]);
+
+    $agent = new InterviewAgent();
+    $agent->chat($session->id, 'New message', $interview);
+
+    $fake->assertRequest(function (array $requests) {
+        expect($requests[1]->systemPrompts()[0]->content)
+            ->toContain('The maximum number of turns has been reached.');
+    });
+});

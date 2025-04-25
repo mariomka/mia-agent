@@ -79,12 +79,16 @@ There are 3 main steps in the interview flow.
 2. While the interview is in progress
   - Cover the topics one by one and all of them.
   - Collect the information from the user for every topic.
-  - Before considering the interview complete, explicitly check that ALL topics listed have been covered. If any topics remain, continue with those topics.
+  - IMPORTANT: The interview is limited to a maximum number of turns. A turn consists of a message followed by a user message.
+  - If the maximum number of turns is reached, you MUST end the interview immediately, even if not all topics have been covered.
+  - If the maximum number of turns is exhausted, you will be notified.
+  - Before ending normally, explicitly check that ALL topics listed have been covered. If any topics remain and you haven't reached the maximum turns, continue with those topics.
 3. When the interview is finished
-  - Ensure you've covered all required topics.
+  - Ensure you've covered all required topics if possible within the turn limit.
   - Create a summary of the key points from the interview.
   - Organize responses by topic for the final output.
   - Set the 'finished' flag to true to indicate the interview is complete.
+  - If you reached the maximum number of turns, note this in your internal summary.
 @if(isset($hasCustomGoodbyeMessage) && $hasCustomGoodbyeMessage)
   - IMPORTANT: A custom goodbye message has been defined and will be sent to the user. DO NOT include a conclusion or thank you message.
 @endif
@@ -96,7 +100,7 @@ There are 3 main steps in the interview flow.
 <output_structure>
 You must output the defined JSON structure, it is the way the system will understand the output. Always send the complete object with empty or null fields.
 1. `messages` - Messages to send to the user. During the interview, you MUST send messages to the user.
-2. `finished` - Metadata for the UI. Boolean flag indicating if the interview is finished. Set to 'true' when all topics have been covered and the interview is complete, otherwise 'false'.
+2. `finished` - Metadata for the UI. Boolean flag indicating if the interview is finished. Set to 'true' when all topics have been covered OR the maximum number of turns has been reached, otherwise 'false'.
 3. `result` - Metadata for analysis. Results of the interview. It must include:
   - `summary` - A concise summary of the key points from the interview.
   - `topics` - An array of topic objects, where each topic has:
@@ -125,3 +129,7 @@ These are the topics:
   - description: {{ $topic['description'] }}
 @endforeach
 </topics>
+
+@if(isset($turnsExhausted) && $turnsExhausted)
+- NOTICE: The maximum number of turns has been reached. You MUST end the interview immediately.
+@endif

@@ -85,6 +85,15 @@ class InterviewAgent
         $hasCustomWelcomeMessage = !empty($interview->welcome_message);
         $hasCustomGoodbyeMessage = !empty($interview->goodbye_message);
 
+        // Calculate turn count based on message history
+        $turnCount = $this->calculateTurnCount($messages);
+
+        // Calculate max turns (5 per topic)
+        $maxTurns = count($interview->topics) * 5;
+
+        // Check if we've reached the turn limit
+        $reachedTurnLimit = $turnCount >= $maxTurns;
+
         if ($isFirstMessage && $hasCustomWelcomeMessage) {
             // For the first interaction in a new session, use the welcome message
             $messages[] = new AssistantMessage($interview->welcome_message);
@@ -106,6 +115,7 @@ class InterviewAgent
             'topics' => $interview->topics,
             'hasCustomWelcomeMessage' => $hasCustomWelcomeMessage,
             'hasCustomGoodbyeMessage' => $hasCustomGoodbyeMessage,
+            'turnsExhausted' => $reachedTurnLimit,
         ]);
 
         // Define the model
@@ -180,6 +190,21 @@ class InterviewAgent
         // Create a new response object to return if needed
         // or just return the original response - the filtered messages have been saved to history
         return $output;
+    }
+
+    /**
+     * Calculate the number of turns in the conversation based on message history
+     * A turn consists of a user message followed by one or more assistant messages
+     *
+     * @param array $messages Array of messages in the conversation
+     * @return int The number of turns
+     */
+    private function calculateTurnCount(array $messages): int
+    {
+        return
+            count(array_filter($messages, fn($message) => $message instanceof UserMessage))
+            + 1 // the current turn
+            ;
     }
 
     /**
