@@ -119,6 +119,7 @@ class InterviewAgent
             ->withMessages($messages)
             ->withClientRetry(3)
             ->usingTemperature(0.2)
+            ->withMaxTokens(200)
             ->asStructured();
 
         $output = $response->structured ?? [];
