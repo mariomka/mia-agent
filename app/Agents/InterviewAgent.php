@@ -79,6 +79,17 @@ class InterviewAgent
         );
 
         $messages = $this->loadPreviousMessages($sessionId);
+        $isFirstMessage = empty($messages);
+
+        // Check if this is the first interaction and a welcome message is defined
+        $hasCustomWelcomeMessage = !empty($interview->welcome_message);
+        $hasCustomGoodbyeMessage = !empty($interview->goodbye_message);
+
+        if ($isFirstMessage && $hasCustomWelcomeMessage) {
+            // For the first interaction in a new session, use the welcome message
+            $messages[] = new AssistantMessage($interview->welcome_message);
+            $this->saveMessages($sessionId, $messages, $interview, 0, 0, 0);
+        }
 
         // Only add the user message to the history if it's not empty (initialization case)
         if (strlen(trim($message)) > 0) {
@@ -93,6 +104,8 @@ class InterviewAgent
             'targetName' => $interview->target_name,
             'targetDescription' => $interview->target_description,
             'topics' => $interview->topics,
+            'hasCustomWelcomeMessage' => $hasCustomWelcomeMessage,
+            'hasCustomGoodbyeMessage' => $hasCustomGoodbyeMessage,
         ]);
 
         // Define the model
@@ -121,6 +134,12 @@ class InterviewAgent
             $outputTokens
         );
 
+        $finished = !empty($output['finished']) && $output['finished'] === true;
+
+        if ($finished && $hasCustomGoodbyeMessage) {
+            $output['messages'] = [$interview->goodbye_message];
+        }
+
         // Create a filtered version of the messages
         $filteredMessages = [];
         if (!empty($output['messages'])) {
@@ -128,7 +147,7 @@ class InterviewAgent
             $filteredMessages = array_values(
                 array_filter($output['messages'], fn($msg) => !empty(trim($msg)))
             );
-            
+
             // Limit to maximum of 2 messages as per system prompt
             $filteredMessages = array_slice($filteredMessages, 0, 2);
 
@@ -138,16 +157,16 @@ class InterviewAgent
             }
         }
 
-        // Also limit messages in the output
-        if (isset($output['messages'])) {
-            $output['messages'] = $filteredMessages;
-        }
+        $output['messages'] = [
+            ...$isFirstMessage && $hasCustomWelcomeMessage ? [$interview->welcome_message] : [],
+            ...$filteredMessages,
+        ];
 
         // Save messages along with token usage and cost
         $this->saveMessages($sessionId, $messages, $interview, $inputTokens, $outputTokens, $cost);
 
         // Check if the interview is finished and update the session record
-        if (!empty($output['finished']) && $output['finished'] === true) {
+        if ($finished) {
             $this->finalizeSession(
                 $sessionId,
                 $output['result']['summary'] ?? null,

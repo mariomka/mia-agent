@@ -364,7 +364,7 @@ test('chat method limits output to maximum of two messages per turn', function (
     expect($result['messages'])->toHaveCount(2);
     expect($result['messages'][0])->toBe('Message 1');
     expect($result['messages'][1])->toBe('Message 2');
-    
+
     // Verify session messages also only includes the first two assistant messages
     expect($session->messages)->toHaveCount(3); // 1 user message + 2 assistant messages
     expect($session->messages[0]['type'])->toBe('user');
@@ -374,3 +374,171 @@ test('chat method limits output to maximum of two messages per turn', function (
     expect($session->messages[2]['type'])->toBe('assistant');
     expect($session->messages[2]['content'])->toBe('Message 2');
 });
+
+test('chat method uses goodbye message for final interaction if defined', function () {
+    // Create a session first
+    $session = InterviewSession::factory()->create();
+    $userMessage = 'Final message';
+
+    // Create interview with a goodbye message
+    $goodbyeMessage = 'This is a custom goodbye message!';
+    $interview = Interview::factory()->create([
+        'goodbye_message' => $goodbyeMessage
+    ]);
+
+    $summary = "This is a summary of the interview";
+    $topics = [
+        [
+            'key' => 'topic1',
+            'messages' => ['User mentioned X', 'User prefers Y']
+        ]
+    ];
+
+    // LLM response indicating the interview is finished
+    $response = [
+        'messages' => ['This is the original final message.'],
+        'finished' => true,
+        'result' => [
+            'summary' => $summary,
+            'topics' => $topics
+        ]
+    ];
+
+    $fakeResponse = new StructuredResponse(
+        steps: collect([]),
+        responseMessages: collect([]),
+        text: json_encode($response),
+        structured: $response,
+        finishReason: FinishReason::Stop,
+        usage: new Usage(500, 300),
+        meta: new Meta('fake-1', 'fake-model'),
+        additionalContent: []
+    );
+
+    Prism::fake([$fakeResponse]);
+
+    $agent = new InterviewAgent();
+    $result = $agent->chat($session->id, $userMessage, $interview);
+
+    $session->refresh();
+
+    // Verify the goodbye message replaces the original final message
+    expect($result['messages'])->toHaveCount(1);
+    expect($result['messages'][0])->toBe($goodbyeMessage);
+    expect($result['finished'])->toBeTrue();
+
+    // Verify the session has the goodbye message
+    $messages = $session->messages;
+    expect($messages)->toBeArray();
+
+    // Get the last message from the array
+    $lastIndex = count($messages) - 1;
+    expect($lastIndex)->toBeGreaterThanOrEqual(0);
+    expect($messages[$lastIndex]['type'])->toBe('assistant');
+    expect($messages[$lastIndex]['content'])->toBe($goodbyeMessage);
+
+    // Verify the session was finalized
+    expect($session->finished)->toBeTrue();
+    expect($session->summary)->toBe($summary);
+    expect($session->topics)->toBe($topics);
+});
+
+test('chat method uses custom welcome message for first interaction', closure: function () {
+    $session = InterviewSession::factory()->create();
+    $userMessage = ''; // Empty message for initialization
+
+    // Create interview with a welcome message
+    $welcomeMessage = 'This is a custom welcome message!';
+    $interview = Interview::factory()->create([
+        'welcome_message' => $welcomeMessage
+    ]);
+
+    $assistantMessage = 'This response should follow the welcome message.';
+    $fakeResponse = new StructuredResponse(
+        steps: collect([]),
+        responseMessages: collect([]),
+        text: json_encode([
+            'messages' => [$assistantMessage],
+            'finished' => false
+        ]),
+        structured: [
+            'messages' => [$assistantMessage],
+            'finished' => false
+        ],
+        finishReason: FinishReason::Stop,
+        usage: new Usage(100, 50),
+        meta: new Meta('fake-1', 'fake-model'),
+        additionalContent: []
+    );
+
+    // Fake the LLM response
+    Prism::fake([$fakeResponse]);
+
+    // Create the agent and call chat
+    $agent = new InterviewAgent();
+    $result = $agent->chat($session->id, $userMessage, $interview);
+
+    // Verify the welcome message is returned directly without calling the LLM
+    expect($result)->toBeArray()
+        ->and($result['messages'])->toHaveCount(2)
+        ->and($result['messages'][0])->toBe($welcomeMessage)
+        ->and($result['messages'][1])->toBe($assistantMessage);
+
+    // Verify a session was created with the welcome message
+    $session = InterviewSession::where('id', $session->id)->first();
+    expect($session)->not->toBeNull();
+    expect($session->messages)->toHaveCount(2);
+    expect($session->messages[0]['type'])->toBe('assistant');
+    expect($session->messages[0]['content'])->toBe($welcomeMessage);
+    expect($session->messages)->toHaveCount(2);
+    expect($session->messages[1]['type'])->toBe('assistant');
+    expect($session->messages[1]['content'])->toBe($assistantMessage);
+});
+
+test('chat method uses custom goodbye message for last interaction', closure: function () {
+    $session = InterviewSession::factory()->create();
+    $userMessage = ''; // Empty message for initialization
+
+    // Create interview with a welcome message
+    $goodbyeMessage = 'This is a custom goodbye message!';
+    $interview = Interview::factory()->create([
+        'goodbye_message' => $goodbyeMessage
+    ]);
+
+    $fakeResponse = new StructuredResponse(
+        steps: collect([]),
+        responseMessages: collect([]),
+        text: json_encode([
+            'messages' => ['Not used message.'],
+            'finished' => true
+        ]),
+        structured: [
+            'messages' => ['Not used message.'],
+            'finished' => true
+        ],
+        finishReason: FinishReason::Stop,
+        usage: new Usage(100, 50),
+        meta: new Meta('fake-1', 'fake-model'),
+        additionalContent: []
+    );
+
+    // Fake the LLM response
+    Prism::fake([$fakeResponse]);
+
+    // Create the agent and call chat
+    $agent = new InterviewAgent();
+    $result = $agent->chat($session->id, $userMessage, $interview);
+
+    // Verify the welcome message is returned directly without calling the LLM
+    expect($result)->toBeArray()
+        ->and($result['messages'])->toHaveCount(1)
+        ->and($result['messages'][0])->toBe($goodbyeMessage);
+
+    // Verify a session was created with the welcome message
+    $session = InterviewSession::where('id', $session->id)->first();
+    expect($session)->not->toBeNull();
+    expect($session->messages)->toHaveCount(1);
+    expect($session->messages[0]['type'])->toBe('assistant');
+    expect($session->messages[0]['content'])->toBe($goodbyeMessage);
+});
+

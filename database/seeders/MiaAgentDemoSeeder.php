@@ -19,6 +19,8 @@ class MiaAgentDemoSeeder extends Seeder
             'interview_type' => 'Market Research',
             'target_name' => 'Mia Agent',
             'target_description' => 'Mia Agent is an AI-powered interview platform that automates various types of interviews including market research, customer feedback, product validation, and more. The system creates consistent interview experiences while gathering valuable insights for stakeholders across different domains and use cases.',
+            'welcome_message' => 'Hello! I\'m Mia, and I\'m here to learn about your thoughts and experiences related to AI-powered interview systems like Mia Agent. This will help us understand how people perceive and interact with such technology.',
+            'goodbye_message' => 'Thank you for sharing your insights. If you’d like to add more later, feel free to reach out!',
             'topics' => [
                 [
                     'key' => Str::random(10),
@@ -59,4 +61,4 @@ class MiaAgentDemoSeeder extends Seeder
             ],
         ]);
     }
-} 
+}

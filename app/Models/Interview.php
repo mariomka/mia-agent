@@ -24,6 +24,8 @@ class Interview extends Model
         'target_description',
         'topics',
         'interview_type',
+        'welcome_message',
+        'goodbye_message',
     ];
 
     /**

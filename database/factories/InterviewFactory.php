@@ -29,6 +29,8 @@ class InterviewFactory extends Factory
             'language' => fake()->randomElement($languages),
             'target_name' => fake()->catchPhrase(),
             'target_description' => fake()->paragraph(),
+            'welcome_message' => '',
+            'goodbye_message' => '',
             'topics' => [
                 [
                     'key' => Str::random(10),

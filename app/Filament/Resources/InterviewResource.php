@@ -9,10 +9,8 @@ use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Support\Enums\Alignment;
-use Filament\Support\Enums\IconPosition;
 use Filament\Tables;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Str;
 
 class InterviewResource extends Resource
@@ -83,6 +81,35 @@ class InterviewResource extends Resource
                                                     ->iconButton()
                                                     ->icon('heroicon-o-information-circle')
                                                     ->tooltip('Provide context about the target that helps the AI agent understand what is being discussed.')
+                                                    ->color('gray')
+                                            ),
+                                    ]),
+
+                                Forms\Components\Section::make('Custom Messages')
+                                    ->schema([
+                                        Forms\Components\Textarea::make('welcome_message')
+                                            ->label('Welcome Message')
+                                            ->placeholder('Optional custom message to start the interview')
+                                            ->maxLength(300)
+                                            ->rows(3)
+                                            ->hintAction(
+                                                Forms\Components\Actions\Action::make('welcome_message_info')
+                                                    ->iconButton()
+                                                    ->icon('heroicon-o-information-circle')
+                                                    ->tooltip('Custom message sent at the beginning of each interview. If empty, the AI will generate its own introduction.')
+                                                    ->color('gray')
+                                            ),
+
+                                        Forms\Components\Textarea::make('goodbye_message')
+                                            ->label('Goodbye Message')
+                                            ->placeholder('Optional custom message to end the interview')
+                                            ->maxLength(300)
+                                            ->rows(3)
+                                            ->hintAction(
+                                                Forms\Components\Actions\Action::make('goodbye_message_info')
+                                                    ->iconButton()
+                                                    ->icon('heroicon-o-information-circle')
+                                                    ->tooltip('Custom message sent at the end of each interview. If empty, the AI will generate its own conclusion.')
                                                     ->color('gray')
                                             ),
                                     ]),

@@ -42,6 +42,17 @@ class ViewInterview extends ViewRecord
                                             ->markdown(),
                                     ]),
 
+                                Infolists\Components\Section::make('Custom Messages')
+                                    ->schema([
+                                        Infolists\Components\TextEntry::make('welcome_message')
+                                            ->label('Welcome Message')
+                                            ->placeholder('No custom welcome message defined'),
+
+                                        Infolists\Components\TextEntry::make('goodbye_message')
+                                            ->label('Goodbye Message')
+                                            ->placeholder('No custom goodbye message defined'),
+                                    ]),
+
                                 Infolists\Components\Section::make('Topics')
                                     ->schema([
                                         Infolists\Components\TextEntry::make('topics_formatted')
@@ -50,25 +61,25 @@ class ViewInterview extends ViewRecord
                                                 if (!$record->topics || !is_array($record->topics)) {
                                                     return '*No topics available*';
                                                 }
-                                                
+
                                                 $markdown = '';
-                                                
+
                                                 foreach ($record->topics as $index => $topic) {
                                                     $markdown .= "### Topic " . ($index + 1) . "\n\n";
-                                                    
+
                                                     if (isset($topic['question'])) {
                                                         $markdown .= "**Question**: " . $topic['question'] . "\n\n";
                                                     }
-                                                    
+
                                                     if (isset($topic['description'])) {
                                                         $markdown .= "**Description**: " . $topic['description'] . "\n\n";
                                                     }
-                                                    
+
                                                     if (isset($topic['approach'])) {
                                                         $markdown .= "**Approach**: " . ucfirst($topic['approach']) . "\n\n";
                                                     }
                                                 }
-                                                
+
                                                 return $markdown;
                                             })
                                             ->markdown()
@@ -88,14 +99,14 @@ class ViewInterview extends ViewRecord
                                             ->label('Language')
                                             ->formatStateUsing(fn (string $state): string => ucfirst($state)),
                                     ]),
-                                
+
                                 Infolists\Components\Section::make('Statistics')
                                     ->schema([
                                         Infolists\Components\TextEntry::make('sessions_count')
                                             ->label('Total Sessions')
                                             ->state(fn ($record) => $record->sessions->count()),
                                     ]),
-                                
+
                                 Infolists\Components\Section::make('Timestamps')
                                     ->schema([
                                         Infolists\Components\TextEntry::make('created_at')
@@ -110,4 +121,4 @@ class ViewInterview extends ViewRecord
                     ]),
             ]);
     }
-} 
+}
