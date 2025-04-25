@@ -118,6 +118,7 @@ class InterviewAgent
             ->withSystemPrompt($systemPrompt)
             ->withMessages($messages)
             ->withClientRetry(3)
+            ->usingTemperature(0.2)
             ->asStructured();
 
         $output = $response->structured ?? [];
