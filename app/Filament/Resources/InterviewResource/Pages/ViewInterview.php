@@ -112,6 +112,13 @@ class ViewInterview extends ViewRecord
                                         Infolists\Components\TextEntry::make('sessions_count')
                                             ->label('Total Sessions')
                                             ->state(fn ($record) => $record->sessions->count()),
+                                        
+                                        Infolists\Components\TextEntry::make('total_cost')
+                                            ->label('Total Cost')
+                                            ->state(function ($record) {
+                                                return $record->sessions->sum('cost');
+                                            })
+                                            ->money('USD'),
                                     ]),
 
                                 Infolists\Components\Section::make('Timestamps')
