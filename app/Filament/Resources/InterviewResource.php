@@ -47,12 +47,15 @@ class InterviewResource extends Resource
                                                     ->color('gray')
                                             ),
 
-                                        Forms\Components\Select::make('interview_type')
+                                        Forms\Components\TextInput::make('interview_type')
                                             ->required()
-                                            ->options([
-                                                'User Interview' => 'User Interview',
-                                                'Screening Interview' => 'Screening Interview',
-                                                'Customer Feedback' => 'Customer Feedback',
+                                            ->maxLength(100)
+                                            ->datalist([
+                                                'User Interview',
+                                                'Screening Interview',
+                                                'Customer Feedback',
+                                                'Product Feedback',
+                                                'Market Research',
                                             ])
                                             ->hintAction(
                                                 Forms\Components\Actions\Action::make('interview_type_info')
@@ -267,12 +270,18 @@ class InterviewResource extends Resource
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                Tables\Filters\SelectFilter::make('interview_type')
-                    ->options([
-                        'User Interview' => 'User Interview',
-                        'Screening Interview' => 'Screening Interview',
-                        'Customer Feedback' => 'Customer Feedback',
-                    ]),
+                Tables\Filters\Filter::make('interview_type')
+                    ->form([
+                        Forms\Components\TextInput::make('interview_type')
+                            ->label('Interview Type')
+                            ->placeholder('Search by type...'),
+                    ])
+                    ->query(function ($query, array $data) {
+                        return $query->when(
+                            $data['interview_type'],
+                            fn ($query) => $query->where('interview_type', 'like', "%{$data['interview_type']}%")
+                        );
+                    }),
 
                 Tables\Filters\SelectFilter::make('language')
                     ->options([
