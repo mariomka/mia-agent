@@ -199,16 +199,16 @@ class InterviewResource extends Resource
                                                     ->color('gray')
                                             ),
 
-                                        Forms\Components\Select::make('language')
+                                        Forms\Components\TextInput::make('language')
                                             ->required()
                                             ->default('english')
-                                            ->options([
-                                                'english' => 'English',
-                                                'spanish' => 'Spanish',
-                                                'french' => 'French',
-                                                'german' => 'German',
-                                                'italian' => 'Italian',
-                                                'portuguese' => 'Portuguese',
+                                            ->datalist([
+                                                'English',
+                                                'Spanish',
+                                                'French',
+                                                'German',
+                                                'Italian',
+                                                'Portuguese',
                                             ])
                                             ->hintAction(
                                                 Forms\Components\Actions\Action::make('language_info')
@@ -283,15 +283,18 @@ class InterviewResource extends Resource
                         );
                     }),
 
-                Tables\Filters\SelectFilter::make('language')
-                    ->options([
-                        'english' => 'English',
-                        'spanish' => 'Spanish',
-                        'french' => 'French',
-                        'german' => 'German',
-                        'italian' => 'Italian',
-                        'portuguese' => 'Portuguese',
-                    ]),
+                Tables\Filters\Filter::make('language')
+                    ->form([
+                        Forms\Components\TextInput::make('language')
+                            ->label('Language')
+                            ->placeholder('Search by language...'),
+                    ])
+                    ->query(function ($query, array $data) {
+                        return $query->when(
+                            $data['language'],
+                            fn ($query) => $query->where('language', 'like', "%{$data['language']}%")
+                        );
+                    }),
             ])
             ->actions([
                 Tables\Actions\Action::make('open_interview')
