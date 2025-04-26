@@ -17,28 +17,6 @@ class SessionsRelationManager extends RelationManager
 
     protected static ?string $recordTitleAttribute = 'id';
 
-    public function form(Form $form): Form
-    {
-        return $form
-            ->schema([
-                Forms\Components\TextInput::make('id')
-                    ->required()
-                    ->maxLength(255)
-                    ->disabled(),
-
-                Forms\Components\Toggle::make('finished')
-                    ->required(),
-
-                Forms\Components\Textarea::make('summary')
-                    ->rows(4)
-                    ->columnSpanFull(),
-
-                Forms\Components\Placeholder::make('topics')
-                    ->content('Topics are stored in a structured array format and cannot be directly edited here.')
-                    ->columnSpanFull(),
-            ]);
-    }
-
     public function table(Table $table): Table
     {
         return $table
