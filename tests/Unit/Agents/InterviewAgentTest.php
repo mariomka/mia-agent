@@ -4,7 +4,6 @@ use App\Agents\InterviewAgent;
 use App\Models\Interview;
 use App\Models\InterviewSession;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Str;
 use Prism\Prism\Enums\FinishReason;
 use Prism\Prism\Prism;
@@ -101,8 +100,11 @@ test('chat method handles interview completion', function () {
 });
 
 test('chat method calculates cost correctly', function () {
-    Config::set('prism.pricing.openai.gpt-4.1-mini.input', 1); // $1 per million tokens
-    Config::set('prism.pricing.openai.gpt-4.1-mini.output', 2); // $2 per million tokens
+    // Mock the config to use test values
+    config([
+        'agent.pricing.input' => 1.0, // $1 per million tokens
+        'agent.pricing.output' => 2.0, // $2 per million tokens
+    ]);
 
     $session = InterviewSession::factory()->create();
     $userMessage = 'Test message';
@@ -128,14 +130,17 @@ test('chat method calculates cost correctly', function () {
 
     $session->refresh();
 
-    expect((float) $session->cost)->toBe((1_000 / 1_000_000 * 1) + (500 / 1_000_000 * 2));
+    expect((float) $session->cost)->toBe((1_000 / 1_000_000 * 1.0) + (500 / 1_000_000 * 2.0));
     expect($session->input_tokens)->toBe(1000);
     expect($session->output_tokens)->toBe(500);
 });
 
 test('chat method accumulates tokens and cost across multiple calls', function () {
-    Config::set('prism.pricing.openai.gpt-4.1-mini.input', 1); // $1 per million tokens
-    Config::set('prism.pricing.openai.gpt-4.1-mini.output', 2); // $2 per million tokens
+    // Mock the config to use test values
+    config([
+        'agent.pricing.input' => 1.0, // $1 per million tokens
+        'agent.pricing.output' => 2.0, // $2 per million tokens
+    ]);
 
     $session = InterviewSession::factory()->create();
     $interview = Interview::factory()->create();
@@ -172,7 +177,7 @@ test('chat method accumulates tokens and cost across multiple calls', function (
     $agent->chat($session->id, 'First message', $interview);
     $session->refresh();
 
-    expect((float) $session->cost)->toBe((1_000 / 1_000_000 * 1) + (500 / 1_000_000 * 2))
+    expect((float) $session->cost)->toBe((1_000 / 1_000_000 * 1.0) + (500 / 1_000_000 * 2.0))
         ->and($session->input_tokens)->toBe(1000)
         ->and($session->output_tokens)->toBe(500);
 
@@ -181,7 +186,7 @@ test('chat method accumulates tokens and cost across multiple calls', function (
     $session->refresh();
 
     // Total cost should be sum of both calls
-    $expectedTotalCost = ((1_000 + 800) / 1_000_000 * 1) + ((500 + 400) / 1_000_000 * 2);
+    $expectedTotalCost = ((1_000 + 800) / 1_000_000 * 1.0) + ((500 + 400) / 1_000_000 * 2.0);
     expect((float) $session->cost)->toBe($expectedTotalCost)
         ->and($session->input_tokens)->toBe(1800) // 1000 + 800
         ->and($session->output_tokens)->toBe(900); // 500 + 400

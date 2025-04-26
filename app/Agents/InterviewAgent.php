@@ -4,8 +4,6 @@ namespace App\Agents;
 
 use App\Models\Interview;
 use App\Models\InterviewSession;
-use Illuminate\Support\Facades\Config;
-use Prism\Prism\Enums\Provider;
 use Prism\Prism\Prism;
 use Prism\Prism\Schema\ArraySchema;
 use Prism\Prism\Schema\BooleanSchema;
@@ -17,10 +15,6 @@ use function view;
 
 class InterviewAgent
 {
-    // Default model
-    private const DEFAULT_MODEL = 'gpt-4.1-mini';
-    private const DEFAULT_PROVIDER = 'openai';
-
     public function chat(string $sessionId, string $message, Interview $interview): mixed
     {
         $topicSchema = new ObjectSchema(
@@ -118,12 +112,11 @@ class InterviewAgent
             'turnsExhausted' => $reachedTurnLimit,
         ]);
 
-        // Define the model
-        $model = self::DEFAULT_MODEL;
-        $provider = Provider::OpenAI;
+        $providerName = config('agent.provider');
+        $modelName = config('agent.model');
 
         $response = Prism::structured()
-            ->using($provider, $model)
+            ->using($providerName, $modelName)
             ->withSchema($schema)
             ->withSystemPrompt($systemPrompt)
             ->withMessages($messages)
@@ -139,12 +132,7 @@ class InterviewAgent
         $outputTokens = $response->usage->completionTokens ?? 0;
 
         // Calculate cost based on token usage and configuration
-        $cost = $this->calculateCost(
-            self::DEFAULT_PROVIDER,
-            $model,
-            $inputTokens,
-            $outputTokens
-        );
+        $cost = $this->calculateCost($inputTokens, $outputTokens);
 
         $finished = !empty($output['finished']) && $output['finished'] === true;
 
@@ -210,17 +198,14 @@ class InterviewAgent
     /**
      * Calculate the cost of token usage based on the provider and model
      *
-     * @param string $provider The provider name (e.g., 'openai')
-     * @param string $model The model name (e.g., 'o4-mini')
      * @param int $inputTokens Number of input tokens
      * @param int $outputTokens Number of output tokens
      * @return float The calculated cost
      */
-    private function calculateCost(string $provider, string $model, int $inputTokens, int $outputTokens): float
+    private function calculateCost(int $inputTokens, int $outputTokens): float
     {
-        // Get pricing from config
-        $inputPrice = Config::get("prism.pricing.{$provider}.{$model}.input", 0);
-        $outputPrice = Config::get("prism.pricing.{$provider}.{$model}.output", 0);
+        $inputPrice = config('agent.pricing.input');
+        $outputPrice = config('agent.pricing.output');
 
         // Calculate cost (convert from per million tokens to per token)
         $inputCost = ($inputTokens / 1_000_000) * $inputPrice;

@@ -49,9 +49,26 @@ return [
         ],
     ],
 
+    // Interview agent configuration
+    'interview_agent' => [
+        'provider' => env('INTERVIEW_AGENT_PROVIDER', 'openai'),
+        'model' => env('INTERVIEW_AGENT_MODEL', 'gpt-4.1-mini'),
+    ],
+
     // Token pricing configuration per million tokens (in USD)
     'pricing' => [
+        // Default fallback pricing for all providers and models
+        'default' => [
+            'input' => env('DEFAULT_TOKEN_INPUT_PRICE', 0.5),
+            'output' => env('DEFAULT_TOKEN_OUTPUT_PRICE', 1.5),
+        ],
         'openai' => [
+            // Default pricing for all OpenAI models
+            'default' => [
+                'input' => env('OPENAI_DEFAULT_INPUT_PRICE', 0.5),
+                'output' => env('OPENAI_DEFAULT_OUTPUT_PRICE', 1.5),
+            ],
+            // Model-specific pricing (will override defaults when specified)
             'o4-mini' => [
                 'input' => env('OPENAI_O4_MINI_INPUT_PRICE', 1.10),
                 'output' => env('OPENAI_O4_MINI_OUTPUT_PRICE', 4.40),
@@ -62,9 +79,22 @@ return [
             ],
         ],
         'deepseek' => [
+            // Default pricing for all DeepSeek models
+            'default' => [
+                'input' => env('DEEPSEEK_DEFAULT_INPUT_PRICE', 1.0),
+                'output' => env('DEEPSEEK_DEFAULT_OUTPUT_PRICE', 2.0),
+            ],
+            // Model-specific pricing
             'deepseek-chat' => [
                 'input' => env('DEEPSEEK_CHAT_INPUT_PRICE', 1.10),
                 'output' => env('DEEPSEEK_CHAT_OUTPUT_PRICE', 2.19),
+            ],
+        ],
+        'anthropic' => [
+            // Default pricing for all Anthropic models
+            'default' => [
+                'input' => env('ANTHROPIC_DEFAULT_INPUT_PRICE', 3.0),
+                'output' => env('ANTHROPIC_DEFAULT_OUTPUT_PRICE', 15.0),
             ],
         ],
     ],
