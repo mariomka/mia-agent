@@ -25,14 +25,14 @@ class SessionsRelationManager extends RelationManager
                     ->required()
                     ->maxLength(255)
                     ->disabled(),
-                
+
                 Forms\Components\Toggle::make('finished')
                     ->required(),
-                
+
                 Forms\Components\Textarea::make('summary')
                     ->rows(4)
                     ->columnSpanFull(),
-                    
+
                 Forms\Components\Placeholder::make('topics')
                     ->content('Topics are stored in a structured array format and cannot be directly edited here.')
                     ->columnSpanFull(),
@@ -48,15 +48,15 @@ class SessionsRelationManager extends RelationManager
             ->columns([
                 Tables\Columns\TextColumn::make('id')
                     ->searchable(),
-                
+
                 Tables\Columns\IconColumn::make('finished')
                     ->boolean()
                     ->label('Completed'),
-                
+
                 Tables\Columns\TextColumn::make('summary')
                     ->limit(50)
                     ->searchable(),
-                
+
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable(),
@@ -64,7 +64,7 @@ class SessionsRelationManager extends RelationManager
             ->filters([
                 Tables\Filters\TernaryFilter::make('finished')
                     ->label('Completed'),
-                
+
                 Tables\Filters\Filter::make('created_at')
                     ->form([
                         Forms\Components\DatePicker::make('created_from'),
@@ -93,6 +93,7 @@ class SessionsRelationManager extends RelationManager
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
-            ]);
+            ])
+            ->defaultSort('created_at', 'desc');
     }
-} 
+}
