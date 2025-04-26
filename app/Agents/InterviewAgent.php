@@ -121,7 +121,6 @@ class InterviewAgent
             ->withSystemPrompt($systemPrompt)
             ->withMessages($messages)
             ->withClientRetry(3)
-            ->withMaxTokens(200)
             ->asStructured();
 
         $output = $response->structured ?? [];
