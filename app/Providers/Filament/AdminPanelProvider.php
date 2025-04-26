@@ -19,6 +19,7 @@ use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 use App\Filament\Widgets\StatsOverviewWidget;
 use App\Filament\Widgets\RecentSessionsWidget;
+use App\Filament\Widgets\SpendingStatsWidget;
 
 class AdminPanelProvider extends PanelProvider
 {
@@ -44,6 +45,7 @@ class AdminPanelProvider extends PanelProvider
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')
             ->widgets([
                 StatsOverviewWidget::class,
+                SpendingStatsWidget::class,
                 RecentSessionsWidget::class,
             ])
             ->middleware([
