@@ -77,7 +77,7 @@ class InterviewResource extends Resource
                                             ),
 
                                         Forms\Components\Textarea::make('target_description')
-                                            ->maxLength(300)
+                                            ->maxLength(400)
                                             ->rows(4)
                                             ->hintAction(
                                                 Forms\Components\Actions\Action::make('target_description_info')
@@ -202,6 +202,7 @@ class InterviewResource extends Resource
                                         Forms\Components\TextInput::make('language')
                                             ->required()
                                             ->default('english')
+                                            ->maxLength(40)
                                             ->datalist([
                                                 'English',
                                                 'Spanish',
