@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\InterviewResource\Pages;
 
 use App\Filament\Resources\InterviewResource;
+use App\Http\Controllers\InterviewController;
 use Filament\Actions;
 use Filament\Infolists;
 use Filament\Infolists\Infolist;
@@ -15,6 +16,12 @@ class ViewInterview extends ViewRecord
     protected function getHeaderActions(): array
     {
         return [
+            Actions\Action::make('open_interview')
+                ->label('Open Interview')
+                ->icon('heroicon-o-arrow-top-right-on-square')
+                ->color('success')
+                ->url(fn () => InterviewController::generateSignedUrl($this->record))
+                ->openUrlInNewTab(),
             Actions\EditAction::make(),
             Actions\DeleteAction::make(),
         ];
