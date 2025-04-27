@@ -122,7 +122,8 @@ class ViewInterviewSession extends ViewRecord
                                 Infolists\Components\Section::make('Interview Session Details')
                                     ->schema([
                                         Infolists\Components\TextEntry::make('interview.name')
-                                            ->label('Interview Name'),
+                                            ->label('Interview')
+                                            ->url(fn ($record) => route('filament.admin.resources.interviews.view', $record->interview->id)),
                                         Infolists\Components\TextEntry::make('session_id')
                                             ->label('Session ID'),
                                         Infolists\Components\IconEntry::make('finished')
