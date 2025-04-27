@@ -21,6 +21,8 @@ class InterviewResource extends Resource
 
     protected static ?string $navigationLabel = 'Interviews';
 
+    protected static ?string $recordTitleAttribute = 'name';
+
     public static function form(Form $form): Form
     {
         return $form
