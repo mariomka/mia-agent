@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Enums\InterviewStatus;
 use App\Models\Interview;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
@@ -23,6 +24,7 @@ class InterviewFactory extends Factory
         $interviewTypes = ['User Interview', 'Screening Interview', 'Customer Feedback', 'Market Research'];
 
         return [
+            'status' => InterviewStatus::Published->value,
             'name' => fake()->sentence(3),
             'interview_type' => fake()->randomElement($interviewTypes),
             'agent_name' => fake()->randomElement($agentNames),

@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\InterviewStatus;
 use App\Models\Interview;
 use App\Models\InterviewSession;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -12,6 +14,14 @@ class InterviewController extends Controller
 {
     public function __invoke(Request $request, Interview $interview): Response
     {
+        if (!Auth::check() && $interview->status === InterviewStatus::Draft) {
+            abort(404);
+        }
+
+        if ($interview->status === InterviewStatus::Completed) {
+            abort(404);
+        }
+
         $interviewSessionKey = "interview_{$interview->id}_session_id";
 
         $sessionId = $request->session()->get($interviewSessionKey);

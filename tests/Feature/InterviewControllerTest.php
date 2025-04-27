@@ -2,8 +2,10 @@
 
 namespace Tests\Feature;
 
+use App\Enums\InterviewStatus;
 use App\Models\Interview;
 use App\Models\InterviewSession;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Support\Str;
@@ -19,7 +21,7 @@ it('generates session id when none exists', function () {
     $interview = Interview::factory()->create();
     $response = get(route('interview', $interview));
     $interviewSessionKey = "interview_{$interview->id}_session_id";
-    
+
     $response->assertStatus(200);
     $response->assertInertia(fn ($page) => $page->component('Chat'));
 
@@ -125,7 +127,7 @@ it('loads and formats messages from session', function () {
         expect(session($interviewSessionKey))->toBe($responseSessionId);
         expect($responseSessionId)->toBe($session->id);
 
-        // Verify formatted messages 
+        // Verify formatted messages
         $expectedMessages = [
             [
                 'id' => "{$responseSessionId}_0",
@@ -234,9 +236,9 @@ it('returns 404 for non-existent interview', function () {
 it('handles database errors gracefully', function () {
     $interview = Interview::factory()->create();
     $response = get(route('interview', $interview));
-    
+
     $response->assertStatus(200);
-    
+
     $interviewSessionKey = "interview_{$interview->id}_session_id";
     $sessionId = session($interviewSessionKey);
     expect($sessionId)->not->toBeNull();
@@ -245,19 +247,51 @@ it('handles database errors gracefully', function () {
 
 it('rejects requests with invalid session ID format', function () {
     $interview = Interview::factory()->create();
-    
+
     $interviewSessionKey = "interview_{$interview->id}_session_id";
     session([$interviewSessionKey => 'not-a-valid-uuid']);
-    
+
     $response = get(route('interview', $interview));
-    
+
     $newSessionId = session($interviewSessionKey);
     expect(Str::isUuid($newSessionId))->toBeTrue();
     expect($newSessionId)->not->toBe('not-a-valid-uuid');
-    
+
     $response->assertStatus(200);
-    $response->assertInertia(fn ($page) => 
-        $page->has('sessionId') && 
+    $response->assertInertia(fn ($page) =>
+        $page->has('sessionId') &&
         $page->where('sessionId', $newSessionId)
     );
 });
+
+it('returns 404 for draft interviews when user is not authenticated', function () {
+    $interview = Interview::factory()->create([
+        'status' => InterviewStatus::Draft->value
+    ]);
+
+    $response = get(route('interview', $interview));
+    $response->assertStatus(404);
+});
+
+it('allows access to draft interviews for authenticated users', function () {
+    $user = User::factory()->create();
+    $this->actingAs($user);
+
+    $interview = Interview::factory()->create([
+        'status' => InterviewStatus::Draft->value
+    ]);
+
+    $response = get(route('interview', $interview));
+    $response->assertStatus(200);
+    $response->assertInertia(fn ($page) => $page->component('Chat'));
+});
+
+it('returns 404 for completed interviews', function () {
+    $interview = Interview::factory()->create([
+        'status' => InterviewStatus::Completed->value
+    ]);
+
+    $response = get(route('interview', $interview));
+    $response->assertStatus(404);
+});
+

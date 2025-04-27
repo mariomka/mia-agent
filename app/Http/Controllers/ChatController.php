@@ -3,10 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Agents\InterviewAgent;
+use App\Enums\InterviewStatus;
 use App\Models\Interview;
 use App\Models\InterviewSession;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 
 class ChatController extends Controller
@@ -27,7 +29,18 @@ class ChatController extends Controller
         $sessionId = $request->input('sessionId');
         $interview = Interview::findOrFail($request->input('interviewId'));
 
-        // Check if this interview session is already finished
+        if (!Auth::check() && $interview->status === InterviewStatus::Draft) {
+            return response()->json([
+                'error' => 'Interview not found or not available.',
+            ], 404);
+        }
+
+        if ($interview->status === InterviewStatus::Completed) {
+            return response()->json([
+                'error' => 'Interview not found or not available.',
+            ], 404);
+        }
+
         $session = InterviewSession::where('id', $sessionId)
             ->where('interview_id', $interview->id)
             ->first();

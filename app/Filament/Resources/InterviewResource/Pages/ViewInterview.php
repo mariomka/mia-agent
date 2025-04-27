@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\InterviewResource\Pages;
 
+use App\Enums\InterviewStatus;
 use App\Filament\Resources\InterviewResource;
 use App\Http\Controllers\InterviewController;
 use Filament\Actions;
@@ -107,12 +108,26 @@ class ViewInterview extends ViewRecord
                                             ->formatStateUsing(fn (string $state): string => ucfirst($state)),
                                     ]),
 
+                                Infolists\Components\Section::make('Access')
+                                    ->schema([
+                                        Infolists\Components\TextEntry::make('status')
+                                            ->label('Status')
+                                            ->badge()
+                                            ->color(function (InterviewStatus $state): string {
+                                                return match ($state) {
+                                                    InterviewStatus::Draft => 'gray',
+                                                    InterviewStatus::Published => 'success',
+                                                    InterviewStatus::Completed => 'info',
+                                                };
+                                            }),
+                                    ]),
+
                                 Infolists\Components\Section::make('Statistics')
                                     ->schema([
                                         Infolists\Components\TextEntry::make('sessions_count')
                                             ->label('Total Sessions')
                                             ->state(fn ($record) => $record->sessions->count()),
-                                        
+
                                         Infolists\Components\TextEntry::make('total_cost')
                                             ->label('Total Cost')
                                             ->state(function ($record) {

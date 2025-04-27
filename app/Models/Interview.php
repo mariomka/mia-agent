@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\InterviewStatus;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -17,6 +18,7 @@ class Interview extends Model
      * @var array<int, string>
      */
     protected $fillable = [
+        'status',
         'name',
         'agent_name',
         'language',
@@ -34,6 +36,7 @@ class Interview extends Model
      * @var array<string, string>
      */
     protected $casts = [
+        'status' => InterviewStatus::class,
         'topics' => 'array',
     ];
 

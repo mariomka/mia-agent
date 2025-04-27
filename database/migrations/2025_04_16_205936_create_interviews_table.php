@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::create('interviews', function (Blueprint $table) {
             $table->uuid('id')->primary();
+            $table->string('status');
             $table->string('name');
             $table->string('interview_type')->nullable();
             $table->string('agent_name');

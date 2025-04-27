@@ -2,7 +2,9 @@
 
 namespace App\Filament\Resources;
 
+use App\Enums\InterviewStatus;
 use App\Filament\Resources\InterviewResource\Pages;
+use App\Filament\Resources\InterviewResource\RelationManagers\SessionsRelationManager;
 use App\Http\Controllers\InterviewController;
 use App\Models\Interview;
 use Filament\Forms;
@@ -222,6 +224,26 @@ class InterviewResource extends Resource
                                             ),
                                     ]),
 
+                                Forms\Components\Section::make('Access')
+                                    ->schema([
+                                        Forms\Components\ToggleButtons::make('status')
+                                            ->inline()
+                                            ->options([
+                                                InterviewStatus::Draft->value => 'Draft',
+                                                InterviewStatus::Published->value => 'Published',
+                                                InterviewStatus::Completed->value => 'Completed',
+                                            ])
+                                            ->default(InterviewStatus::Draft->value)
+                                            ->required()
+                                            ->hintAction(
+                                                Forms\Components\Actions\Action::make('status_info')
+                                                    ->iconButton()
+                                                    ->icon('heroicon-o-information-circle')
+                                                    ->tooltip('Draft: not publicly accessible. Published: available for interviews. Completed: no longer available for new interviews.')
+                                                    ->color('gray')
+                                            ),
+                                    ]),
+
                                 Forms\Components\Section::make('Timestamps')
                                     ->schema([
                                         Forms\Components\Placeholder::make('created_at')
@@ -245,6 +267,15 @@ class InterviewResource extends Resource
     {
         return $table
             ->columns([
+                Tables\Columns\TextColumn::make('status')
+                    ->badge()
+                    ->colors([
+                        'gray' => fn (InterviewStatus $state): bool => $state === InterviewStatus::Draft,
+                        'success' => fn (InterviewStatus $state): bool => $state === InterviewStatus::Published,
+                        'info' => fn (InterviewStatus $state): bool => $state === InterviewStatus::Completed,
+                    ])
+                    ->sortable(),
+
                 Tables\Columns\TextColumn::make('name')
                     ->searchable()
                     ->sortable(),
@@ -298,6 +329,13 @@ class InterviewResource extends Resource
                             fn ($query) => $query->where('language', 'like', "%{$data['language']}%")
                         );
                     }),
+
+                Tables\Filters\SelectFilter::make('status')
+                    ->options([
+                        InterviewStatus::Draft->value => 'Draft',
+                        InterviewStatus::Published->value => 'Published',
+                        InterviewStatus::Completed->value => 'Completed',
+                    ]),
             ])
             ->actions([
                 Tables\Actions\Action::make('open_interview')
@@ -324,7 +362,7 @@ class InterviewResource extends Resource
     public static function getRelations(): array
     {
         return [
-            \App\Filament\Resources\InterviewResource\RelationManagers\SessionsRelationManager::class,
+            SessionsRelationManager::class,
         ];
     }
 
