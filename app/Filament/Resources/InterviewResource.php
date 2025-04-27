@@ -342,7 +342,7 @@ class InterviewResource extends Resource
                     ->label('')
                     ->icon('heroicon-o-arrow-top-right-on-square')
                     ->color('success')
-                    ->url(fn (Interview $record) => InterviewController::generateSignedUrl($record))
+                    ->url(fn (Interview $record) => InterviewController::generateUrl($record))
                     ->openUrlInNewTab(),
                 Tables\Actions\ViewAction::make()
                     ->label(''),

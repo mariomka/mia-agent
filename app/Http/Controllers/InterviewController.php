@@ -73,8 +73,11 @@ class InterviewController extends Controller
         ]);
     }
 
-    public static function generateSignedUrl(Interview $interview): string
+    public static function generateUrl(Interview $interview, ?array $params = []): string
     {
-        return route('interview', $interview);
+        return route('interview', [
+            'interview' => $interview,
+            ...$params
+        ]);
     }
 }

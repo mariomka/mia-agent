@@ -18,14 +18,14 @@ class EditInterview extends EditRecord
                 ->label('Open Interview')
                 ->icon('heroicon-o-arrow-top-right-on-square')
                 ->color('success')
-                ->url(fn () => InterviewController::generateSignedUrl($this->record))
+                ->url(fn () => InterviewController::generateUrl($this->record))
                 ->openUrlInNewTab(),
             Actions\DeleteAction::make(),
         ];
     }
-    
+
     protected function getRedirectUrl(): string
     {
         return $this->getResource()::getUrl('index');
     }
-} 
+}

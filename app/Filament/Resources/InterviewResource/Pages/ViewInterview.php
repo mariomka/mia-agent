@@ -6,9 +6,12 @@ use App\Enums\InterviewStatus;
 use App\Filament\Resources\InterviewResource;
 use App\Http\Controllers\InterviewController;
 use Filament\Actions;
+use Filament\Forms;
 use Filament\Infolists;
 use Filament\Infolists\Infolist;
 use Filament\Resources\Pages\ViewRecord;
+use Filament\Support\Enums\MaxWidth;
+use Illuminate\Support\HtmlString;
 
 class ViewInterview extends ViewRecord
 {
@@ -17,15 +20,85 @@ class ViewInterview extends ViewRecord
     protected function getHeaderActions(): array
     {
         return [
+            Actions\Action::make('generate_url')
+                ->label('Generate URL')
+                ->icon('heroicon-o-link')
+                ->color('gray')
+                ->slideOver()
+                ->modalWidth(MaxWidth::Large)
+                ->modalSubmitAction(false)
+                ->modalCancelAction(false)
+                ->form([
+                    Forms\Components\Placeholder::make('generated_url')
+                        ->label('Interview URL')
+                        ->key('generated_url')
+                        ->hintAction(
+                            Forms\Components\Actions\Action::make('open_url')
+                                ->iconButton()
+                                ->icon('heroicon-o-arrow-top-right-on-square')
+                                ->tooltip('Open')
+                                ->color('gray')
+                                ->url(fn(Forms\Get $get) => $this->generateUrl($get('query_params') ?? []))
+                                ->openUrlInNewTab()
+                        )
+                        ->content(function (Forms\Get $get): HtmlString {
+                            $url = $this->generateUrl($get('query_params') ?? []);
+
+                            return new HtmlString(<<<HTML
+                                <div class="p-2 bg-gray-100 dark:bg-gray-800 rounded overflow-x-auto cursor-pointer">
+                                    <code class="text-xs break-all" x-on:click="navigator.clipboard.writeText('$url'); new FilamentNotification().title('URL copied to clipboard').duration(1500).send()">$url</code>
+                                </div>
+                            HTML
+                            );
+                        }),
+
+                    Forms\Components\Repeater::make('query_params')
+                        ->label('Query Parameters')
+                        ->schema([
+                            Forms\Components\TextInput::make('key')
+                                ->label('Parameter Name')
+                                ->required()
+                                ->live(true),
+                            Forms\Components\TextInput::make('value')
+                                ->label('Parameter Value')
+                                ->live(true),
+                        ])
+                        ->collapsible()
+                        ->collapsed(false)
+                        ->addActionLabel('Add Parameter')
+                        ->defaultItems(0)
+                        ->afterStateUpdated(function (Forms\Get $get, Forms\Set $set) {
+                            $set('generated_url', $this->generateUrl($get('query_params')));
+                        })
+                        ->hintAction(
+                            Forms\Components\Actions\Action::make('target_name_info')
+                                ->iconButton()
+                                ->icon('heroicon-o-information-circle')
+                                ->tooltip('Add custom query parameters to the interview URL.')
+                                ->color('gray')
+                        ),
+                ]),
             Actions\Action::make('open_interview')
                 ->label('Open Interview')
                 ->icon('heroicon-o-arrow-top-right-on-square')
                 ->color('success')
-                ->url(fn () => InterviewController::generateSignedUrl($this->record))
+                ->url(fn() => InterviewController::generateUrl($this->record))
                 ->openUrlInNewTab(),
             Actions\EditAction::make(),
             Actions\DeleteAction::make(),
         ];
+    }
+
+    private function generateUrl(?array $params): string
+    {
+        $queryParams = [];
+        foreach ($params as $param) {
+            if (!empty($param['key'])) {
+                $queryParams[$param['key']] = $param['value'] ?? '';
+            }
+        }
+
+        return InterviewController::generateUrl($this->record, $queryParams);
     }
 
     public function infolist(Infolist $infolist): Infolist
@@ -105,7 +178,7 @@ class ViewInterview extends ViewRecord
                                             ->label('Agent Name'),
                                         Infolists\Components\TextEntry::make('language')
                                             ->label('Language')
-                                            ->formatStateUsing(fn (string $state): string => ucfirst($state)),
+                                            ->formatStateUsing(fn(string $state): string => ucfirst($state)),
                                     ]),
 
                                 Infolists\Components\Section::make('Access')
@@ -126,7 +199,7 @@ class ViewInterview extends ViewRecord
                                     ->schema([
                                         Infolists\Components\TextEntry::make('sessions_count')
                                             ->label('Total Sessions')
-                                            ->state(fn ($record) => $record->sessions->count()),
+                                            ->state(fn($record) => $record->sessions->count()),
 
                                         Infolists\Components\TextEntry::make('total_cost')
                                             ->label('Total Cost')
