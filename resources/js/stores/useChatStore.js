@@ -8,7 +8,7 @@ export const useChatStore = defineStore('chat', () => {
   const page = usePage();
   const interviewId = ref(page.props.interview?.id);
   const sessionId = ref(page.props.sessionId || null);
-  
+
   // State
   const messages = ref(page.props.messages || []); // Use messages from backend
   const isLoading = ref(false);
@@ -21,13 +21,13 @@ export const useChatStore = defineStore('chat', () => {
     // Reset transient state
     isLoading.value = false;
     error.value = null;
-    
+
     // If session is already marked as finished in the backend, don't initialize
     if (isInterviewEnded.value) {
       console.log('Session is already finished, skipping initialization');
       return;
     }
-    
+
     // Check if messages are empty or if the last message needs retrying
     if (messages.value.length === 0) {
       // If no messages, initialize the chat with the first AI message
@@ -150,6 +150,19 @@ export const useChatStore = defineStore('chat', () => {
 
       // Add AI response messages
       if (response.output) {
+        // Check for empty messages response
+        if (
+          (response.output.messages && Array.isArray(response.output.messages) && response.output.messages.length === 0)
+        ) {
+          // Treat empty messages as an error
+          upsertMessage({
+            id: userMessageId,
+            status: 'error',
+          });
+          isLoading.value = false;
+          return;
+        }
+
         // Handle both arrays and single message responses
         if (response.output.messages && Array.isArray(response.output.messages)) {
           // Process each message in the array (limited to max 3 messages by the agent)
@@ -172,7 +185,7 @@ export const useChatStore = defineStore('chat', () => {
           };
           upsertMessage(aiMessage);
         }
-        
+
         // Handle final output if present for tests
         if (response.output.final_output) {
           endInterview(response.output.final_output);
@@ -184,6 +197,11 @@ export const useChatStore = defineStore('chat', () => {
           isLoading.value = false;
         }
       } else {
+        // Treat missing output as an error
+        upsertMessage({
+          id: userMessageId,
+          status: 'error',
+        });
         isLoading.value = false;
       }
     } catch (err) {
@@ -203,7 +221,7 @@ export const useChatStore = defineStore('chat', () => {
   // Action to retry sending a failed message
   async function retryFailedMessage(messageId, options = {}) {
     if (isInterviewEnded.value) return; // Don't retry if interview is ended
-    
+
     const { force = false } = options;
     const messageIndex = findMessageIndexById(messageId);
     if (messageIndex === -1) {
@@ -237,15 +255,28 @@ export const useChatStore = defineStore('chat', () => {
 
       // Add AI response messages
       if (response.output) {
+        // Check for empty messages response
+        if (
+          (response.output.messages && Array.isArray(response.output.messages) && response.output.messages.length === 0)
+        ) {
+          // Treat empty messages as an error
+          upsertMessage({
+            id: messageId,
+            status: 'error',
+          });
+          isLoading.value = false;
+          return;
+        }
+
         // Find current message position
         const messagePosition = findMessageIndexById(messageId);
-        
+
         // Remove any AI messages that might be after this user message
         let nextIndex = messagePosition + 1;
         while (nextIndex < messages.value.length && messages.value[nextIndex].sender === 'ai') {
           messages.value.splice(nextIndex, 1);
         }
-        
+
         // Handle both arrays and single message responses
         if (response.output.messages && Array.isArray(response.output.messages)) {
           // Add the new AI messages

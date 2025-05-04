@@ -55,8 +55,8 @@ const roundedCornerClass = computed(() => {
 
 // Animation classes
 const animationClass = computed(() => {
-  return isVisible.value 
-    ? 'opacity-100 translate-y-0' 
+  return isVisible.value
+    ? 'opacity-100 translate-y-0'
     : 'opacity-0 translate-y-3';
 });
 
@@ -69,7 +69,7 @@ const handleRetry = () => {
 <template>
   <div :class="['flex w-full', alignmentClass]">
     <!-- Using Tailwind for animation -->
-    <div 
+    <div
       :class="[
         'py-2 px-4 text-lg sm:text-xl max-w-xs sm:max-w-md lg:max-w-lg relative group rounded-lg',
         'transition-all duration-300 ease-out transform',
@@ -100,4 +100,4 @@ const handleRetry = () => {
 .whitespace-pre-wrap {
   white-space: pre-wrap; /* Ensures newlines in messages are displayed */
 }
-</style> 
+</style>
