@@ -149,7 +149,7 @@ class InterviewResource extends Resource
                                         Forms\Components\TextInput::make('question')
                                             ->label('Question')
                                             ->required()
-                                            ->maxLength(122)
+                                            ->maxLength(180)
                                             ->hintAction(
                                                 Forms\Components\Actions\Action::make('question_info')
                                                     ->iconButton()
