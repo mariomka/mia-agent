@@ -1,10 +1,11 @@
 import { describe, it, expect, vi } from 'vitest';
 import { mount } from '@vue/test-utils';
 import ChatInput from './ChatInput.vue';
+import { mountWithI18n } from '../testUtils/i18nTestHelper';
 
 describe('ChatInput.vue', () => {
   it('renders textarea and button with send icon', () => {
-    const wrapper = mount(ChatInput);
+    const wrapper = mountWithI18n(mount, ChatInput);
     expect(wrapper.find('textarea').exists()).toBe(true);
     const button = wrapper.find('button');
     expect(button.exists()).toBe(true);
@@ -15,7 +16,7 @@ describe('ChatInput.vue', () => {
   });
 
   it('enables button only when textarea has text', async () => {
-    const wrapper = mount(ChatInput);
+    const wrapper = mountWithI18n(mount, ChatInput);
     const textarea = wrapper.find('textarea');
     const button = wrapper.find('button');
 
@@ -36,7 +37,7 @@ describe('ChatInput.vue', () => {
   });
 
   it('emits sendMessage event on button click', async () => {
-    const wrapper = mount(ChatInput);
+    const wrapper = mountWithI18n(mount, ChatInput);
     const textarea = wrapper.find('textarea');
     const button = wrapper.find('button');
     const message = 'Test message';
@@ -54,7 +55,7 @@ describe('ChatInput.vue', () => {
   });
 
   it('emits sendMessage event on Enter key press (not Shift+Enter)', async () => {
-    const wrapper = mount(ChatInput);
+    const wrapper = mountWithI18n(mount, ChatInput);
     const textarea = wrapper.find('textarea');
     const message = 'Enter key test';
 
@@ -79,7 +80,7 @@ describe('ChatInput.vue', () => {
   });
 
   it('disables button but not input when isLoading is true', async () => {
-    const wrapper = mount(ChatInput, { props: { isLoading: false } });
+    const wrapper = mountWithI18n(mount, ChatInput, { props: { isLoading: false } });
     const textarea = wrapper.find('textarea');
     const button = wrapper.find('button');
 
@@ -112,7 +113,7 @@ describe('ChatInput.vue', () => {
     const originalActiveElement = document.activeElement;
     const focusSpy = vi.spyOn(HTMLElement.prototype, 'focus');
     
-    const wrapper = mount(ChatInput);
+    const wrapper = mountWithI18n(mount, ChatInput);
     
     // Verify that focus was called on the textarea
     expect(focusSpy).toHaveBeenCalled();

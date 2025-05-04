@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { mount } from '@vue/test-utils';
 import ChatMessage from './ChatMessage.vue';
+import { mountWithI18n } from '../testUtils/i18nTestHelper';
 
 describe('ChatMessage.vue', () => {
   it('renders AI message correctly (sent status)', () => {
@@ -10,7 +11,7 @@ describe('ChatMessage.vue', () => {
       text: 'Hello from AI',
       status: 'sent', // Explicitly sent
     };
-    const wrapper = mount(ChatMessage, { props: { message } });
+    const wrapper = mountWithI18n(mount, ChatMessage, { props: { message } });
 
     expect(wrapper.text()).toContain(message.text);
 
@@ -38,7 +39,7 @@ describe('ChatMessage.vue', () => {
       text: 'Hello from User',
       status: 'sent',
     };
-    const wrapper = mount(ChatMessage, { props: { message } });
+    const wrapper = mountWithI18n(mount, ChatMessage, { props: { message } });
 
     expect(wrapper.text()).toContain(message.text);
 
@@ -68,7 +69,7 @@ describe('ChatMessage.vue', () => {
       status: 'error',
       error: errorMessage,
     };
-    const wrapper = mount(ChatMessage, { props: { message } });
+    const wrapper = mountWithI18n(mount, ChatMessage, { props: { message } });
 
     expect(wrapper.text()).toContain(message.text);
 
@@ -96,7 +97,7 @@ describe('ChatMessage.vue', () => {
       status: 'error',
       error: 'Timeout',
     };
-    const wrapper = mount(ChatMessage, { props: { message } });
+    const wrapper = mountWithI18n(mount, ChatMessage, { props: { message } });
 
     const retryButton = wrapper.find('button');
     await retryButton.trigger('click');
@@ -110,8 +111,8 @@ describe('ChatMessage.vue', () => {
       const messageAI = { id: 'ai-sent', sender: 'ai', text: 'AI', status: 'sent' };
       const messageUserSent = { id: 'user-sent', sender: 'user', text: 'User Sent', status: 'sent' };
 
-      const wrapperAI = mount(ChatMessage, { props: { message: messageAI } });
-      const wrapperUser = mount(ChatMessage, { props: { message: messageUserSent } });
+      const wrapperAI = mountWithI18n(mount, ChatMessage, { props: { message: messageAI } });
+      const wrapperUser = mountWithI18n(mount, ChatMessage, { props: { message: messageUserSent } });
 
       expect(wrapperAI.find('.text-gray-400.italic').exists()).toBe(false);
       expect(wrapperUser.find('.text-gray-400.italic').exists()).toBe(false);
@@ -120,7 +121,7 @@ describe('ChatMessage.vue', () => {
   // Test text size separately
   it('uses correct text size', () => {
      const message = { id: 'any', sender: 'ai', text: 'Test text', status: 'sent' };
-     const wrapper = mount(ChatMessage, { props: { message } });
+     const wrapper = mountWithI18n(mount, ChatMessage, { props: { message } });
      const bubbleDiv = wrapper.find('.rounded-lg');
      expect(bubbleDiv.exists()).toBe(true);
      expect(bubbleDiv.classes()).toContain('text-lg');
