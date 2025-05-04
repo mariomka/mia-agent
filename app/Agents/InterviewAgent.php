@@ -106,6 +106,7 @@ class InterviewAgent
             'interviewType' => $interview->interview_type,
             'targetName' => $interview->target_name,
             'targetDescription' => $interview->target_description,
+            'targetAdditionalContext' => $interview->target_additional_context,
             'topics' => $interview->topics,
             'hasCustomWelcomeMessage' => $hasCustomWelcomeMessage,
             'hasCustomGoodbyeMessage' => $hasCustomGoodbyeMessage,

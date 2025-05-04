@@ -20,6 +20,7 @@ return new class extends Migration
             $table->string('language');
             $table->string('target_name')->nullable();
             $table->text('target_description')->nullable();
+            $table->text('target_additional_context')->nullable();
             $table->text('welcome_message')->nullable();
             $table->text('goodbye_message')->nullable();
             $table->json('topics')->nullable();

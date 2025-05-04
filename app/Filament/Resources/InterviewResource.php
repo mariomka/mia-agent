@@ -81,13 +81,25 @@ class InterviewResource extends Resource
                                             ),
 
                                         Forms\Components\Textarea::make('target_description')
-                                            ->maxLength(400)
-                                            ->rows(4)
+                                            ->maxLength(300)
+                                            ->rows(3)
                                             ->hintAction(
                                                 Forms\Components\Actions\Action::make('target_description_info')
                                                     ->iconButton()
                                                     ->icon('heroicon-o-information-circle')
                                                     ->tooltip('Provide context about the target that helps the AI agent understand what is being discussed.')
+                                                    ->color('gray')
+                                            ),
+
+                                        Forms\Components\Textarea::make('target_additional_context')
+                                            ->label('Additional Context')
+                                            ->maxLength(1000)
+                                            ->rows(6)
+                                            ->hintAction(
+                                                Forms\Components\Actions\Action::make('target_additional_context_info')
+                                                    ->iconButton()
+                                                    ->icon('heroicon-o-information-circle')
+                                                    ->tooltip('Provide more detailed information about the target that will help the AI agent with deeper understanding during the interview.')
                                                     ->color('gray')
                                             ),
                                     ]),

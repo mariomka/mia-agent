@@ -24,6 +24,7 @@ class Interview extends Model
         'language',
         'target_name',
         'target_description',
+        'target_additional_context',
         'topics',
         'interview_type',
         'welcome_message',
