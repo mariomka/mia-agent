@@ -1,0 +1,9 @@
+{
+  "chat": {
+    "placeholder": "Escribe tu mensaje...",
+    "sendButton": "Enviar mensaje",
+    "interviewComplete": "Entrevista completa",
+    "messageFailedToSend": "Error al enviar el mensaje",
+    "retry": "Reintentar"
+  }
+}

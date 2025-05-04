@@ -1,0 +1,9 @@
+{
+  "chat": {
+    "placeholder": "Type your message...",
+    "sendButton": "Send chat message",
+    "interviewComplete": "Interview complete",
+    "messageFailedToSend": "Message failed to send",
+    "retry": "Retry"
+  }
+}

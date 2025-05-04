@@ -68,7 +68,7 @@ onMounted(() => {
         @keydown="handleKeydown"
         @input="handleInput"
         class="flex-1 py-2 px-1 bg-transparent border-none rounded-lg focus:outline-none resize-none transition duration-150 ease-in-out text-base"
-        placeholder="Type your message..."
+        :placeholder="$t('chat.placeholder')"
         rows="1"
         style="min-height: 40px; max-height: 120px;"
         aria-label="Chat message input"
@@ -80,7 +80,7 @@ onMounted(() => {
         @click="sendMessage"
         :disabled="!messageText.trim() || props.isLoading"
         class="p-2 rounded-full text-gray-500 hover:text-blue-600 hover:bg-blue-100 focus:outline-none focus:ring-1 focus:ring-blue-400 focus:ring-offset-1 disabled:text-gray-300 disabled:hover:bg-transparent disabled:cursor-not-allowed transition duration-150 ease-in-out shrink-0"
-        aria-label="Send chat message"
+        :aria-label="$t('chat.sendButton')"
       >
         <!-- SVG Send Icon (Paper Plane) -->
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">

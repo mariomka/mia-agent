@@ -82,12 +82,12 @@ const handleRetry = () => {
 
        <!-- Error Indicator & Retry Button -->
        <div v-if="isError" class="mt-1 pt-1 border-t border-red-200">
-         <p class="text-xs italic text-red-600 mb-1">Message failed to send</p>
+         <p class="text-xs italic text-red-600 mb-1">{{ $t('chat.messageFailedToSend') }}</p>
          <button
             @click="handleRetry"
             class="text-xs font-medium text-blue-600 hover:text-blue-800 focus:outline-none"
          >
-           Retry
+           {{ $t('chat.retry') }}
          </button>
        </div>
 
