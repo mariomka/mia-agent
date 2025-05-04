@@ -1,24 +1,14 @@
 import { createI18n } from 'vue-i18n';
-
-// Mock translations for tests
-const messages = {
-  en: {
-    chat: {
-      placeholder: 'Type your message...',
-      sendButton: 'Send chat message',
-      interviewComplete: 'Interview Complete',
-      messageFailedToSend: 'Message failed to send',
-      retry: 'Retry'
-    }
-  }
-};
+import en from '../i18n/locales/en.json';
 
 // Create i18n instance for tests
 export const i18n = createI18n({
   legacy: false,
   locale: 'en',
   fallbackLocale: 'en',
-  messages
+  messages: {
+    en
+  }
 });
 
 /**
