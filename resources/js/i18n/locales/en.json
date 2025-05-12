@@ -4,6 +4,7 @@
     "sendButton": "Send chat message",
     "interviewComplete": "Interview complete",
     "messageFailedToSend": "Message failed to send",
-    "retry": "Retry"
+    "retry": "Retry",
+    "charactersRemaining": "characters remaining"
   }
 }

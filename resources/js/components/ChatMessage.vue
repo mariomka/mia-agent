@@ -21,7 +21,7 @@ const emit = defineEmits(['retry']);
 // Animation state
 const isVisible = ref(false);
 
-// Show the message with a slight delay
+// Show the message with a slight delay and staggered animation
 onMounted(() => {
   setTimeout(() => {
     isVisible.value = true;
@@ -34,30 +34,33 @@ const alignmentClass = computed(() => {
 });
 
 const isError = computed(() => props.message.status === 'error');
+const isSending = computed(() => props.message.status === 'sending');
 
-// Minimal bubble styling with error state
 const bubbleClass = computed(() => {
   if (isError.value) {
-    // Error style: Light red background, darker red text
-    return 'bg-red-100 text-red-700';
+    return 'bg-red-50/90 backdrop-blur-sm border border-red-200 text-red-700 shadow-xs';
   }
   return props.message.sender === 'ai'
-    ? 'bg-gray-100 text-gray-800' // AI: Light gray bubble
-    : 'bg-blue-100 text-blue-900'; // User: Pale blue bubble
+    ? 'bg-purple-50/90 backdrop-blur-sm border border-purple-100 text-gray-800 shadow-xs' // AI: Subtle purple solid color
+    : 'bg-indigo-50/90 backdrop-blur-sm border border-indigo-100 text-indigo-900 shadow-xs'; // User: Indigo tinted glass
 });
 
-// Add custom rounded corners based on sender
 const roundedCornerClass = computed(() => {
   return props.message.sender === 'ai'
-    ? 'rounded-t-2xl rounded-r-2xl rounded-bl-xs' // AI: squared bottom left
-    : 'rounded-t-2xl rounded-l-2xl rounded-br-xs'; // User: squared bottom right
+    ? 'rounded-t-2xl rounded-br-2xl rounded-bl-sm' // AI: rounded except top-left
+    : 'rounded-t-2xl rounded-br-sm rounded-bl-2xl'; // User: rounded except top-right and bottom-right
 });
 
-// Animation classes
 const animationClass = computed(() => {
-  return isVisible.value
+  const baseAnimation = isVisible.value
     ? 'opacity-100 translate-y-0'
     : 'opacity-0 translate-y-3';
+
+  const slideDirection = props.message.sender === 'ai'
+    ? 'animate-slide-in-from-left'
+    : 'animate-slide-in-from-right';
+
+  return `${baseAnimation} ${isVisible.value ? slideDirection : ''}`;
 });
 
 const handleRetry = () => {
@@ -67,30 +70,29 @@ const handleRetry = () => {
 </script>
 
 <template>
-  <div :class="['flex w-full', alignmentClass]">
+  <div :class="['flex w-full mb-3', alignmentClass]">
     <!-- Using Tailwind for animation -->
     <div
       :class="[
-        'py-2 px-4 text-lg sm:text-xl max-w-xs sm:max-w-md lg:max-w-lg relative group rounded-lg',
+        'py-3 px-4 text-base sm:text-lg max-w-xs sm:max-w-md lg:max-w-lg relative group',
         'transition-all duration-300 ease-out transform',
         bubbleClass,
         roundedCornerClass,
         animationClass
       ]"
     >
-       <p class="whitespace-pre-wrap">{{ message.text }}</p>
+      <p class="whitespace-pre-wrap font-normal leading-relaxed">{{ message.text }}</p>
 
-       <!-- Error Indicator & Retry Button -->
-       <div v-if="isError" class="mt-1 pt-1 border-t border-red-200">
-         <p class="text-xs italic text-red-600 mb-1">{{ $t('chat.messageFailedToSend') }}</p>
-         <button
-            @click="handleRetry"
-            class="text-xs font-medium text-blue-600 hover:text-blue-800 focus:outline-none"
-         >
-           {{ $t('chat.retry') }}
-         </button>
-       </div>
-
+      <!-- Error Indicator & Retry Button -->
+      <div v-if="isError" class="mt-2 pt-1 border-t border-red-200">
+        <p class="text-xs italic text-red-600 mb-1">{{ $t('chat.messageFailedToSend') }}</p>
+        <button
+          @click="handleRetry"
+          class="text-xs font-medium text-indigo-600 hover:text-indigo-800 focus:outline-none focus:ring-2 focus:ring-indigo-300 rounded-full py-0.5 transition-all duration-200"
+        >
+          {{ $t('chat.retry') }}
+        </button>
+      </div>
     </div>
   </div>
 </template>
@@ -99,5 +101,35 @@ const handleRetry = () => {
 /* Styles for ChatMessage component */
 .whitespace-pre-wrap {
   white-space: pre-wrap; /* Ensures newlines in messages are displayed */
+}
+
+@keyframes slide-in-from-left {
+  0% {
+    transform: translateX(-10px);
+    opacity: 0;
+  }
+  100% {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slide-in-from-right {
+  0% {
+    transform: translateX(10px);
+    opacity: 0;
+  }
+  100% {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.animate-slide-in-from-left {
+  animation: slide-in-from-left 0.3s ease-out;
+}
+
+.animate-slide-in-from-right {
+  animation: slide-in-from-right 0.3s ease-out;
 }
 </style>

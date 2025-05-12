@@ -93,11 +93,15 @@ watch(messages, () => {
           </div>
           
           <div v-if="isLoading" class="flex justify-start">
-             <div class="flex items-center space-x-1 py-2 px-4">
-                <span class="dot dot-1"></span>
-                <span class="dot dot-2"></span>
-                <span class="dot dot-3"></span>
+            <div class="bg-white/80 backdrop-blur-sm border border-indigo-100/30 shadow-xs rounded-2xl py-3 px-4">
+              <div class="flex items-center space-x-2">
+                <div class="typing-indicator">
+                  <span class="dot dot-1"></span>
+                  <span class="dot dot-2"></span>
+                  <span class="dot dot-3"></span>
+                </div>
               </div>
+            </div>
           </div>
         </div>
       </div>
@@ -127,26 +131,32 @@ watch(messages, () => {
 </template>
 
 <style scoped>
-/* Add styles for the waving dots animation */
+.typing-indicator {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
 .dot {
   display: inline-block;
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background-color: #a0aec0; /* gray-500 */
-  animation: wave 1.3s linear infinite;
+  background-color: #818cf8; /* indigo-400 */
+  animation: wave 1.3s linear infinite, colorChange 3s infinite alternate;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .dot-1 {
-  animation-delay: -0.9s;
+  animation-delay: -0.9s, -0.3s;
 }
 
 .dot-2 {
-  animation-delay: -0.7s;
+  animation-delay: -0.7s, -0.6s;
 }
 
 .dot-3 {
-  animation-delay: -0.5s;
+  animation-delay: -0.5s, -0.9s;
 }
 
 @keyframes wave {
@@ -155,6 +165,18 @@ watch(messages, () => {
   }
   30% {
     transform: translateY(-8px); /* Adjust vertical distance */
+  }
+}
+
+@keyframes colorChange {
+  0% {
+    background-color: #818cf8; /* indigo-400 */
+  }
+  50% {
+    background-color: #a78bfa; /* purple-400 */
+  }
+  100% {
+    background-color: #818cf8; /* back to indigo-400 */
   }
 }
 </style> 

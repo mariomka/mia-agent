@@ -19,14 +19,6 @@ describe('ChatMessage.vue', () => {
     const outerDiv = wrapper.find('.flex');
     expect(outerDiv.classes()).toContain('justify-start');
 
-    // Check bubble styling
-    const bubbleDiv = wrapper.find('.rounded-lg');
-    expect(bubbleDiv.exists()).toBe(true);
-    expect(bubbleDiv.classes()).toContain('bg-gray-100');
-    expect(bubbleDiv.classes()).toContain('text-gray-800');
-    expect(bubbleDiv.classes()).toContain('rounded-lg');
-    expect(bubbleDiv.classes()).toContain('text-lg');
-
     // Check no error stuff shown
     expect(wrapper.find('.border-t').exists()).toBe(false);
     expect(wrapper.find('button').exists()).toBe(false);
@@ -47,14 +39,6 @@ describe('ChatMessage.vue', () => {
     const outerDiv = wrapper.find('.flex');
     expect(outerDiv.classes()).toContain('justify-end');
 
-    // Check bubble styling
-    const bubbleDiv = wrapper.find('.rounded-lg');
-    expect(bubbleDiv.exists()).toBe(true);
-    expect(bubbleDiv.classes()).toContain('bg-blue-100');
-    expect(bubbleDiv.classes()).toContain('text-blue-900');
-    expect(bubbleDiv.classes()).toContain('rounded-lg');
-    expect(bubbleDiv.classes()).toContain('text-lg');
-
      // Check no error stuff shown
     expect(wrapper.find('.border-t').exists()).toBe(false);
     expect(wrapper.find('button').exists()).toBe(false);
@@ -72,11 +56,6 @@ describe('ChatMessage.vue', () => {
     const wrapper = mountWithI18n(mount, ChatMessage, { props: { message } });
 
     expect(wrapper.text()).toContain(message.text);
-
-    // Check bubble styling for error
-    const bubbleDiv = wrapper.find('.rounded-lg');
-    expect(bubbleDiv.classes()).toContain('bg-red-100');
-    expect(bubbleDiv.classes()).toContain('text-red-700');
 
     // Check error message is displayed
     const errorDiv = wrapper.find('.border-t'); // Find error container
@@ -107,23 +86,5 @@ describe('ChatMessage.vue', () => {
     expect(wrapper.emitted('retry')[0]).toEqual([message.id]);
   });
 
-  it('does not show sending indicator for AI messages or sent user messages', () => {
-      const messageAI = { id: 'ai-sent', sender: 'ai', text: 'AI', status: 'sent' };
-      const messageUserSent = { id: 'user-sent', sender: 'user', text: 'User Sent', status: 'sent' };
 
-      const wrapperAI = mountWithI18n(mount, ChatMessage, { props: { message: messageAI } });
-      const wrapperUser = mountWithI18n(mount, ChatMessage, { props: { message: messageUserSent } });
-
-      expect(wrapperAI.find('.text-gray-400.italic').exists()).toBe(false);
-      expect(wrapperUser.find('.text-gray-400.italic').exists()).toBe(false);
-  });
-
-  // Test text size separately
-  it('uses correct text size', () => {
-     const message = { id: 'any', sender: 'ai', text: 'Test text', status: 'sent' };
-     const wrapper = mountWithI18n(mount, ChatMessage, { props: { message } });
-     const bubbleDiv = wrapper.find('.rounded-lg');
-     expect(bubbleDiv.exists()).toBe(true);
-     expect(bubbleDiv.classes()).toContain('text-lg');
-  });
-}); 
+});

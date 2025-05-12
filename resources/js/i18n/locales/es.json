@@ -4,6 +4,7 @@
     "sendButton": "Enviar mensaje",
     "interviewComplete": "Entrevista completa",
     "messageFailedToSend": "Error al enviar el mensaje",
-    "retry": "Reintentar"
+    "retry": "Reintentar",
+    "charactersRemaining": "caracteres restantes"
   }
 }
