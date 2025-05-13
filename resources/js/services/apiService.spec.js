@@ -9,7 +9,7 @@ describe('API Service - sendChatMessage', () => {
   const mockSessionId = 'test-session-id';
   const mockChatInput = 'Hello, AI!';
   const mockInterviewId = 123;
-  const CHAT_URL = 'http://127.0.0.1:8000/chat';
+  const CHAT_URL = '/chat';
 
   afterEach(() => {
     vi.restoreAllMocks();
@@ -116,7 +116,7 @@ describe('API Service - sendChatMessage', () => {
 describe('API Service - initializeChat', () => {
   const mockSessionId = 'test-session-id';
   const mockInterviewId = 123;
-  const CHAT_URL = 'http://127.0.0.1:8000/chat';
+  const CHAT_URL = '/chat';
 
   afterEach(() => {
     vi.restoreAllMocks();
