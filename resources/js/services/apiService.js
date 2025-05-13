@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const CHAT_URL = import.meta.env.VITE_APP_CHAT_URL || 'http://127.0.0.1:8000/chat';
+const CHAT_URL = '/chat';
 
 /**
  * Sends a message to the chat API endpoint.
