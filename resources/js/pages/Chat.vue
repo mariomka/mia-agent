@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted, ref, nextTick, watch, computed } from 'vue';
+import { computed, nextTick, onMounted, ref, watch } from 'vue';
 import { storeToRefs } from 'pinia';
 import ChatMessage from '../components/ChatMessage.vue';
 import ChatInput from '../components/ChatInput.vue';
@@ -40,10 +40,10 @@ const scrollToBottom = async () => {
 // Function to group messages by sender
 const groupedMessages = computed(() => {
   if (!messages.value || messages.value.length === 0) return [];
-  
+
   const result = [];
   let currentGroup = null;
-  
+
   messages.value.forEach((message) => {
     // Start a new group if needed
     if (!currentGroup || currentGroup.sender !== message.sender) {
@@ -54,10 +54,10 @@ const groupedMessages = computed(() => {
       currentGroup.messages.push(message);
     }
   });
-  
+
   // Don't forget to add the last group
   if (currentGroup) result.push(currentGroup);
-  
+
   return result;
 });
 
@@ -69,7 +69,7 @@ watch(messages, () => {
 </script>
 
 <template>
-  <div class="flex flex-col h-screen">
+  <div class="flex flex-col h-full overflow-hidden">
     <!-- Chat messages container (full width with scroll) -->
     <div
       ref="chatMessagesContainer"
@@ -82,8 +82,8 @@ watch(messages, () => {
           <!-- Group messages by sender -->
           <div v-for="(group, groupIndex) in groupedMessages" :key="groupIndex" class="mb-3">
             <!-- Messages in a group have reduced spacing between them -->
-            <div v-for="(message, messageIndex) in group.messages" 
-                 :key="message.id" 
+            <div v-for="(message, messageIndex) in group.messages"
+                 :key="message.id"
                  :class="{ 'mt-0.5': messageIndex > 0 }">
               <ChatMessage
                 :message="message"
@@ -91,7 +91,19 @@ watch(messages, () => {
               />
             </div>
           </div>
-          
+
+          <div v-if="isInterviewEnded" class="pt-4">
+            <div class="flex items-center justify-center">
+              <div class="flex justify-center items-center bg-green-50 border border-green-200 rounded-md p-3">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mx-auto text-green-500 mr-3" fill="none"
+                     viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                </svg>
+                <h2 class="text-lg font-medium text-gray-900">{{ $t('chat.interviewComplete') }}</h2>
+              </div>
+            </div>
+          </div>
+
           <div v-if="isLoading" class="flex justify-start">
             <div class="bg-white/80 backdrop-blur-sm border border-indigo-100/30 shadow-xs rounded-2xl py-3 px-4">
               <div class="flex items-center space-x-2">
@@ -107,21 +119,6 @@ watch(messages, () => {
       </div>
     </div>
 
-    <div v-if="isInterviewEnded" class="p-4">
-      <div class="max-w-[800px] mx-auto">
-        <div class="flex items-center justify-center">
-          <div class="flex justify-center items-center bg-green-50 border border-green-200 rounded-md p-4">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mx-auto text-green-500 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-            </svg>
-            <h2 class="text-lg font-medium text-gray-900">{{ $t('chat.interviewComplete') }}</h2>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Input area -->
-    <!-- Conditionally render ChatInput based on interview status -->
     <ChatInput
       v-if="!isInterviewEnded"
       @send-message="handleSendMessage"
@@ -179,4 +176,4 @@ watch(messages, () => {
     background-color: #818cf8; /* back to indigo-400 */
   }
 }
-</style> 
+</style>

@@ -38,13 +38,13 @@ const handleKeydown = (event) => {
 // Basic auto-resize logic for textarea
 const handleInput = (event) => {
   const textarea = event.target;
-  
+
   // Limit text to MAX_CHARS characters
   if (textarea.value.length > MAX_CHARS) {
     textarea.value = textarea.value.substring(0, MAX_CHARS);
     messageText.value = textarea.value;
   }
-  
+
   textarea.rows = 1; // Reset rows to recalculate height
   const lines = textarea.value.split('\n').length;
   const maxRows = 5; // Maximum number of rows before scrolling
@@ -77,11 +77,11 @@ const handleBlur = () => {
 // Compute send button classes
 const sendButtonClass = computed(() => {
   const baseClasses = 'p-3 rounded-full focus:outline-none focus:ring-2 focus:ring-offset-1 disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-200 ease-in-out shrink-0';
-  
+
   if (!messageText.value.trim() || props.isLoading) {
     return `${baseClasses} text-gray-400 bg-gray-100`;
   }
-  
+
   return `${baseClasses} text-white bg-indigo-600 hover:bg-indigo-700 shadow-md hover:shadow-lg`;
 });
 </script>
@@ -91,7 +91,7 @@ const sendButtonClass = computed(() => {
   <div class="bg-gradient-to-r from-indigo-50/80 to-purple-50/80 backdrop-blur-md border-t border-indigo-100/50 shadow-xs">
     <div class="flex flex-col max-w-[800px] mx-auto px-4 py-3 sm:px-6">
       <!-- Input area with glass effect -->
-      <div 
+      <div
         class="flex items-center space-x-2 bg-white/70 backdrop-blur-sm rounded-2xl px-4 py-2 border border-indigo-100/50 shadow-xs transition-all duration-300 ease-in-out"
         :class="{ 'border-indigo-300/70 shadow-md ring-1 ring-indigo-300/30': isFocused }"
       >
@@ -122,7 +122,7 @@ const sendButtonClass = computed(() => {
           </svg>
         </button>
       </div>
-      
+
       <!-- Character counter and loading state -->
       <div class="flex justify-between items-center mt-1 px-2">
         <div :class="['text-xs transition-all', charCounterClass]">
@@ -174,4 +174,4 @@ button:not(:disabled):hover {
 button:not(:disabled):active {
   transform: scale(0.95);
 }
-</style> 
+</style>
