@@ -21,7 +21,11 @@ const sendMessage = () => {
     emit('sendMessage', textToSend);
     messageText.value = ''; // Clear input after sending
     // Reset textarea height after sending
-    if (textareaRef.value) textareaRef.value.rows = 1;
+    if (textareaRef.value) {
+      textareaRef.value.rows = 1;
+      // Refocus the textarea after sending
+      textareaRef.value.focus();
+    }
   }
 };
 
