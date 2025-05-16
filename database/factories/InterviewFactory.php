@@ -36,24 +36,28 @@ class InterviewFactory extends Factory
             'topics' => [
                 [
                     'key' => Str::random(10),
+                    'enabled' => true,
                     'question' => 'How do you currently use our application?',
                     'description' => 'Understand current usage patterns and workflows',
                     'approach' => 'direct'
                 ],
                 [
                     'key' => Str::random(10),
+                    'enabled' => true,
                     'question' => 'What frustrations do you experience with the product?',
                     'description' => 'Identify pain points and areas for improvement',
                     'approach' => 'direct'
                 ],
                 [
                     'key' => Str::random(10),
+                    'enabled' => true,
                     'question' => 'How would you feel about a chat feature to talk with colleagues?',
                     'description' => 'Validate interest in proposed communication feature',
                     'approach' => 'direct'
                 ],
                 [
                     'key' => Str::random(10),
+                    'enabled' => true,
                     'question' => 'If you could wave a magic wand and change anything about the product, what would it be?',
                     'description' => 'Uncover aspirational needs and unexpected opportunities',
                     'approach' => 'indirect'

@@ -83,8 +83,10 @@ class InterviewAgent
         // Calculate turn count based on message history
         $turnCount = $this->calculateTurnCount($messages);
 
-        // Calculate max turns (5 per topic)
-        $maxTurns = count($interview->topics) * 5;
+        // Filter out disabled topics
+        $enabledTopics = array_values(array_filter($interview->topics, fn($topic) => $topic['enabled'] === true));
+
+        $maxTurns = count($enabledTopics) * 5;
 
         // Check if we've reached the turn limit
         $reachedTurnLimit = $turnCount >= $maxTurns;
@@ -107,7 +109,7 @@ class InterviewAgent
             'targetName' => $interview->target_name,
             'targetDescription' => $interview->target_description,
             'targetAdditionalContext' => $interview->target_additional_context,
-            'topics' => $interview->topics,
+            'topics' => $enabledTopics,
             'hasCustomWelcomeMessage' => $hasCustomWelcomeMessage,
             'hasCustomGoodbyeMessage' => $hasCustomGoodbyeMessage,
             'turnsExhausted' => $reachedTurnLimit,

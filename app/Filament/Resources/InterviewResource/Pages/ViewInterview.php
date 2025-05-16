@@ -146,7 +146,8 @@ class ViewInterview extends ViewRecord
                                                 $markdown = '';
 
                                                 foreach ($record->topics as $index => $topic) {
-                                                    $markdown .= "### Topic " . ($index + 1) . "\n\n";
+                                                    $status = isset($topic['enabled']) && $topic['enabled'] === true ? '' : ' (disabled)';
+                                                    $markdown .= "### Topic " . ($index + 1) . $status . "\n\n";
 
                                                     if (isset($topic['question'])) {
                                                         $markdown .= "**Question**: " . $topic['question'] . "\n\n";

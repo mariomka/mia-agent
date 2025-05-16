@@ -147,6 +147,17 @@ class InterviewResource extends Resource
                                         Forms\Components\Hidden::make('key')
                                             ->default(fn () => Str::random(10)),
 
+                                        Forms\Components\Toggle::make('enabled')
+                                            ->label('Enabled')
+                                            ->default(true)
+                                            ->hintAction(
+                                                Forms\Components\Actions\Action::make('enabled_info')
+                                                    ->iconButton()
+                                                    ->icon('heroicon-o-information-circle')
+                                                    ->tooltip('When disabled, this topic will not be sent to the agent during interviews.')
+                                                    ->color('gray')
+                                            ),
+
                                         Forms\Components\TextInput::make('question')
                                             ->label('Question')
                                             ->required()

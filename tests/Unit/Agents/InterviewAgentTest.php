@@ -562,7 +562,12 @@ test('turnsExhausted flag is set correctly when maximum turns are reached', func
 
     $interview = Interview::factory()->create([
         'topics' => [
-            ['key' => 'topic1', 'question' => 'Question 1', 'description' => 'Description 1']
+            [
+                'key' => 'topic1',
+                'enabled' => true,
+                'question' => 'Question 1',
+                'description' => 'Description 1',
+                ]
         ]
     ]);
 
@@ -603,6 +608,162 @@ test('turnsExhausted flag is set correctly when maximum turns are reached', func
         ],
     ]);
 
+    $agent = new InterviewAgent();
+    $agent->chat($session->id, 'New message', $interview);
+
+    $fake->assertRequest(function (array $requests) {
+        expect($requests[1]->systemPrompts()[0]->content)
+            ->toContain('The maximum number of turns has been reached.');
+    });
+});
+
+test('disabled topics are filtered out from system prompt', function () {
+    $session = InterviewSession::factory()->create();
+    $userMessage = 'Hello';
+
+    // Create an interview with both enabled and disabled topics
+    $interview = Interview::factory()->create([
+        'topics' => [
+            [
+                'key' => 'topic1',
+                'enabled' => true,
+                'question' => 'Enabled Question 1',
+                'description' => 'Enabled Description 1',
+            ],
+            [
+                'key' => 'topic2',
+                'enabled' => false,
+                'question' => 'Disabled Question 2',
+                'description' => 'Disabled Description 2',
+            ],
+            [
+                'key' => 'topic3',
+                'enabled' => true,
+                'question' => 'Enabled Question 3',
+                'description' => 'Enabled Description 3',
+            ]
+        ]
+    ]);
+
+    $response = [
+        'messages' => ['This is a response'],
+        'finished' => false
+    ];
+
+    $fakeResponse = new StructuredResponse(
+        steps: collect([]),
+        responseMessages: collect([]),
+        text: json_encode($response),
+        structured: $response,
+        finishReason: FinishReason::Stop,
+        usage: new Usage(100, 50),
+        meta: new Meta('fake-1', 'fake-model'),
+        additionalContent: []
+    );
+
+    $fake = Prism::fake([$fakeResponse]);
+
+    $agent = new InterviewAgent();
+    $agent->chat($session->id, $userMessage, $interview);
+
+    // Verify that only enabled topics are included in the system prompt
+    $fake->assertRequest(function (array $requests) {
+        $systemPrompt = $requests[0]->systemPrompts()[0]->content;
+
+        // Should contain enabled topics
+        expect($systemPrompt)->toContain('Enabled Question 1');
+        expect($systemPrompt)->toContain('Enabled Description 1');
+        expect($systemPrompt)->toContain('Enabled Question 3');
+        expect($systemPrompt)->toContain('Enabled Description 3');
+
+        // Should not contain disabled topics
+        expect($systemPrompt)->not->toContain('Disabled Question 2');
+        expect($systemPrompt)->not->toContain('Disabled Description 2');
+
+        // Check topic numbering - should be sequential (1 and 2, not 1 and 3)
+        expect($systemPrompt)->toContain('1. Key: topic1');
+        expect($systemPrompt)->toContain('2. Key: topic3');
+        expect($systemPrompt)->not->toContain('3. Key:');
+    });
+});
+
+test('max turns calculation only considers enabled topics', function () {
+    // Create a session with several messages
+    $session = InterviewSession::factory()->create([
+        'messages' => [
+            ['type' => 'user', 'content' => 'Message 1'],
+            ['type' => 'assistant', 'content' => 'Response 1'],
+            ['type' => 'user', 'content' => 'Message 2'],
+            ['type' => 'assistant', 'content' => 'Response 2'],
+        ]
+    ]);
+
+    // Create an interview with 1 enabled topic and 2 disabled topics
+    $interview = Interview::factory()->create([
+        'topics' => [
+            [
+                'key' => 'topic1',
+                'enabled' => true,
+                'question' => 'Enabled Question 1',
+                'description' => 'Enabled Description 1',
+            ],
+            [
+                'key' => 'topic2',
+                'enabled' => false,
+                'question' => 'Disabled Question 2',
+                'description' => 'Disabled Description 2',
+            ],
+            [
+                'key' => 'topic3',
+                'enabled' => false,
+                'question' => 'Disabled Question 3',
+                'description' => 'Disabled Description 3',
+            ]
+        ]
+    ]);
+
+    $response = [
+        'messages' => ['This is a response'],
+        'finished' => false
+    ];
+
+    $fakeResponse = new StructuredResponse(
+        steps: collect([]),
+        responseMessages: collect([]),
+        text: json_encode($response),
+        structured: $response,
+        finishReason: FinishReason::Stop,
+        usage: new Usage(100, 50),
+        meta: new Meta('fake-1', 'fake-model'),
+        additionalContent: []
+    );
+
+    $fake = Prism::fake([$fakeResponse, $fakeResponse]);
+
+    // First call - should not be exhausted (2 turns used, max is 5 for 1 enabled topic)
+    $agent = new InterviewAgent();
+    $agent->chat($session->id, 'New message', $interview);
+
+    $fake->assertRequest(function (array $requests) {
+        expect($requests[0]->systemPrompts()[0]->content)
+            ->not
+            ->toContain('The maximum number of turns has been reached.');
+    });
+
+    // Add more messages to reach the turn limit for 1 enabled topic (5 turns)
+    $session->update([
+        'messages' => [
+            ...$session->messages,
+            ['type' => 'user', 'content' => 'Message 3'],
+            ['type' => 'assistant', 'content' => 'Response 3'],
+            ['type' => 'user', 'content' => 'Message 4'],
+            ['type' => 'assistant', 'content' => 'Response 4'],
+            ['type' => 'user', 'content' => 'Message 5'],
+            ['type' => 'assistant', 'content' => 'Response 5'],
+        ],
+    ]);
+
+    // Second call - should be exhausted (5 turns used, max is 5 for 1 enabled topic)
     $agent = new InterviewAgent();
     $agent->chat($session->id, 'New message', $interview);
 
