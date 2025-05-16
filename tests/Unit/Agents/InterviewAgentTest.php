@@ -1,6 +1,7 @@
 <?php
 
 use App\Agents\InterviewAgent;
+use App\Enums\InterviewSessionStatus;
 use App\Models\Interview;
 use App\Models\InterviewSession;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -237,7 +238,7 @@ test('chat method updates session with messages and result when completed', func
     expect($result['result']['topics'])->toBe($topics);
 
     // Verify the session was updated
-    expect($session->finished)->toBeTrue();
+    expect($session->status)->toBe(InterviewSessionStatus::COMPLETED);
     expect($session->summary)->toBe($summary);
     expect($session->topics)->toBe($topics);
 });
@@ -443,7 +444,7 @@ test('chat method uses goodbye message for final interaction if defined', functi
     expect($messages[$lastIndex]['content'])->toBe($goodbyeMessage);
 
     // Verify the session was finalized
-    expect($session->finished)->toBeTrue();
+    expect($session->status)->toBe(InterviewSessionStatus::COMPLETED);
     expect($session->summary)->toBe($summary);
     expect($session->topics)->toBe($topics);
 });

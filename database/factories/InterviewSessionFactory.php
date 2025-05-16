@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Enums\InterviewSessionStatus;
 use App\Models\Interview;
 use App\Models\InterviewSession;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -32,7 +33,7 @@ class InterviewSessionFactory extends Factory
             'messages' => [], // Default to an empty array
             'summary' => null, // Default to null
             'topics' => [], // Default to an empty array
-            'finished' => false, // Default to not finished
+            'status' => InterviewSessionStatus::IN_PROGRESS, // Default to in progress
         ];
     }
-} 
+}

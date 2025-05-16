@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Enums\InterviewSessionStatus;
 use App\Enums\InterviewStatus;
 use App\Models\Interview;
 use App\Models\InterviewSession;
@@ -78,7 +79,7 @@ it('reuses existing interview session with database', function () {
             ['type' => 'user', 'content' => 'Hello'],
             ['type' => 'assistant', 'content' => 'Hi there!'],
         ],
-        'finished' => false
+        'status' => InterviewSessionStatus::IN_PROGRESS,
     ])->create();
     session([$interviewSessionKey => $session->id]);
 
@@ -112,7 +113,7 @@ it('loads and formats messages from session', function () {
             ['type' => 'user', 'content' => 'Hello'],
             ['type' => 'assistant', 'content' => 'Hi there!'],
         ],
-        'finished' => false
+        'status' => InterviewSessionStatus::IN_PROGRESS,
     ])->create();
     session([$interviewSessionKey => $session->id]);
 
@@ -171,7 +172,7 @@ it('passes session finished status to frontend', function () {
         'messages' => $messages,
         'summary' => $summary,
         'topics' => $topics,
-        'finished' => true
+        'status' => InterviewSessionStatus::COMPLETED,
     ])->create();
     session([$interviewSessionKey => $session->id]);
 
@@ -204,7 +205,7 @@ it('passes unfinished status for ongoing sessions', function () {
     $session = InterviewSession::factory([
         'interview_id' => $interview->id,
         'messages' => $messages,
-        'finished' => false
+        'status' => InterviewSessionStatus::IN_PROGRESS,
     ])->create();
     session([$interviewSessionKey => $session->id]);
 

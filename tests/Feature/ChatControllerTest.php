@@ -3,15 +3,14 @@
 namespace Tests\Feature;
 
 use App\Agents\InterviewAgent;
+use App\Enums\InterviewSessionStatus;
 use App\Enums\InterviewStatus;
 use App\Models\Interview;
 use App\Models\InterviewSession;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
-
 use function Pest\Laravel\postJson;
 
 uses(RefreshDatabase::class, WithFaker::class);
@@ -117,7 +116,7 @@ it('rejects new messages for finished interviews', function () {
         ],
         'summary' => 'This is a summary',
         'topics' => [['key' => 'topic1', 'messages' => ['Info 1']]],
-        'finished' => true
+        'status' => InterviewSessionStatus::COMPLETED,
     ]);
 
     $this->mock(InterviewAgent::class, function ($mock) {
@@ -190,7 +189,7 @@ it('rejects initialization for finished interviews', function () {
         ],
         'summary' => 'This is a summary',
         'topics' => [['key' => 'topic1', 'messages' => ['Info 1']]],
-        'finished' => true
+        'status' => InterviewSessionStatus::COMPLETED,
     ]);
 
     $this->mock(InterviewAgent::class, function ($mock) {

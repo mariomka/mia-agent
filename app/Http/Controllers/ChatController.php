@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Agents\InterviewAgent;
+use App\Enums\InterviewSessionStatus;
 use App\Enums\InterviewStatus;
 use App\Models\Interview;
 use App\Models\InterviewSession;
@@ -45,7 +46,7 @@ class ChatController extends Controller
             ->where('interview_id', $interview->id)
             ->first();
 
-        if ($session && $session->finished) {
+        if ($session && $session->status !== InterviewSessionStatus::IN_PROGRESS) {
             return response()->json([
                 'error' => 'This interview is already completed and cannot accept new messages.',
                 'finished' => true

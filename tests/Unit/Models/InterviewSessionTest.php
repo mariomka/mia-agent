@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\InterviewSessionStatus;
 use App\Models\Interview;
 use App\Models\InterviewSession;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -13,7 +14,7 @@ test('it has the correct fillable attributes', function () {
         'messages',
         'summary',
         'topics',
-        'finished',
+        'status',
         'metadata',
         'input_tokens',
         'output_tokens',
@@ -30,7 +31,7 @@ test('it casts attributes correctly', function () {
 
     expect($casts['messages'])->toBe('array');
     expect($casts['topics'])->toBe('array');
-    expect($casts['finished'])->toBe('boolean');
+    expect($casts['status'])->toBe(InterviewSessionStatus::class);;
 });
 
 test('it belongs to an interview', function () {
@@ -83,23 +84,10 @@ test('it stores and retrieves topics as array', function () {
     expect($interviewSession->topics)->toBe($topics);
 });
 
-test('it has default value for finished', function () {
-    $interview = Interview::factory()->create();
-    $sessionId = (string) Str::uuid7();
-    $interviewSession = InterviewSession::create([
-        'id' => $sessionId,
-        'interview_id' => $interview->id,
-        'messages' => [],
-        'finished' => false,
-    ]);
-
-    expect($interviewSession->finished)->toBeFalse();
-});
-
 test('session belongs to interview', function () {
     $interview = Interview::factory()->create();
     $session = InterviewSession::factory()->create(['interview_id' => $interview->id]);
-    
+
     expect($session->interview)->toBeInstanceOf(Interview::class);
     expect($session->interview->id)->toBe($interview->id);
 });
@@ -108,7 +96,7 @@ test('session attributes are properly cast', function () {
     $session = InterviewSession::factory()->create([
         'messages' => [['role' => 'system', 'content' => 'test']]
     ]);
-    
+
     expect($session->messages)->toBeArray();
     expect($session->messages[0]['role'])->toBe('system');
-}); 
+});

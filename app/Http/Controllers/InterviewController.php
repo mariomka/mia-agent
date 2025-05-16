@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\InterviewSessionStatus;
 use App\Enums\InterviewStatus;
 use App\Models\Interview;
 use App\Models\InterviewSession;
@@ -69,7 +70,7 @@ class InterviewController extends Controller
             ],
             'sessionId' => $session->id, // Use the definitive session ID
             'messages' => $messages,
-            'is_finished' => (bool) $session->finished
+            'is_finished' => $session->status !== InterviewSessionStatus::IN_PROGRESS
         ]);
     }
 
