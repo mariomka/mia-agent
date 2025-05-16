@@ -33,7 +33,7 @@ class ProcessStaleInterviewSessions extends Command
         $twoHoursAgo = Carbon::now()->subHours(2);
 
         $staleSessions = InterviewSession
-            ::where('status', InterviewSessionStatus::IN_PROGRESS)
+            ::where('status', InterviewSessionStatus::inProgress)
             ->where('updated_at', '<', $twoHoursAgo)
             ->get();
 
@@ -95,7 +95,7 @@ class ProcessStaleInterviewSessions extends Command
         $session->update([
             'summary' => $output['summary'] ?? null,
             'topics' => $output['topics'] ?? [],
-            'status' => InterviewSessionStatus::PARTIALLY_COMPLETED,
+            'status' => InterviewSessionStatus::partiallyCompleted,
         ]);
 
         $this->info("Session {$session->id} marked as partially completed.");
@@ -108,7 +108,7 @@ class ProcessStaleInterviewSessions extends Command
     {
         $this->info("Session {$session->id} has no user messages, marking as canceled.");
 
-        $session->update(['status' => InterviewSessionStatus::CANCELED]);
+        $session->update(['status' => InterviewSessionStatus::canceled]);
 
         $this->info("Session {$session->id} marked as canceled.");
     }

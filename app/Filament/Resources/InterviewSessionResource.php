@@ -38,10 +38,10 @@ class InterviewSessionResource extends Resource
                     ->label('Status')
                     ->formatStateUsing(fn (InterviewSessionStatus $state): string => $state->label())
                     ->colors([
-                        'warning' => fn (InterviewSessionStatus $state): bool => $state === InterviewSessionStatus::IN_PROGRESS,
-                        'success' => fn (InterviewSessionStatus $state): bool => $state === InterviewSessionStatus::COMPLETED,
-                        'info' => fn (InterviewSessionStatus $state): bool => $state === InterviewSessionStatus::PARTIALLY_COMPLETED,
-                        'danger' => fn (InterviewSessionStatus $state): bool => $state === InterviewSessionStatus::CANCELED,
+                        'warning' => fn (InterviewSessionStatus $state): bool => $state === InterviewSessionStatus::inProgress,
+                        'success' => fn (InterviewSessionStatus $state): bool => $state === InterviewSessionStatus::completed,
+                        'info' => fn (InterviewSessionStatus $state): bool => $state === InterviewSessionStatus::partiallyCompleted,
+                        'danger' => fn (InterviewSessionStatus $state): bool => $state === InterviewSessionStatus::canceled,
                     ]),
 
                 Tables\Columns\TextColumn::make('interview.name')

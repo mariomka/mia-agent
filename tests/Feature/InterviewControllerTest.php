@@ -79,7 +79,7 @@ it('reuses existing interview session with database', function () {
             ['type' => 'user', 'content' => 'Hello'],
             ['type' => 'assistant', 'content' => 'Hi there!'],
         ],
-        'status' => InterviewSessionStatus::IN_PROGRESS,
+        'status' => InterviewSessionStatus::inProgress,
     ])->create();
     session([$interviewSessionKey => $session->id]);
 
@@ -113,7 +113,7 @@ it('loads and formats messages from session', function () {
             ['type' => 'user', 'content' => 'Hello'],
             ['type' => 'assistant', 'content' => 'Hi there!'],
         ],
-        'status' => InterviewSessionStatus::IN_PROGRESS,
+        'status' => InterviewSessionStatus::inProgress,
     ])->create();
     session([$interviewSessionKey => $session->id]);
 
@@ -172,7 +172,7 @@ it('passes session finished status to frontend', function () {
         'messages' => $messages,
         'summary' => $summary,
         'topics' => $topics,
-        'status' => InterviewSessionStatus::COMPLETED,
+        'status' => InterviewSessionStatus::completed,
     ])->create();
     session([$interviewSessionKey => $session->id]);
 
@@ -205,7 +205,7 @@ it('passes unfinished status for ongoing sessions', function () {
     $session = InterviewSession::factory([
         'interview_id' => $interview->id,
         'messages' => $messages,
-        'status' => InterviewSessionStatus::IN_PROGRESS,
+        'status' => InterviewSessionStatus::inProgress,
     ])->create();
     session([$interviewSessionKey => $session->id]);
 

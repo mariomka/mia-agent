@@ -116,7 +116,7 @@ it('rejects new messages for finished interviews', function () {
         ],
         'summary' => 'This is a summary',
         'topics' => [['key' => 'topic1', 'messages' => ['Info 1']]],
-        'status' => InterviewSessionStatus::COMPLETED,
+        'status' => InterviewSessionStatus::completed,
     ]);
 
     $this->mock(InterviewAgent::class, function ($mock) {
@@ -189,7 +189,7 @@ it('rejects initialization for finished interviews', function () {
         ],
         'summary' => 'This is a summary',
         'topics' => [['key' => 'topic1', 'messages' => ['Info 1']]],
-        'status' => InterviewSessionStatus::COMPLETED,
+        'status' => InterviewSessionStatus::completed,
     ]);
 
     $this->mock(InterviewAgent::class, function ($mock) {

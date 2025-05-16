@@ -46,7 +46,7 @@ class ChatController extends Controller
             ->where('interview_id', $interview->id)
             ->first();
 
-        if ($session && $session->status !== InterviewSessionStatus::IN_PROGRESS) {
+        if ($session && $session->status !== InterviewSessionStatus::inProgress) {
             return response()->json([
                 'error' => 'This interview is already completed and cannot accept new messages.',
                 'finished' => true

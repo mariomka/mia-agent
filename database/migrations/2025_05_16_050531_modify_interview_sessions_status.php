@@ -9,12 +9,12 @@ return new class extends Migration {
     public function up(): void
     {
         Schema::table('interview_sessions', function (Blueprint $table) {
-            $table->string('status')->default(InterviewSessionStatus::IN_PROGRESS->value)->after('metadata');
+            $table->string('status')->default(InterviewSessionStatus::inProgress->value)->after('metadata');
         });
 
         DB::statement('UPDATE interview_sessions SET status = CASE WHEN finished = 1 THEN ? ELSE ? END', [
-            InterviewSessionStatus::COMPLETED->value,
-            InterviewSessionStatus::IN_PROGRESS->value
+            InterviewSessionStatus::completed->value,
+            InterviewSessionStatus::inProgress->value
         ]);
 
         Schema::table('interview_sessions', function (Blueprint $table) {
@@ -33,8 +33,8 @@ return new class extends Migration {
                 WHEN status = ? OR status = ? THEN 1
                 ELSE 0
                 END', [
-            InterviewSessionStatus::COMPLETED->value,
-            InterviewSessionStatus::PARTIALLY_COMPLETED->value
+            InterviewSessionStatus::completed->value,
+            InterviewSessionStatus::partiallyCompleted->value
         ]);
 
         Schema::table('interview_sessions', function (Blueprint $table) {

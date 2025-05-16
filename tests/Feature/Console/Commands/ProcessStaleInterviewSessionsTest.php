@@ -35,7 +35,7 @@ it('processes stale sessions with user messages correctly', function () {
             ['type' => 'assistant', 'content' => 'Hello, how can I help you?'],
             ['type' => 'user', 'content' => 'I need information about your services.']
         ],
-        'status' => InterviewSessionStatus::IN_PROGRESS,
+        'status' => InterviewSessionStatus::inProgress,
         'metadata' => [],
         'input_tokens' => 0,
         'output_tokens' => 0,
@@ -55,7 +55,7 @@ it('processes stale sessions with user messages correctly', function () {
     $staleSession->refresh();
 
     // Assert that the session status is now PARTIALLY_COMPLETED
-    expect($staleSession->status->value)->toBe(InterviewSessionStatus::PARTIALLY_COMPLETED->value)
+    expect($staleSession->status->value)->toBe(InterviewSessionStatus::partiallyCompleted->value)
         ->and($staleSession->summary)->toBe('Test summary')
         ->and($staleSession->topics)->toBe([
             [
@@ -78,7 +78,7 @@ it('processes stale sessions without user messages correctly', function () {
         'messages' => [
             ['type' => 'assistant', 'content' => 'Hello, how can I help you?'],
         ],
-        'status' => InterviewSessionStatus::IN_PROGRESS,
+        'status' => InterviewSessionStatus::inProgress,
         'metadata' => [],
         'input_tokens' => 0,
         'output_tokens' => 0,
@@ -98,7 +98,7 @@ it('processes stale sessions without user messages correctly', function () {
     $staleSession->refresh();
 
     // Assert that the session status is now CANCELED
-    expect($staleSession->status)->toBe(InterviewSessionStatus::CANCELED);
+    expect($staleSession->status)->toBe(InterviewSessionStatus::canceled);
 });
 
 it('does not process recent sessions', function () {
@@ -113,7 +113,7 @@ it('does not process recent sessions', function () {
             ['type' => 'assistant', 'content' => 'Hello, how can I help you?'],
             ['type' => 'user', 'content' => 'I need information about your services.']
         ],
-        'status' => InterviewSessionStatus::IN_PROGRESS,
+        'status' => InterviewSessionStatus::inProgress,
         'metadata' => [],
         'input_tokens' => 0,
         'output_tokens' => 0,
@@ -133,5 +133,5 @@ it('does not process recent sessions', function () {
     $session->refresh();
 
     // Assert that the session status is still IN_PROGRESS
-    expect($session->status)->toBe(InterviewSessionStatus::IN_PROGRESS);
+    expect($session->status)->toBe(InterviewSessionStatus::inProgress);
 });

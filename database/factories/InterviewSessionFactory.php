@@ -33,7 +33,7 @@ class InterviewSessionFactory extends Factory
             'messages' => [], // Default to an empty array
             'summary' => null, // Default to null
             'topics' => [], // Default to an empty array
-            'status' => InterviewSessionStatus::IN_PROGRESS, // Default to in progress
+            'status' => InterviewSessionStatus::inProgress, // Default to in progress
         ];
     }
 }

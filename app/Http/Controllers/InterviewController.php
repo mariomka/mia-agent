@@ -70,7 +70,7 @@ class InterviewController extends Controller
             ],
             'sessionId' => $session->id, // Use the definitive session ID
             'messages' => $messages,
-            'is_finished' => $session->status !== InterviewSessionStatus::IN_PROGRESS
+            'is_finished' => $session->status !== InterviewSessionStatus::inProgress
         ]);
     }
 

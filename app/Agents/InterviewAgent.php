@@ -285,7 +285,7 @@ class InterviewAgent
             ->update([
                 'summary' => $summary,
                 'topics' => $topics,
-                'status' => InterviewSessionStatus::COMPLETED,
+                'status' => InterviewSessionStatus::completed,
             ]);
     }
 }
