@@ -18,7 +18,7 @@ use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 use App\Filament\Widgets\StatsOverviewWidget;
-use App\Filament\Widgets\RecentSessionsWidget;
+use App\Filament\Widgets\RecentCompletedSessionsWidget;
 use App\Filament\Widgets\SpendingStatsWidget;
 
 class AdminPanelProvider extends PanelProvider
@@ -47,7 +47,7 @@ class AdminPanelProvider extends PanelProvider
             ->widgets([
                 StatsOverviewWidget::class,
                 SpendingStatsWidget::class,
-                RecentSessionsWidget::class,
+                RecentCompletedSessionsWidget::class,
             ])
             ->middleware([
                 EncryptCookies::class,

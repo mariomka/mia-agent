@@ -10,7 +10,7 @@ use Filament\Tables\Table;
 use Filament\Widgets\TableWidget as BaseWidget;
 use Illuminate\Database\Eloquent\Model;
 
-class RecentSessionsWidget extends BaseWidget
+class RecentCompletedSessionsWidget extends BaseWidget
 {
     protected static ?int $sort = 3;
 
@@ -22,6 +22,10 @@ class RecentSessionsWidget extends BaseWidget
             ->query(
                 InterviewSession::query()
                     ->with('interview')
+                    ->whereIn('status', [
+                        InterviewSessionStatus::completed,
+                        InterviewSessionStatus::partiallyCompleted,
+                    ])
                     ->latest()
                     ->limit(15)
             )
@@ -52,7 +56,7 @@ class RecentSessionsWidget extends BaseWidget
                     ->dateTime()
                     ->sortable(),
             ])
-            ->heading('Recent Interview Sessions')
+            ->heading('Recent Completed Interview Sessions')
             ->paginated(false);
     }
 }
