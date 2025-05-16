@@ -41,7 +41,7 @@ class InterviewController extends Controller
                 // Ensure default values are set if creating
                 'messages' => [],
                 'metadata' => ['query_parameters' => $request->query()],
-                'finished' => false,
+                'status' => InterviewSessionStatus::inProgress,
             ]);
         }
 

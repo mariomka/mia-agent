@@ -34,8 +34,9 @@ class InterviewSessionResource extends Resource
                     ->searchable()
                     ->toggleable(isToggledHiddenByDefault: true),
 
-                Tables\Columns\BadgeColumn::make('status')
+                Tables\Columns\TextColumn::make('status')
                     ->label('Status')
+                    ->badge()
                     ->formatStateUsing(fn (InterviewSessionStatus $state): string => $state->label())
                     ->colors([
                         'warning' => fn (InterviewSessionStatus $state): bool => $state === InterviewSessionStatus::inProgress,

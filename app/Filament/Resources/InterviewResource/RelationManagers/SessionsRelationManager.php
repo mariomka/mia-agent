@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\InterviewResource\RelationManagers;
 
+use App\Enums\InterviewSessionStatus;
 use App\Filament\Resources\InterviewSessionResource;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -27,9 +28,17 @@ class SessionsRelationManager extends RelationManager
                 Tables\Columns\TextColumn::make('id')
                     ->searchable(),
 
-                Tables\Columns\IconColumn::make('finished')
-                    ->boolean()
-                    ->label('Completed'),
+                Tables\Columns\TextColumn::make('status')
+                    ->label('Status')
+                    ->badge()
+                    ->formatStateUsing(fn (InterviewSessionStatus $state): string => $state->label())
+                    ->colors([
+                        'warning' => fn (InterviewSessionStatus $state): bool => $state === InterviewSessionStatus::inProgress,
+                        'success' => fn (InterviewSessionStatus $state): bool => $state === InterviewSessionStatus::completed,
+                        'info' => fn (InterviewSessionStatus $state): bool => $state === InterviewSessionStatus::partiallyCompleted,
+                        'danger' => fn (InterviewSessionStatus $state): bool => $state === InterviewSessionStatus::canceled,
+                    ]),
+
 
                 Tables\Columns\TextColumn::make('summary')
                     ->limit(50)
@@ -40,8 +49,10 @@ class SessionsRelationManager extends RelationManager
                     ->sortable(),
             ])
             ->filters([
-                Tables\Filters\TernaryFilter::make('finished')
-                    ->label('Completed'),
+                Tables\Filters\SelectFilter::make('status')
+                    ->label('Status')
+                    ->options(InterviewSessionStatus::toArray())
+                    ->multiple(),
 
                 Tables\Filters\Filter::make('created_at')
                     ->form([
@@ -59,18 +70,6 @@ class SessionsRelationManager extends RelationManager
                                 fn (Builder $query, $date): Builder => $query->whereDate('created_at', '<=', $date),
                             );
                     }),
-            ])
-            ->headerActions([
-                Tables\Actions\CreateAction::make(),
-            ])
-            ->actions([
-                Tables\Actions\ViewAction::make(),
-                Tables\Actions\DeleteAction::make(),
-            ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
-                ]),
             ])
             ->defaultSort('created_at', 'desc');
     }

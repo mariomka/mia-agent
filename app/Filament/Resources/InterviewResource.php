@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources;
 
+use App\Enums\InterviewSessionStatus;
 use App\Enums\InterviewStatus;
 use App\Filament\Resources\InterviewResource\Pages;
 use App\Filament\Resources\InterviewResource\RelationManagers\SessionsRelationManager;
@@ -300,7 +301,10 @@ class InterviewResource extends Resource
                     ->label('Sessions')
                     ->state(function (Interview $record): string {
                         $totalSessions = $record->sessions()->count();
-                        $completedSessions = $record->sessions()->where('finished', true)->count();
+                        $completedSessions = $record->sessions()->whereIn('status', [
+                            InterviewSessionStatus::completed,
+                            InterviewSessionStatus::partiallyCompleted,
+                        ])->count();
                         return "{$completedSessions} / {$totalSessions}";
                     })
                     ->sortable(),

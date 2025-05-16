@@ -2,10 +2,13 @@
 
 namespace App\Filament\Widgets;
 
+use App\Enums\InterviewSessionStatus;
+use App\Filament\Resources\InterviewSessionResource;
 use App\Models\InterviewSession;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Filament\Widgets\TableWidget as BaseWidget;
+use Illuminate\Database\Eloquent\Model;
 
 class RecentSessionsWidget extends BaseWidget
 {
@@ -22,14 +25,20 @@ class RecentSessionsWidget extends BaseWidget
                     ->latest()
                     ->limit(15)
             )
+            ->recordUrl(
+                fn (Model $record): string => InterviewSessionResource::getUrl('view', ['record' => $record])
+            )
             ->columns([
-                Tables\Columns\IconColumn::make('finished')
+                Tables\Columns\TextColumn::make('status')
                     ->label('Status')
-                    ->boolean()
-                    ->trueIcon('heroicon-o-check-circle')
-                    ->falseIcon('heroicon-o-clock')
-                    ->trueColor('success')
-                    ->falseColor('warning'),
+                    ->badge()
+                    ->formatStateUsing(fn (InterviewSessionStatus $state): string => $state->label())
+                    ->colors([
+                        'warning' => fn (InterviewSessionStatus $state): bool => $state === InterviewSessionStatus::inProgress,
+                        'success' => fn (InterviewSessionStatus $state): bool => $state === InterviewSessionStatus::completed,
+                        'info' => fn (InterviewSessionStatus $state): bool => $state === InterviewSessionStatus::partiallyCompleted,
+                        'danger' => fn (InterviewSessionStatus $state): bool => $state === InterviewSessionStatus::canceled,
+                    ]),
 
                 Tables\Columns\TextColumn::make('interview.name')
                     ->label('Interview')
@@ -42,11 +51,6 @@ class RecentSessionsWidget extends BaseWidget
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable(),
-            ])
-            ->actions([
-                Tables\Actions\Action::make('view')
-                    ->url(fn (InterviewSession $record): string => route('filament.admin.resources.interview-sessions.view', $record))
-                    ->icon('heroicon-m-eye'),
             ])
             ->heading('Recent Interview Sessions')
             ->paginated(false);

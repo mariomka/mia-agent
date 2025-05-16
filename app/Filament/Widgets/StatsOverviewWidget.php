@@ -2,6 +2,7 @@
 
 namespace App\Filament\Widgets;
 
+use App\Enums\InterviewSessionStatus;
 use App\Models\Interview;
 use App\Models\InterviewSession;
 use Filament\Widgets\StatsOverviewWidget as BaseWidget;
@@ -15,7 +16,9 @@ class StatsOverviewWidget extends BaseWidget
     {
         $totalInterviews = Interview::count();
         $totalSessions = InterviewSession::count();
-        $completedSessions = InterviewSession::where('finished', true)->count();
+        $completedSessions = InterviewSession::where('status', [
+            InterviewSessionStatus::completed,
+        ])->count();
 
         $completionRate = $totalSessions > 0
             ? round(($completedSessions / $totalSessions) * 100, 1)
