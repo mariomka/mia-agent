@@ -2,6 +2,7 @@
 
 namespace App\Agents;
 
+use App\Enums\InterviewSessionStatus;
 use App\Models\Interview;
 use App\Models\InterviewSession;
 use Prism\Prism\Prism;
@@ -15,7 +16,7 @@ use function view;
 
 class InterviewAgent
 {
-    public function chat(string $sessionId, string $message, Interview $interview): mixed
+    public function chat(string $sessionId, string $message, Interview $interview, bool $isStaleSession = false): array
     {
         $topicSchema = new ObjectSchema(
             name: 'topic',
@@ -99,7 +100,6 @@ class InterviewAgent
             $messages[] = new UserMessage($message);
         }
 
-        // Get system prompt with language instruction and agent name
         $systemPrompt = view('agents.interview.system-prompt', [
             'language' => $interview->language,
             'agentName' => $interview->agent_name,
@@ -111,6 +111,7 @@ class InterviewAgent
             'hasCustomWelcomeMessage' => $hasCustomWelcomeMessage,
             'hasCustomGoodbyeMessage' => $hasCustomGoodbyeMessage,
             'turnsExhausted' => $reachedTurnLimit,
+            'isStaleSession' => $isStaleSession,
         ]);
 
         $providerName = config('agent.provider');
@@ -133,6 +134,16 @@ class InterviewAgent
         // Calculate cost based on token usage and configuration
         $cost = $this->calculateCost($inputTokens, $outputTokens);
 
+        if ($isStaleSession) {
+            $this->saveMessages($sessionId, $messages, $interview, $inputTokens, $outputTokens, $cost);
+
+            return [
+                'summary' => $output['result']['summary'] ?? null,
+                'topics' => $output['result']['topics'] ?? [],
+            ];
+        }
+
+        // For normal sessions, process the output as before
         $finished = !empty($output['finished']) && $output['finished'] === true;
 
         if ($finished && $hasCustomGoodbyeMessage) {
@@ -174,8 +185,6 @@ class InterviewAgent
             );
         }
 
-        // Create a new response object to return if needed
-        // or just return the original response - the filtered messages have been saved to history
         return $output;
     }
 
@@ -276,7 +285,7 @@ class InterviewAgent
             ->update([
                 'summary' => $summary,
                 'topics' => $topics,
-                'finished' => true,
+                'status' => InterviewSessionStatus::COMPLETED,
             ]);
     }
 }

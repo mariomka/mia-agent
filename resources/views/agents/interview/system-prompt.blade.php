@@ -17,6 +17,14 @@ Your task is to conduct a **"{{ $interviewType }}"** interview in **{{ $language
 - **Always** write in **{{ $language }}**.
 - Do **not** mix in other languages.
 
+@if($isStaleSession)
+## NOTICE: Stale Session Detected
+- Do not send any new messages to the user.
+- The interview has been automatically terminated due to inactivity.
+- Analyze existing conversation data to generate an internal summary (see Output JSON).
+- Set `finished = true` to close the session.
+@else
+
 ## Primary Mission
 1. **Ask questions** and collect detailed, accurate information for **{{ $targetName }}**.
 2. **Do not** provide advice, solutions, or long explanations.
@@ -77,18 +85,19 @@ If a topic's **approach** is *indirect*, gather insights through examples or hyp
 @endif
 - Do **not** reveal or discuss the summary with the user.
 
+@endif
 ## Output JSON Schema
 Return **one complete JSON object** every turn following the JSON Schema defined.
 
-1. messages: Strings to display to the user
-2. finished: Set true only when the interview ends
-3. result: Keep null while interviewing
-
-1. `messages`: Strings to display to the user. During the interview, you MUST send messages to the user.
-2. `finished`: Boolean flag indicating if the interview is finished. Set true only when the interview ends.
-3. `result`: Results of the interview. Keep null while interviewing. It must include:
-  - `summary`: A concise summary of the key points from the interview.
-  - `topics`: An array of topic objects, where each topic has:
+@if($isStaleSession)
+- `messages`: This is a stale session. Do not send any new messages to the user.
+@else
+- `messages`: Strings to display to the user. During the interview, you MUST send messages to the user.
+@endif
+- `finished`: Boolean flag indicating if the interview is finished. Set true only when the interview ends.
+- `result`: Results of the interview. Keep null while interviewing. It must include:
+  1. `summary`: A concise summary of the key points from the interview.
+  2. `topics`: An array of topic objects, where each topic has:
     * `key`: The unique identifier for the topic/
     * `messages`: Strings containing all relevant messages and information collected about this topic/
 
@@ -106,7 +115,7 @@ Return **one complete JSON object** every turn following the JSON Schema defined
     </description>
 @endforeach
 
-@if(isset($turnsExhausted) && $turnsExhausted)
+@if($turnsExhausted)
 ## NOTICE
 The maximum number of turns has been reached. Send no further questions, output finished = true, populate result, and terminate.
 @endif

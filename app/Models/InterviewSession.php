@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\InterviewSessionStatus;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -22,7 +23,7 @@ class InterviewSession extends Model
         'messages',
         'summary',
         'topics',
-        'finished',
+        'status',
         'metadata',
         'input_tokens',
         'output_tokens',
@@ -38,7 +39,7 @@ class InterviewSession extends Model
         'messages' => 'array',
         'topics' => 'array',
         'metadata' => 'array',
-        'finished' => 'boolean',
+        'status' => InterviewSessionStatus::class,
         'input_tokens' => 'integer',
         'output_tokens' => 'integer',
         'cost' => 'decimal:6',
