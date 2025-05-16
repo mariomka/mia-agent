@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources;
 
+use App\Enums\InterviewSessionStatus;
 use App\Filament\Resources\InterviewSessionResource\Pages;
 use App\Models\InterviewSession;
 use Filament\Forms;
@@ -33,13 +34,15 @@ class InterviewSessionResource extends Resource
                     ->searchable()
                     ->toggleable(isToggledHiddenByDefault: true),
 
-                Tables\Columns\IconColumn::make('finished')
+                Tables\Columns\BadgeColumn::make('status')
                     ->label('Status')
-                    ->boolean()
-                    ->trueIcon('heroicon-o-check-circle')
-                    ->falseIcon('heroicon-o-clock')
-                    ->trueColor('success')
-                    ->falseColor('warning'),
+                    ->formatStateUsing(fn (InterviewSessionStatus $state): string => $state->label())
+                    ->colors([
+                        'warning' => fn (InterviewSessionStatus $state): bool => $state === InterviewSessionStatus::IN_PROGRESS,
+                        'success' => fn (InterviewSessionStatus $state): bool => $state === InterviewSessionStatus::COMPLETED,
+                        'info' => fn (InterviewSessionStatus $state): bool => $state === InterviewSessionStatus::PARTIALLY_COMPLETED,
+                        'danger' => fn (InterviewSessionStatus $state): bool => $state === InterviewSessionStatus::CANCELED,
+                    ]),
 
                 Tables\Columns\TextColumn::make('interview.name')
                     ->label('Interview')
@@ -66,8 +69,10 @@ class InterviewSessionResource extends Resource
                     ->searchable()
                     ->preload(),
 
-                Tables\Filters\TernaryFilter::make('finished')
-                    ->label('Completed'),
+                Tables\Filters\SelectFilter::make('status')
+                    ->label('Status')
+                    ->options(InterviewSessionStatus::toArray())
+                    ->multiple(),
 
                 Tables\Filters\Filter::make('created_at')
                     ->form([
